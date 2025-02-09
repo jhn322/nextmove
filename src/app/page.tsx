@@ -6,28 +6,28 @@ const difficultyLevels = [
     name: "Easy",
     href: "/play/easy",
     description: "Learn the basics with a bot that makes predictable moves.",
-    color: "bg-green-500/10 hover:bg-green-500/20 border-green-500/20",
+    color: "bg-green-500/30 hover:bg-green-500/20 border-green-500/50",
   },
   {
     name: "Intermediate",
     href: "/play/intermediate",
     description:
       "Test your skills against a bot with moderate tactical awareness.",
-    color: "bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/20",
+    color: "bg-blue-500/30 hover:bg-blue-500/20 border-blue-500/50",
   },
   {
     name: "Hard",
     href: "/play/hard",
     description:
       "Challenge yourself with advanced strategies and combinations.",
-    color: "bg-orange-500/10 hover:bg-orange-500/20 border-orange-500/20",
+    color: "bg-orange-500/30 hover:bg-orange-500/20 border-orange-500/50",
   },
   {
     name: "Expert",
     href: "/play/expert",
     description:
-      "Face our strongest bot with sophisticated chess understanding.",
-    color: "bg-red-500/10 hover:bg-red-500/20 border-red-500/20",
+      "Face the strongest bot with sophisticated chess understanding.",
+    color: "bg-red-500/30 hover:bg-red-500/20 border-red-500/50",
   },
 ];
 
@@ -39,8 +39,8 @@ export default function Home() {
           <Puzzle className="h-16 w-16 mx-auto" />
           <h1 className="text-4xl font-bold">Welcome to Chess-Next</h1>
           <p className="text-xl text-muted-foreground">
-            Challenge yourself against our bot opponents at different skill
-            levels and see if you can win.
+            Challenge yourself against bot opponents at different skill levels
+            and see if you can win.
           </p>
         </div>
 
