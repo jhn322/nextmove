@@ -73,16 +73,16 @@ const Navbar = () => {
           <NavigationMenu>
             <NavigationMenuList className="space-x-2">
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="text-base font-bold px-4 py-2">
+                <NavigationMenuTrigger className="text-base font-bold px-4 py-2 rounded-xl">
                   Play
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid w-52 gap-1 p-4">
+                  <ul className="grid w-52 gap-1 p-4 rounded-xl">
                     {playItems.map((item) => (
                       <li key={item.href}>
                         <Link
                           href={item.href}
-                          className="block select-none rounded-md p-2.5 text-base font-medium hover:bg-accent hover:text-accent-foreground"
+                          className="block select-none rounded-xl p-2.5 text-base font-medium hover:bg-accent hover:text-accent-foreground"
                         >
                           {item.title}
                         </Link>
@@ -94,7 +94,7 @@ const Navbar = () => {
               <NavigationMenuItem>
                 <Link
                   href="/history"
-                  className="px-4 py-2 text-base font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
+                  className="px-4 py-2 text-base font-medium rounded-xl hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
                 >
                   <History className="mr-2 h-4 w-4" />
                   History
@@ -103,7 +103,7 @@ const Navbar = () => {
               <NavigationMenuItem>
                 <Link
                   href="/settings"
-                  className="px-4 py-2 text-base font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
+                  className="px-4 py-2 text-base font-medium rounded-xl hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
@@ -221,7 +221,7 @@ const Navbar = () => {
                   onOpenChange={setIsPlayOpen}
                   className="space-y-2"
                 >
-                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 text-base font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 text-base font-medium rounded-xl hover:bg-accent hover:text-accent-foreground transition-colors">
                     Play
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-200 ${
@@ -245,7 +245,7 @@ const Navbar = () => {
 
                 <Link
                   href="/history"
-                  className="py-2 px-3 text-base font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
+                  className="py-2 px-3 text-base font-medium rounded-xl hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
                   onClick={() => setIsOpen(false)}
                 >
                   <History className="mr-2 h-4 w-4" />
@@ -254,7 +254,7 @@ const Navbar = () => {
 
                 <Link
                   href="/settings"
-                  className="py-2 px-3 text-base font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
+                  className="py-2 px-3 text-base font-medium rounded-xl hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center"
                   onClick={() => setIsOpen(false)}
                 >
                   <Settings className="mr-2 h-4 w-4" />
