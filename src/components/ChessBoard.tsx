@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Chess } from "chess.js";
 import Square from "@/components/Square";
 import Piece from "@/components/Piece";
@@ -13,6 +13,28 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     col: number;
   } | null>(null);
   const [engine, setEngine] = useState<StockfishEngine | null>(null);
+
+  // Make a move and update the board
+  const makeMove = useCallback(
+    (from: string, to: string) => {
+      try {
+        const move = game.move({
+          from,
+          to,
+          promotion: "q", // Always promote to queen for simplicity
+        });
+
+        if (move) {
+          setBoard(game.board());
+          return true;
+        }
+      } catch {
+        console.log("Invalid move");
+      }
+      return false;
+    },
+    [game]
+  );
 
   // Initialize Stockfish
   useEffect(() => {
@@ -44,26 +66,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     return () => {
       stockfish.terminate();
     };
-  }, [difficulty]);
-
-  // Make a move and update the board
-  const makeMove = (from: string, to: string) => {
-    try {
-      const move = game.move({
-        from,
-        to,
-        promotion: "q", // Always promote to queen (for now)
-      });
-
-      if (move) {
-        setBoard(game.board());
-        return true;
-      }
-    } catch (e) {
-      console.log("Invalid move");
-    }
-    return false;
-  };
+  }, [difficulty, makeMove]);
 
   // Get bot's move
   const getBotMove = () => {
