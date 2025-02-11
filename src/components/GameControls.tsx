@@ -156,19 +156,7 @@ const GameControls = ({
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
           <CardHeader className="p-4 pb-2">
-            <CardTitle className="flex items-center gap-2">
-              Play As
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Changing color will restart the game</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2">Play As</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="flex gap-3">
@@ -222,7 +210,7 @@ const GameControls = ({
                     <Info className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Changing difficulty will restart the game</p>
+                    <p>Change the bot opponent's skill level.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
