@@ -2,6 +2,18 @@
 
 import Link from "next/link";
 import { Puzzle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 const difficultyLevels = [
   {
@@ -59,6 +71,12 @@ const difficultyLevels = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+  const [showDialog, setShowDialog] = useState(false);
+  const [pendingDifficulty, setPendingDifficulty] = useState<
+    (typeof difficultyLevels)[0] | null
+  >(null);
+
   // Check for saved game
   const getSavedGameDifficulty = () => {
     if (typeof window === "undefined") return null;
@@ -78,36 +96,81 @@ export default function Home() {
 
   const savedDifficulty = getSavedGameDifficulty();
 
-  return (
-    <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center p-8">
-      <div className="max-w-4xl w-full text-center space-y-8">
-        <div className="space-y-4">
-          <Puzzle className="h-16 w-16 mx-auto" />
-          <h1 className="text-4xl font-bold">Welcome to Chess-Next</h1>
-          <p className="text-xl text-muted-foreground">
-            Challenge yourself against bot opponents at different skill levels
-            and see if you can win.
-          </p>
-        </div>
+  const handleDifficultyClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    level: (typeof difficultyLevels)[0]
+  ) => {
+    // If there's a saved game and user is clicking a different difficulty
+    if (
+      savedDifficulty &&
+      savedDifficulty.toLowerCase() !== level.name.toLowerCase()
+    ) {
+      e.preventDefault();
+      setPendingDifficulty(level);
+      setShowDialog(true);
+    }
+  };
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-          {difficultyLevels.map((level) => (
-            <Link
-              key={level.name}
-              href={level.href}
-              className={`relative p-6 rounded-xl border ${level.color} transition-all duration-200 hover:scale-[1.02]`}
-            >
-              {savedDifficulty?.toLowerCase() === level.name.toLowerCase() && (
-                <div className="absolute -top-3 right-4 px-3 py-1 bg-green-500 text-white text-sm rounded-full">
-                  Saved Game
-                </div>
-              )}
-              <h2 className="text-2xl font-bold mb-2">{level.name}</h2>
-              <p className="text-muted-foreground">{level.description}</p>
-            </Link>
-          ))}
+  const handleConfirm = () => {
+    if (pendingDifficulty) {
+      localStorage.removeItem("chess-game-state");
+      router.push(pendingDifficulty.href);
+    }
+    setShowDialog(false);
+  };
+
+  return (
+    <>
+      <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center p-8">
+        <div className="max-w-4xl w-full text-center space-y-8">
+          <div className="space-y-4">
+            <Puzzle className="h-16 w-16 mx-auto" />
+            <h1 className="text-4xl font-bold">Welcome to Chess-Next</h1>
+            <p className="text-xl text-muted-foreground">
+              Challenge yourself against bot opponents at different skill levels
+              and see if you can win.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+            {difficultyLevels.map((level) => (
+              <Link
+                key={level.name}
+                href={level.href}
+                onClick={(e) => handleDifficultyClick(e, level)}
+                className={`relative p-6 rounded-xl border ${level.color} transition-all duration-200 hover:scale-[1.02]`}
+              >
+                {savedDifficulty?.toLowerCase() ===
+                  level.name.toLowerCase() && (
+                  <div className="absolute -top-3 right-4 px-3 py-1 bg-green-500 text-white text-sm rounded-full">
+                    Saved Game
+                  </div>
+                )}
+                <h2 className="text-2xl font-bold mb-2">{level.name}</h2>
+                <p className="text-muted-foreground">{level.description}</p>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+
+      <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start New Game?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have a saved game in progress. Starting a new game will lose
+              your current progress. Are you sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirm}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

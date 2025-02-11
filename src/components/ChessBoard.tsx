@@ -3,6 +3,16 @@ import { Chess, Square } from "chess.js";
 import SquareComponent from "@/components/Square";
 import Piece from "@/components/Piece";
 import GameControls from "@/components/GameControls";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type StockfishEngine = Worker;
 
@@ -18,6 +28,8 @@ const DEFAULT_STATE = {
 };
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
+  const [showResignDialog, setShowResignDialog] = useState(false);
+
   // Load initial state from localStorage or use defaults
   const loadSavedState = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -240,13 +252,18 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   };
 
   const handleResign = () => {
-    alert(`${playerColor === "w" ? "White" : "Black"} resigns!`);
     // Reset everything
     handleRestart();
+    setShowResignDialog(true);
+  };
+
+  const handleConfirmResign = () => {
+    handleRestart();
+    setShowResignDialog(false);
   };
 
   return (
-    <div className="flex flex-col w-full lg:flex-row items-center lg:items-start justify-center gap-4 p-4 min-h-[calc(90vh-4rem)]">
+    <main className="flex flex-col w-full lg:flex-row items-center lg:items-start justify-center gap-4 p-4 min-h-[calc(90vh-4rem)]">
       <div className="w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
         <div className="w-full aspect-square">
           <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
@@ -314,7 +331,27 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           }}
         />
       </div>
-    </div>
+
+      <AlertDialog open={showResignDialog} onOpenChange={setShowResignDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center">
+              Resign Game?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Are you sure you want to resign? This will count as a loss and
+              start a new game.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmResign}>
+              Resign
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </main>
   );
 };
 
