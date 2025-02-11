@@ -23,6 +23,7 @@ interface SquareProps {
   children?: React.ReactNode;
   onClick: () => void;
   difficulty: string;
+  isPossibleMove: boolean;
 }
 
 const Square = ({
@@ -31,6 +32,7 @@ const Square = ({
   children,
   onClick,
   difficulty,
+  isPossibleMove,
 }: SquareProps) => {
   const colors = difficultyColors[difficulty as keyof typeof difficultyColors];
 
@@ -40,12 +42,21 @@ const Square = ({
       className={`
         relative aspect-square w-full
         ${isLight ? colors.light : colors.dark}
-        ${isSelected ? "ring-2 ring-blue-500" : ""}
+        ${
+          isSelected
+            ? "after:absolute after:inset-0 after:bg-yellow-400 after:bg-opacity-40 after:pointer-events-none"
+            : ""
+        }
         cursor-pointer
+        transition-all duration-150
+        hover:brightness-110
       `}
     >
       <div className="absolute inset-0 flex items-center justify-center">
         {children}
+        {isPossibleMove && !children && (
+          <div className="w-8 h-8 rounded-full bg-black  bg-opacity-40" />
+        )}
       </div>
     </div>
   );

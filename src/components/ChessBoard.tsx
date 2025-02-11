@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Chess } from "chess.js";
-import Square from "@/components/Square";
+import { Chess, Square } from "chess.js";
+import SquareComponent from "@/components/Square";
 import Piece from "@/components/Piece";
 
 type StockfishEngine = Worker;
@@ -13,6 +13,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     col: number;
   } | null>(null);
   const [engine, setEngine] = useState<StockfishEngine | null>(null);
+  const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
 
   // Make a move and update the board
   const makeMove = useCallback(
@@ -85,11 +86,16 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       const piece = board[row][col];
       if (piece && piece.color === "w") {
         setSelectedPiece({ row, col });
+        const from = `${"abcdefgh"[col]}${8 - row}` as Square;
+        const moves = game.moves({ square: from, verbose: true });
+        setPossibleMoves(moves.map((move) => move.to));
       }
     } else {
       // Try to make a move
-      const from = `${"abcdefgh"[selectedPiece.col]}${8 - selectedPiece.row}`;
-      const to = `${"abcdefgh"[col]}${8 - row}`;
+      const from = `${"abcdefgh"[selectedPiece.col]}${
+        8 - selectedPiece.row
+      }` as Square;
+      const to = `${"abcdefgh"[col]}${8 - row}` as Square;
 
       const moveMade = makeMove(from, to);
       if (moveMade) {
@@ -98,6 +104,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       }
 
       setSelectedPiece(null);
+      setPossibleMoves([]);
     }
   };
 
@@ -118,13 +125,16 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         <div className="w-full h-full grid grid-cols-8 border border-border">
           {board.map((row, rowIndex) =>
             row.map((piece, colIndex) => (
-              <Square
+              <SquareComponent
                 key={`${rowIndex}-${colIndex}`}
                 isLight={(rowIndex + colIndex) % 2 === 0}
                 isSelected={
                   selectedPiece?.row === rowIndex &&
                   selectedPiece?.col === colIndex
                 }
+                isPossibleMove={possibleMoves.includes(
+                  `${"abcdefgh"[colIndex]}${8 - rowIndex}`
+                )}
                 onClick={() => handleSquareClick(rowIndex, colIndex)}
                 difficulty={difficulty}
               >
@@ -137,7 +147,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     }
                   />
                 )}
-              </Square>
+              </SquareComponent>
             ))
           )}
         </div>
