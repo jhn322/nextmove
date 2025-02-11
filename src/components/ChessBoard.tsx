@@ -102,22 +102,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   );
 
   // Save state
-  useEffect(() => {
-    const state = {
-      fen: game.fen(),
-      playerColor,
-      gameTime,
-      whiteTime,
-      blackTime,
-      difficulty,
-      gameStarted,
-      history,
-      currentMove,
-      lastMove,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [
-    game,
+  const gameState = {
+    fen: game.fen(),
     playerColor,
     gameTime,
     whiteTime,
@@ -127,7 +113,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     history,
     currentMove,
     lastMove,
-  ]);
+  };
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+  }, [gameState]);
 
   // Track total and per-player time
   useEffect(() => {
@@ -222,9 +212,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   // Move back to the previous position in history
   const moveBack = useCallback(() => {
-    console.log("Moving back - currentMove:", currentMove);
-    console.log("Moving back - history:", history);
-
     if (currentMove > 1 && history[currentMove - 2]) {
       const newPosition = currentMove - 1;
       const historyEntry = history[newPosition - 1];
@@ -234,15 +221,12 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         setBoard(game.board());
         setCurrentMove(newPosition);
         setLastMove(historyEntry.lastMove);
-        console.log("Moved back to position:", newPosition);
       }
     }
   }, [currentMove, game, history]);
 
+  // Move forward to the next position in history
   const moveForward = useCallback(() => {
-    console.log("Moving forward - currentMove:", currentMove);
-    console.log("Moving forward - history:", history);
-
     if (currentMove < history.length && history[currentMove]) {
       const historyEntry = history[currentMove];
 
@@ -251,10 +235,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         setBoard(game.board());
         setCurrentMove(currentMove + 1);
         setLastMove(historyEntry.lastMove);
-        console.log("Moved forward to position:", currentMove + 1);
       }
     }
-  }, [currentMove, history.length, game, history]);
+  }, [currentMove, game, history]);
 
   // Initialize Stockfish
   useEffect(() => {
@@ -340,7 +323,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           }
           setTimeout(getBotMove, 1000);
         }
-      } catch (error) {
+      } catch {
         console.log("Invalid move");
       }
 
