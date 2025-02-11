@@ -33,14 +33,6 @@ const DEFAULT_STATE = {
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const router = useRouter();
 
-  const [showResignDialog, setShowResignDialog] = useState(false);
-  const [showDifficultyDialog, setShowDifficultyDialog] = useState(false);
-  const [pendingDifficulty, setPendingDifficulty] = useState<string | null>(
-    null
-  );
-  const [showColorDialog, setShowColorDialog] = useState(false);
-  const [pendingColor, setPendingColor] = useState<"w" | "b" | null>(null);
-
   // Load initial state from localStorage or use defaults
   const loadSavedState = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -48,19 +40,37 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       const state = JSON.parse(saved);
       // Only restore if it's the same difficulty level
       if (state.difficulty === difficulty) {
-        return state;
+        return {
+          ...state,
+          history: state.history || [DEFAULT_STATE.fen],
+          currentMove: state.currentMove || 1,
+        };
       }
     }
-    return { ...DEFAULT_STATE, difficulty };
+    return {
+      ...DEFAULT_STATE,
+      difficulty,
+      history: [DEFAULT_STATE.fen],
+      currentMove: 1,
+    };
   };
 
   const savedState = loadSavedState();
+  const [history, setHistory] = useState(savedState.history);
+  const [currentMove, setCurrentMove] = useState(savedState.currentMove);
   const [game] = useState(() => {
     const chess = new Chess();
     chess.load(savedState.fen);
     return chess;
   });
 
+  const [showResignDialog, setShowResignDialog] = useState(false);
+  const [showDifficultyDialog, setShowDifficultyDialog] = useState(false);
+  const [pendingDifficulty, setPendingDifficulty] = useState<string | null>(
+    null
+  );
+  const [showColorDialog, setShowColorDialog] = useState(false);
+  const [pendingColor, setPendingColor] = useState<"w" | "b" | null>(null);
   const [board, setBoard] = useState(game.board());
   const [selectedPiece, setSelectedPiece] = useState<{
     row: number;
@@ -86,6 +96,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       blackTime,
       difficulty,
       gameStarted,
+      history,
+      currentMove,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [
@@ -96,6 +108,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     blackTime,
     difficulty,
     gameStarted,
+    history,
+    currentMove,
   ]);
 
   // Track total and per-player time
@@ -165,6 +179,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
         if (move) {
           setBoard(game.board());
+          // Update history and currentMove using their current values
+          setHistory((prev: string[]) => [...prev, game.fen()]);
+          setCurrentMove((prev: number) => prev + 1);
           return true;
         }
       } catch {
@@ -175,6 +192,33 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     [game]
   );
 
+  // Get bot's move
+  const getBotMove = useCallback(() => {
+    if (engine && !game.isGameOver()) {
+      engine.postMessage("position fen " + game.fen());
+      engine.postMessage("go movetime 1000"); // Think for 1 second
+    }
+  }, [engine, game]);
+
+  // Move back to the previous position in history
+  const moveBack = useCallback(() => {
+    if (currentMove > 1) {
+      const newPosition = currentMove - 1;
+      game.load(history[newPosition - 1]);
+      setBoard(game.board());
+      setCurrentMove(newPosition);
+    }
+  }, [currentMove, game, history]);
+
+  // Move forward to the next position in history
+  const moveForward = useCallback(() => {
+    if (currentMove < history.length) {
+      game.load(history[currentMove]);
+      setBoard(game.board());
+      setCurrentMove(currentMove + 1);
+    }
+  }, [currentMove, history.length, game, history]);
+
   // Initialize Stockfish
   useEffect(() => {
     const stockfish = new Worker("/stockfish.js");
@@ -184,7 +228,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       // When Stockfish finds the best move
       if (message.startsWith("bestmove")) {
         const moveStr = message.split(" ")[1];
-        makeMove(moveStr.slice(0, 2), moveStr.slice(2, 4));
+        if (!game.isGameOver()) {
+          // Add check to prevent moves after game over
+          makeMove(moveStr.slice(0, 2), moveStr.slice(2, 4));
+        }
       }
     };
 
@@ -209,15 +256,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     return () => {
       stockfish.terminate();
     };
-  }, [difficulty, makeMove]);
-
-  // Get bot's move
-  const getBotMove = useCallback(() => {
-    if (engine && !game.isGameOver()) {
-      engine.postMessage("position fen " + game.fen());
-      engine.postMessage("go movetime 1000"); // Think for 1 second
-    }
-  }, [engine, game]);
+  }, [difficulty, makeMove, game]);
 
   const handleSquareClick = (row: number, col: number) => {
     // Only allow moves if it's player's turn
@@ -273,6 +312,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setWhiteTime(0);
     setBlackTime(0);
     setGameStarted(false);
+    setHistory([DEFAULT_STATE.fen]);
+    setCurrentMove(1);
 
     // Save state with preserved player color
     const currentState = {
@@ -413,6 +454,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
             whiteTime={whiteTime}
             blackTime={blackTime}
             game={game}
+            onMoveBack={moveBack}
+            onMoveForward={moveForward}
+            canMoveBack={currentMove > 1}
+            canMoveForward={currentMove < history.length}
           />
         </div>
       </main>

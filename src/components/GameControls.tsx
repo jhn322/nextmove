@@ -20,6 +20,10 @@ interface GameControlsProps {
   whiteTime: number;
   blackTime: number;
   game: Chess;
+  onMoveBack: () => void;
+  onMoveForward: () => void;
+  canMoveBack: boolean;
+  canMoveForward: boolean;
 }
 
 const GameControls = ({
@@ -33,6 +37,10 @@ const GameControls = ({
   whiteTime,
   blackTime,
   game,
+  onMoveBack,
+  onMoveForward,
+  canMoveBack,
+  canMoveForward,
 }: GameControlsProps) => {
   const difficulties = [
     "beginner",
@@ -183,6 +191,24 @@ const GameControls = ({
             <CardTitle>Game Controls</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-3">
+            <div className="flex gap-2">
+              <Button
+                onClick={onMoveBack}
+                variant="outline"
+                className="flex-1"
+                disabled={!canMoveBack}
+              >
+                ← Back
+              </Button>
+              <Button
+                onClick={onMoveForward}
+                variant="outline"
+                className="flex-1"
+                disabled={!canMoveForward}
+              >
+                Forward →
+              </Button>
+            </div>
             <Button onClick={onResign} variant="destructive" className="w-full">
               Resign
             </Button>
