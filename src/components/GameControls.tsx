@@ -205,7 +205,7 @@ const GameControls = ({
                     <Info className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Change the bot opponent's skill level.</p>
+                    <p>Change the bot opponent&apos;s skill level.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
