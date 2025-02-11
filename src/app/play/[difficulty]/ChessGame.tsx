@@ -8,10 +8,7 @@ export default function ChessGame() {
   const difficulty = params.difficulty as string;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      <h1 className="text-2xl font-bold mb-8">
-        Playing against {difficulty} bot
-      </h1>
+    <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-4 min-h-[calc(100vh-4rem)]">
       <ChessBoard difficulty={difficulty} />
     </div>
   );

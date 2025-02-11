@@ -24,6 +24,7 @@ interface SquareProps {
   onClick: () => void;
   difficulty: string;
   isPossibleMove: boolean;
+  isCheck: boolean;
 }
 
 const Square = ({
@@ -33,6 +34,7 @@ const Square = ({
   onClick,
   difficulty,
   isPossibleMove,
+  isCheck,
 }: SquareProps) => {
   const colors = difficultyColors[difficulty as keyof typeof difficultyColors];
 
@@ -45,6 +47,11 @@ const Square = ({
         ${
           isSelected
             ? "after:absolute after:inset-0 after:bg-yellow-400 after:bg-opacity-40 after:pointer-events-none"
+            : ""
+        }
+        ${
+          isCheck
+            ? "after:absolute after:inset-0 after:bg-red-500 after:bg-opacity-40 after:pointer-events-none"
             : ""
         }
         cursor-pointer
