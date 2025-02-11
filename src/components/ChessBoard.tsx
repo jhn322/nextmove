@@ -1,8 +1,11 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { Chess, Square } from "chess.js";
 import SquareComponent from "@/components/Square";
 import Piece from "@/components/Piece";
 import GameControls from "@/components/GameControls";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +31,15 @@ const DEFAULT_STATE = {
 };
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
+  const router = useRouter();
+
   const [showResignDialog, setShowResignDialog] = useState(false);
+  const [showDifficultyDialog, setShowDifficultyDialog] = useState(false);
+  const [pendingDifficulty, setPendingDifficulty] = useState<string | null>(
+    null
+  );
+  const [showColorDialog, setShowColorDialog] = useState(false);
+  const [pendingColor, setPendingColor] = useState<"w" | "b" | null>(null);
 
   // Load initial state from localStorage or use defaults
   const loadSavedState = () => {
@@ -57,7 +68,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   } | null>(null);
   const [engine, setEngine] = useState<StockfishEngine | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
-  const [playerColor, setPlayerColor] = useState<"w" | "b">("w");
+  const [playerColor, setPlayerColor] = useState<"w" | "b">(
+    savedState.playerColor
+  );
   const [gameTime, setGameTime] = useState(0);
   const [whiteTime, setWhiteTime] = useState(0);
   const [blackTime, setBlackTime] = useState(0);
@@ -104,25 +117,40 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   }, [game, gameStarted]);
 
   const handleDifficultyChange = (newDifficulty: string) => {
-    // Update engine skill level
-    const skillLevel =
-      {
-        beginner: 2,
-        easy: 5,
-        intermediate: 8,
-        advanced: 11,
-        hard: 14,
-        expert: 17,
-        master: 20,
-        grandmaster: 23,
-      }[newDifficulty] || 10;
+    if (gameStarted) {
+      setPendingDifficulty(newDifficulty);
+      setShowDifficultyDialog(true);
+    } else {
+      // If no game in progress, change difficulty directly
+      const skillLevel =
+        {
+          beginner: 2,
+          easy: 5,
+          intermediate: 8,
+          advanced: 11,
+          hard: 14,
+          expert: 17,
+          master: 20,
+          grandmaster: 23,
+        }[newDifficulty] || 10;
 
-    if (engine) {
-      engine.postMessage("setoption name Skill Level value " + skillLevel);
+      if (engine) {
+        engine.postMessage("setoption name Skill Level value " + skillLevel);
+      }
+      // Reset the game and navigate to new difficulty
+      handleRestart();
+      router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
+  };
 
-    // Reset the game
-    handleRestart();
+  const handleConfirmDifficultyChange = () => {
+    if (pendingDifficulty) {
+      localStorage.removeItem("chess-game-state");
+      router.push(`/play/${pendingDifficulty.toLowerCase()}`);
+    }
+    setShowDifficultyDialog(false);
+    setPendingDifficulty(null);
+    setGameStarted(false); // Reset game started state
   };
 
   // Make a move and update the board
@@ -245,93 +273,152 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setWhiteTime(0);
     setBlackTime(0);
     setGameStarted(false);
-    localStorage.removeItem(STORAGE_KEY); // Clear saved game
+
+    // Save state with preserved player color
+    const currentState = {
+      ...DEFAULT_STATE,
+      playerColor,
+      difficulty,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
+
     if (playerColor === "b") {
       setTimeout(getBotMove, 500);
     }
   };
 
+  const handleColorChange = (color: "w" | "b") => {
+    if (gameStarted) {
+      setPendingColor(color);
+      setShowColorDialog(true);
+    } else {
+      // If no game in progress, change color directly
+      setPlayerColor(color);
+      game.reset();
+      setBoard(game.board());
+      setSelectedPiece(null);
+      setPossibleMoves([]);
+      setGameTime(0);
+      setWhiteTime(0);
+      setBlackTime(0);
+      setGameStarted(false);
+
+      // Save the new state with updated color
+      const newState = {
+        ...DEFAULT_STATE,
+        playerColor: color,
+        difficulty,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+
+      if (color === "b") {
+        setTimeout(getBotMove, 500);
+      }
+    }
+  };
+
+  const handleConfirmColorChange = () => {
+    if (pendingColor) {
+      setPlayerColor(pendingColor);
+      game.reset();
+      setBoard(game.board());
+      setSelectedPiece(null);
+      setPossibleMoves([]);
+      setGameTime(0);
+      setWhiteTime(0);
+      setBlackTime(0);
+      setGameStarted(false);
+
+      // Save the new state with updated color
+      const newState = {
+        ...DEFAULT_STATE,
+        playerColor: pendingColor,
+        difficulty,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+
+      if (pendingColor === "b") {
+        setTimeout(getBotMove, 500);
+      }
+    }
+    setShowColorDialog(false);
+    setPendingColor(null);
+  };
+
+  // Start resign dialog
   const handleResign = () => {
-    // Reset everything
-    handleRestart();
     setShowResignDialog(true);
   };
 
+  // Confirm resign and reset game
   const handleConfirmResign = () => {
     handleRestart();
     setShowResignDialog(false);
   };
 
   return (
-    <main className="flex flex-col w-full lg:flex-row items-center lg:items-start justify-center gap-4 p-4 min-h-[calc(90vh-4rem)]">
-      <div className="w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
-        <div className="w-full aspect-square">
-          <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
-            {board.map((row, rowIndex) =>
-              row.map((piece, colIndex) => {
-                const isKingInCheck =
-                  game.isCheck() &&
-                  piece?.type.toLowerCase() === "k" &&
-                  piece?.color === game.turn();
+    <>
+      <main className="flex flex-col w-full lg:flex-row items-center lg:items-start justify-center gap-4 p-4 min-h-[calc(90vh-4rem)]">
+        <div className="w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
+          <div className="w-full aspect-square">
+            <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
+              {board.map((row, rowIndex) =>
+                row.map((piece, colIndex) => {
+                  const isKingInCheck =
+                    game.isCheck() &&
+                    piece?.type.toLowerCase() === "k" &&
+                    piece?.color === game.turn();
 
-                return (
-                  <SquareComponent
-                    key={`${rowIndex}-${colIndex}`}
-                    isLight={(rowIndex + colIndex) % 2 === 0}
-                    isSelected={
-                      selectedPiece?.row === rowIndex &&
-                      selectedPiece?.col === colIndex
-                    }
-                    isPossibleMove={possibleMoves.includes(
-                      `${"abcdefgh"[colIndex]}${8 - rowIndex}`
-                    )}
-                    onClick={() => handleSquareClick(rowIndex, colIndex)}
-                    difficulty={difficulty}
-                    isCheck={isKingInCheck}
-                  >
-                    {piece && (
-                      <Piece
-                        type={
-                          piece.color === "w"
-                            ? piece.type.toUpperCase()
-                            : piece.type.toLowerCase()
-                        }
-                      />
-                    )}
-                  </SquareComponent>
-                );
-              })
-            )}
+                  return (
+                    <SquareComponent
+                      key={`${rowIndex}-${colIndex}`}
+                      isLight={(rowIndex + colIndex) % 2 === 0}
+                      isSelected={
+                        selectedPiece?.row === rowIndex &&
+                        selectedPiece?.col === colIndex
+                      }
+                      isPossibleMove={possibleMoves.includes(
+                        `${"abcdefgh"[colIndex]}${8 - rowIndex}`
+                      )}
+                      onClick={() => handleSquareClick(rowIndex, colIndex)}
+                      difficulty={difficulty}
+                      isCheck={isKingInCheck}
+                    >
+                      {piece && (
+                        <Piece
+                          type={
+                            piece.color === "w"
+                              ? piece.type.toUpperCase()
+                              : piece.type.toLowerCase()
+                          }
+                        />
+                      )}
+                    </SquareComponent>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="w-full lg:w-80 rounded-lg">
-        <GameControls
-          difficulty={difficulty}
-          gameStatus={getGameStatus()}
-          onRestart={handleRestart}
-          onResign={handleResign}
-          gameTime={gameTime}
-          whiteTime={whiteTime}
-          blackTime={blackTime}
-          playerColor={playerColor}
-          game={game}
-          onDifficultyChange={handleDifficultyChange}
-          onColorChange={(color) => {
-            setPlayerColor(color);
-            game.reset();
-            setBoard(game.board());
-            setSelectedPiece(null);
-            setPossibleMoves([]);
-            setGameTime(0);
-            if (color === "b") {
-              setTimeout(getBotMove, 500);
-            }
-          }}
-        />
-      </div>
+        <div className="w-full lg:w-80 rounded-lg">
+          <GameControls
+            difficulty={difficulty}
+            gameStatus={getGameStatus()}
+            onRestart={handleRestart}
+            onResign={handleResign}
+            onColorChange={handleColorChange}
+            onDifficultyChange={handleDifficultyChange}
+            playerColor={playerColor}
+            gameTime={gameTime}
+            whiteTime={whiteTime}
+            blackTime={blackTime}
+            game={game}
+          />
+        </div>
+      </main>
 
+      {/* Resign Dialog */}
       <AlertDialog open={showResignDialog} onOpenChange={setShowResignDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -351,7 +438,52 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </main>
+
+      {/* Difficulty Change Dialog */}
+      <AlertDialog
+        open={showDifficultyDialog}
+        onOpenChange={setShowDifficultyDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center">
+              Change Difficulty?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Your current game will be lost by changing difficulty. Are you
+              sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDifficultyChange}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Color Change Dialog */}
+      <AlertDialog open={showColorDialog} onOpenChange={setShowColorDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center">
+              Change Color?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Your current game will be lost by changing colors. Are you sure
+              you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmColorChange}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

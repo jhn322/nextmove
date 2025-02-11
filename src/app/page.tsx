@@ -157,7 +157,9 @@ export default function Home() {
       <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Start New Game?</AlertDialogTitle>
+            <AlertDialogTitle className="text-center">
+              Start New Game?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               You have a saved game in progress. Starting a new game will lose
               your current progress. Are you sure you want to continue?
