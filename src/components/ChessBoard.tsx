@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Chess, Square } from "chess.js";
 import SquareComponent from "@/components/Square";
 import Piece from "@/components/Piece";
@@ -40,6 +40,21 @@ const DEFAULT_STATE = {
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const router = useRouter();
+
+  const skillLevel = useMemo(
+    () =>
+      ({
+        beginner: 2,
+        easy: 5,
+        intermediate: 8,
+        advanced: 11,
+        hard: 14,
+        expert: 17,
+        master: 20,
+        grandmaster: 23,
+      }[difficulty] || 10),
+    [difficulty]
+  );
 
   // Load initial state from localStorage or use defaults
   const loadSavedState = () => {
@@ -102,8 +117,22 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   );
 
   // Save state
-  const gameState = {
-    fen: game.fen(),
+  useEffect(() => {
+    const gameState = {
+      fen: game.fen(),
+      playerColor,
+      gameTime,
+      whiteTime,
+      blackTime,
+      difficulty,
+      gameStarted,
+      history,
+      currentMove,
+      lastMove,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+  }, [
+    game,
     playerColor,
     gameTime,
     whiteTime,
@@ -113,19 +142,13 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     history,
     currentMove,
     lastMove,
-  };
+  ]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
-  }, [gameState]);
-
-  // Track total and per-player time
   useEffect(() => {
     const timer = setInterval(() => {
       if (gameStarted && !game.isGameOver()) {
         // Only count if game has started
         setGameTime((prev) => prev + 1);
-
         if (game.turn() === "w") {
           setWhiteTime((prev) => prev + 1);
         } else {
@@ -142,19 +165,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setPendingDifficulty(newDifficulty);
       setShowDifficultyDialog(true);
     } else {
-      // If no game in progress, change difficulty directly
-      const skillLevel =
-        {
-          beginner: 2,
-          easy: 5,
-          intermediate: 8,
-          advanced: 11,
-          hard: 14,
-          expert: 17,
-          master: 20,
-          grandmaster: 23,
-        }[newDifficulty] || 10;
-
       if (engine) {
         engine.postMessage("setoption name Skill Level value " + skillLevel);
       }
@@ -256,27 +266,13 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     };
 
     setEngine(stockfish);
-
-    // Set difficulty
-    const skillLevel =
-      {
-        beginner: 2,
-        easy: 5,
-        intermediate: 8,
-        advanced: 11,
-        hard: 14,
-        expert: 17,
-        master: 20,
-        grandmaster: 23,
-      }[difficulty] || 10;
-
     stockfish.postMessage("uci");
     stockfish.postMessage("setoption name Skill Level value " + skillLevel);
 
     return () => {
       stockfish.terminate();
     };
-  }, [difficulty, makeMove, game]);
+  }, [difficulty, makeMove, game, skillLevel]);
 
   // Clear lastMove when opponent's turn starts
   useEffect(() => {
