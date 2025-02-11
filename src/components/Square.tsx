@@ -41,6 +41,7 @@ interface SquareProps {
   difficulty: string;
   isPossibleMove: boolean;
   isCheck: boolean;
+  isLastMove: boolean;
 }
 
 const Square = ({
@@ -51,6 +52,7 @@ const Square = ({
   difficulty,
   isPossibleMove,
   isCheck,
+  isLastMove,
 }: SquareProps) => {
   const colors = difficultyColors[difficulty as keyof typeof difficultyColors];
 
@@ -58,27 +60,27 @@ const Square = ({
     <div
       onClick={onClick}
       className={`
-        relative aspect-square w-full
-        ${isLight ? colors.light : colors.dark}
-        ${
-          isSelected
-            ? "after:absolute after:inset-0 after:bg-yellow-400 after:bg-opacity-40 after:pointer-events-none"
-            : ""
-        }
-        ${
-          isCheck
-            ? "after:absolute after:inset-0 after:bg-red-500 after:bg-opacity-40 after:pointer-events-none"
-            : ""
-        }
-        cursor-pointer
-        transition-all duration-150
-        hover:brightness-110
-      `}
+      relative aspect-square w-full
+      ${isLight ? colors.light : colors.dark}
+      ${
+        isSelected || isLastMove
+          ? "before:absolute before:inset-0 before:bg-yellow-400 before:bg-opacity-40 before:pointer-events-none"
+          : ""
+      }
+      ${
+        isCheck
+          ? "before:absolute before:inset-0 before:bg-red-500 before:bg-opacity-40 before:pointer-events-none"
+          : ""
+      }
+      cursor-pointer
+      transition-all duration-150
+      hover:brightness-110
+    `}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center z-10">
         {children}
         {isPossibleMove && !children && (
-          <div className="w-8 h-8 rounded-full bg-black  bg-opacity-40" />
+          <div className="w-8 h-8 rounded-full bg-black bg-opacity-40" />
         )}
       </div>
     </div>

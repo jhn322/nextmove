@@ -85,6 +85,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [whiteTime, setWhiteTime] = useState(0);
   const [blackTime, setBlackTime] = useState(0);
   const [gameStarted, setGameStarted] = useState(savedState.gameStarted);
+  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(
+    null
+  );
 
   // Save state
   useEffect(() => {
@@ -182,6 +185,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           // Update history and currentMove using their current values
           setHistory((prev: string[]) => [...prev, game.fen()]);
           setCurrentMove((prev: number) => prev + 1);
+          setLastMove({ from, to });
           return true;
         }
       } catch {
@@ -258,12 +262,22 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     };
   }, [difficulty, makeMove, game]);
 
+  // Clear lastMove when opponent's turn starts
+  useEffect(() => {
+    if (game.turn() !== playerColor && lastMove?.from !== undefined) {
+      // Only clear if it's opponent's turn AND there's a lastMove to clear
+      const isOpponentMove = lastMove.from.includes(game.turn());
+      if (isOpponentMove) {
+        console.log("Clearing lastMove because opponent's turn");
+        setLastMove(null);
+      }
+    }
+  }, [game.turn(), playerColor, lastMove, game]);
+
   const handleSquareClick = (row: number, col: number) => {
-    // Only allow moves if it's player's turn
     if (game.turn() !== playerColor) return;
 
     if (!selectedPiece) {
-      // If no piece is selected and the clicked square has a piece
       const piece = board[row][col];
       if (piece && piece.color === playerColor) {
         setSelectedPiece({ row, col });
@@ -272,19 +286,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         setPossibleMoves(moves.map((move) => move.to));
       }
     } else {
-      // Try to make a move
       const from = `${"abcdefgh"[selectedPiece.col]}${
         8 - selectedPiece.row
       }` as Square;
       const to = `${"abcdefgh"[col]}${8 - row}` as Square;
 
-      const moveMade = makeMove(from, to);
-      if (moveMade) {
-        if (!gameStarted) {
-          setGameStarted(true); // Set game as started when first move is made
+      try {
+        const move = game.move({ from, to, promotion: "q" });
+        if (move) {
+          setBoard(game.board());
+          setHistory((prev: string[]) => [...prev, game.fen()]);
+          setCurrentMove((prev: number) => prev + 1);
+          setLastMove({ from, to }); // Set lastMove before clearing selection
+
+          if (!gameStarted) {
+            setGameStarted(true);
+          }
+          setTimeout(getBotMove, 1000);
         }
-        // If player's move was successful, get bot's move
-        setTimeout(getBotMove, 500);
+      } catch {
+        console.log("Invalid move");
       }
 
       setSelectedPiece(null);
@@ -405,10 +426,14 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
             <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
               {board.map((row, rowIndex) =>
                 row.map((piece, colIndex) => {
+                  const square = `${"abcdefgh"[colIndex]}${8 - rowIndex}`;
                   const isKingInCheck =
                     game.isCheck() &&
                     piece?.type.toLowerCase() === "k" &&
                     piece?.color === game.turn();
+                  const isLastMove =
+                    lastMove &&
+                    (square === lastMove.from || square === lastMove.to);
 
                   return (
                     <SquareComponent
@@ -418,12 +443,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                         selectedPiece?.row === rowIndex &&
                         selectedPiece?.col === colIndex
                       }
-                      isPossibleMove={possibleMoves.includes(
-                        `${"abcdefgh"[colIndex]}${8 - rowIndex}`
-                      )}
+                      isPossibleMove={possibleMoves.includes(square)}
                       onClick={() => handleSquareClick(rowIndex, colIndex)}
                       difficulty={difficulty}
                       isCheck={isKingInCheck}
+                      isLastMove={isLastMove ?? false}
                     >
                       {piece && (
                         <Piece
