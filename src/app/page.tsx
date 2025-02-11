@@ -87,7 +87,7 @@ export default function Home() {
         const state = JSON.parse(saved);
         // Only return difficulty if game was actually started
         return state.gameStarted ? state.difficulty : null;
-      } catch (e) {
+      } catch {
         return null;
       }
     }
