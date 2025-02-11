@@ -6,8 +6,38 @@ import GameControls from "@/components/GameControls";
 
 type StockfishEngine = Worker;
 
+const STORAGE_KEY = "chess-game-state";
+const DEFAULT_STATE = {
+  fen: new Chess().fen(),
+  playerColor: "w",
+  gameTime: 0,
+  whiteTime: 0,
+  blackTime: 0,
+  difficulty: "beginner",
+  gameStarted: false,
+};
+
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
-  const [game] = useState(new Chess());
+  // Load initial state from localStorage or use defaults
+  const loadSavedState = () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const state = JSON.parse(saved);
+      // Only restore if it's the same difficulty level
+      if (state.difficulty === difficulty) {
+        return state;
+      }
+    }
+    return { ...DEFAULT_STATE, difficulty };
+  };
+
+  const savedState = loadSavedState();
+  const [game] = useState(() => {
+    const chess = new Chess();
+    chess.load(savedState.fen);
+    return chess;
+  });
+
   const [board, setBoard] = useState(game.board());
   const [selectedPiece, setSelectedPiece] = useState<{
     row: number;
@@ -19,7 +49,29 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [gameTime, setGameTime] = useState(0);
   const [whiteTime, setWhiteTime] = useState(0);
   const [blackTime, setBlackTime] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
+  const [gameStarted, setGameStarted] = useState(savedState.gameStarted);
+
+  // Save state
+  useEffect(() => {
+    const state = {
+      fen: game.fen(),
+      playerColor,
+      gameTime,
+      whiteTime,
+      blackTime,
+      difficulty,
+      gameStarted,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [
+    game,
+    playerColor,
+    gameTime,
+    whiteTime,
+    blackTime,
+    difficulty,
+    gameStarted,
+  ]);
 
   // Track total and per-player time
   useEffect(() => {
@@ -72,9 +124,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         });
 
         if (move) {
-          if (!gameStarted) {
-            setGameStarted(true); // Start timer on first move
-          }
           setBoard(game.board());
           return true;
         }
@@ -152,6 +201,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
       const moveMade = makeMove(from, to);
       if (moveMade) {
+        if (!gameStarted) {
+          setGameStarted(true); // Set game as started when first move is made
+        }
         // If player's move was successful, get bot's move
         setTimeout(getBotMove, 500);
       }
@@ -171,6 +223,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     return `${game.turn() === "w" ? "White" : "Black"} turn to move`;
   };
 
+  // Game restart
   const handleRestart = () => {
     game.reset();
     setBoard(game.board());
@@ -180,6 +233,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setWhiteTime(0);
     setBlackTime(0);
     setGameStarted(false);
+    localStorage.removeItem(STORAGE_KEY); // Clear saved game
     if (playerColor === "b") {
       setTimeout(getBotMove, 500);
     }

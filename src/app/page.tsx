@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Puzzle } from "lucide-react";
 
@@ -57,6 +59,25 @@ const difficultyLevels = [
 ];
 
 export default function Home() {
+  // Check for saved game
+  const getSavedGameDifficulty = () => {
+    if (typeof window === "undefined") return null;
+
+    const saved = localStorage.getItem("chess-game-state");
+    if (saved) {
+      try {
+        const state = JSON.parse(saved);
+        // Only return difficulty if game was actually started
+        return state.gameStarted ? state.difficulty : null;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const savedDifficulty = getSavedGameDifficulty();
+
   return (
     <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center p-8">
       <div className="max-w-4xl w-full text-center space-y-8">
@@ -74,8 +95,13 @@ export default function Home() {
             <Link
               key={level.name}
               href={level.href}
-              className={`p-6 rounded-xl border ${level.color} transition-all duration-200 hover:scale-[1.02]`}
+              className={`relative p-6 rounded-xl border ${level.color} transition-all duration-200 hover:scale-[1.02]`}
             >
+              {savedDifficulty?.toLowerCase() === level.name.toLowerCase() && (
+                <div className="absolute -top-3 right-4 px-3 py-1 bg-green-500 text-white text-sm rounded-full">
+                  Saved Game
+                </div>
+              )}
               <h2 className="text-2xl font-bold mb-2">{level.name}</h2>
               <p className="text-muted-foreground">{level.description}</p>
             </Link>
