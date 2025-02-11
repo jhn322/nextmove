@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Chess } from "chess.js";
 import { Info } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -190,26 +191,37 @@ const GameControls = ({
           <CardHeader className="p-4 pb-2">
             <CardTitle>Game Controls</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-3">
-            <div className="flex gap-2">
+          <CardContent className="p-4 pt-0 space-y-4">
+            {/* Move Controls */}
+            <div className="flex gap-3 justify-center">
               <Button
-                onClick={onMoveBack}
                 variant="outline"
-                className="flex-1"
+                size="default"
+                onClick={onMoveBack}
                 disabled={!canMoveBack}
+                className="flex-1 flex items-center justify-center gap-2"
               >
-                ← Back
+                <ChevronLeft className="h-5 w-5" />
+                Back
               </Button>
               <Button
-                onClick={onMoveForward}
                 variant="outline"
-                className="flex-1"
+                size="default"
+                onClick={onMoveForward}
                 disabled={!canMoveForward}
+                className="flex-1 flex items-center justify-center gap-2"
               >
-                Forward →
+                Forward
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
-            <Button onClick={onResign} variant="destructive" className="w-full">
+
+            {/* Resign Button */}
+            <Button
+              onClick={onResign}
+              variant="destructive"
+              className="w-full py-6 text-lg font-medium"
+            >
               Resign
             </Button>
           </CardContent>

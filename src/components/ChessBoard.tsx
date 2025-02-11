@@ -19,6 +19,11 @@ import {
 
 type StockfishEngine = Worker;
 
+type HistoryEntry = {
+  fen: string;
+  lastMove: { from: string; to: string } | null;
+};
+
 const STORAGE_KEY = "chess-game-state";
 const DEFAULT_STATE = {
   fen: new Chess().fen(),
@@ -28,6 +33,9 @@ const DEFAULT_STATE = {
   blackTime: 0,
   difficulty: "beginner",
   gameStarted: false,
+  history: [{ fen: new Chess().fen(), lastMove: null }],
+  currentMove: 1,
+  lastMove: null,
 };
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
@@ -38,25 +46,29 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const state = JSON.parse(saved);
-      // Only restore if it's the same difficulty level
       if (state.difficulty === difficulty) {
+        const initialHistory = [{ fen: DEFAULT_STATE.fen, lastMove: null }];
         return {
           ...state,
-          history: state.history || [DEFAULT_STATE.fen],
+          history: Array.isArray(state.history)
+            ? state.history
+            : initialHistory,
           currentMove: state.currentMove || 1,
+          lastMove: state.lastMove || null,
         };
       }
     }
     return {
       ...DEFAULT_STATE,
       difficulty,
-      history: [DEFAULT_STATE.fen],
+      history: [{ fen: DEFAULT_STATE.fen, lastMove: null }],
       currentMove: 1,
+      lastMove: null,
     };
   };
 
   const savedState = loadSavedState();
-  const [history, setHistory] = useState(savedState.history);
+  const [history, setHistory] = useState<HistoryEntry[]>(savedState.history);
   const [currentMove, setCurrentMove] = useState(savedState.currentMove);
   const [game] = useState(() => {
     const chess = new Chess();
@@ -86,7 +98,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [blackTime, setBlackTime] = useState(0);
   const [gameStarted, setGameStarted] = useState(savedState.gameStarted);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(
-    null
+    savedState.lastMove
   );
 
   // Save state
@@ -101,6 +113,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       gameStarted,
       history,
       currentMove,
+      lastMove,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [
@@ -113,6 +126,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     gameStarted,
     history,
     currentMove,
+    lastMove,
   ]);
 
   // Track total and per-player time
@@ -182,8 +196,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
         if (move) {
           setBoard(game.board());
-          // Update history and currentMove using their current values
-          setHistory((prev: string[]) => [...prev, game.fen()]);
+          setHistory((prev) => [
+            ...prev,
+            { fen: game.fen(), lastMove: { from, to } },
+          ]);
           setCurrentMove((prev: number) => prev + 1);
           setLastMove({ from, to });
           return true;
@@ -206,20 +222,37 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   // Move back to the previous position in history
   const moveBack = useCallback(() => {
-    if (currentMove > 1) {
+    console.log("Moving back - currentMove:", currentMove);
+    console.log("Moving back - history:", history);
+
+    if (currentMove > 1 && history[currentMove - 2]) {
       const newPosition = currentMove - 1;
-      game.load(history[newPosition - 1]);
-      setBoard(game.board());
-      setCurrentMove(newPosition);
+      const historyEntry = history[newPosition - 1];
+
+      if (historyEntry && historyEntry.fen) {
+        game.load(historyEntry.fen);
+        setBoard(game.board());
+        setCurrentMove(newPosition);
+        setLastMove(historyEntry.lastMove);
+        console.log("Moved back to position:", newPosition);
+      }
     }
   }, [currentMove, game, history]);
 
-  // Move forward to the next position in history
   const moveForward = useCallback(() => {
-    if (currentMove < history.length) {
-      game.load(history[currentMove]);
-      setBoard(game.board());
-      setCurrentMove(currentMove + 1);
+    console.log("Moving forward - currentMove:", currentMove);
+    console.log("Moving forward - history:", history);
+
+    if (currentMove < history.length && history[currentMove]) {
+      const historyEntry = history[currentMove];
+
+      if (historyEntry && historyEntry.fen) {
+        game.load(historyEntry.fen);
+        setBoard(game.board());
+        setCurrentMove(currentMove + 1);
+        setLastMove(historyEntry.lastMove);
+        console.log("Moved forward to position:", currentMove + 1);
+      }
     }
   }, [currentMove, history.length, game, history]);
 
@@ -295,16 +328,19 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         const move = game.move({ from, to, promotion: "q" });
         if (move) {
           setBoard(game.board());
-          setHistory((prev: string[]) => [...prev, game.fen()]);
+          setHistory((prev: HistoryEntry[]) => [
+            ...prev,
+            { fen: game.fen(), lastMove: { from, to } },
+          ]);
           setCurrentMove((prev: number) => prev + 1);
-          setLastMove({ from, to }); // Set lastMove before clearing selection
+          setLastMove({ from, to });
 
           if (!gameStarted) {
             setGameStarted(true);
           }
           setTimeout(getBotMove, 1000);
         }
-      } catch {
+      } catch (error) {
         console.log("Invalid move");
       }
 
@@ -333,7 +369,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setWhiteTime(0);
     setBlackTime(0);
     setGameStarted(false);
-    setHistory([DEFAULT_STATE.fen]);
+    setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
     setCurrentMove(1);
 
     // Save state with preserved player color
