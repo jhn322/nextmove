@@ -12,7 +12,6 @@ import {
 interface GameControlsProps {
   difficulty: string;
   gameStatus: string;
-  onRestart: () => void;
   onResign: () => void;
   onColorChange: (color: "w" | "b") => void;
   onDifficultyChange: (difficulty: string) => void;
@@ -26,7 +25,6 @@ interface GameControlsProps {
 const GameControls = ({
   difficulty,
   gameStatus,
-  onRestart,
   onResign,
   onColorChange,
   onDifficultyChange,
@@ -185,9 +183,6 @@ const GameControls = ({
             <CardTitle>Game Controls</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-3">
-            <Button onClick={onRestart} variant="default" className="w-full">
-              Restart Game
-            </Button>
             <Button onClick={onResign} variant="destructive" className="w-full">
               Resign
             </Button>

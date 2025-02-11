@@ -405,7 +405,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           <GameControls
             difficulty={difficulty}
             gameStatus={getGameStatus()}
-            onRestart={handleRestart}
             onResign={handleResign}
             onColorChange={handleColorChange}
             onDifficultyChange={handleDifficultyChange}
