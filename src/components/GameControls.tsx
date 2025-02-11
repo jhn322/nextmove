@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Chess } from "chess.js";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface GameControlsProps {
   difficulty: string;
@@ -140,7 +147,19 @@ const GameControls = ({
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
           <CardHeader className="p-4 pb-2">
-            <CardTitle>Play As</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Play As
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Changing color will restart the game</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="flex gap-3">
@@ -148,6 +167,7 @@ const GameControls = ({
                 onClick={() => onColorChange("w")}
                 variant={playerColor === "w" ? "default" : "outline"}
                 className="flex-1"
+                disabled={playerColor === "w"}
               >
                 White
               </Button>
@@ -155,6 +175,7 @@ const GameControls = ({
                 onClick={() => onColorChange("b")}
                 variant={playerColor === "b" ? "default" : "outline"}
                 className="flex-1"
+                disabled={playerColor === "b"}
               >
                 Black
               </Button>
@@ -184,7 +205,19 @@ const GameControls = ({
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
           <CardHeader className="p-4 pb-2">
-            <CardTitle>Difficulty</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Difficulty
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Changing difficulty will restart the game</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="grid grid-cols-2 gap-2">
@@ -194,6 +227,7 @@ const GameControls = ({
                   onClick={() => onDifficultyChange(diff)}
                   variant={difficulty === diff ? "default" : "outline"}
                   className="w-full capitalize"
+                  disabled={difficulty === diff}
                 >
                   {diff}
                 </Button>
