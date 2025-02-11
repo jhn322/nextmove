@@ -48,10 +48,14 @@ const Navbar = () => {
   const { setTheme } = useTheme();
 
   const playItems = [
+    { title: "Beginner Bot", href: "/play/beginner" },
     { title: "Easy Bot", href: "/play/easy" },
     { title: "Intermediate Bot", href: "/play/intermediate" },
+    { title: "Advanced Bot", href: "/play/advanced" },
     { title: "Hard Bot", href: "/play/hard" },
     { title: "Expert Bot", href: "/play/expert" },
+    { title: "Master Bot", href: "/play/master" },
+    { title: "Grandmaster Bot", href: "/play/grandmaster" },
   ];
 
   return (
@@ -77,7 +81,7 @@ const Navbar = () => {
                   Play
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid w-52 gap-1 p-4 rounded-xl">
+                  <ul className="grid w-[400px] grid-cols-2 gap-3 p-4 rounded-xl">
                     {playItems.map((item) => (
                       <li key={item.href}>
                         <Link

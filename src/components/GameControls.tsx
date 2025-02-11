@@ -36,7 +36,16 @@ const GameControls = ({
   blackTime,
   game,
 }: GameControlsProps) => {
-  const difficulties = ["easy", "intermediate", "hard", "expert"];
+  const difficulties = [
+    "beginner",
+    "easy",
+    "intermediate",
+    "advanced",
+    "hard",
+    "expert",
+    "master",
+    "grandmaster",
+  ];
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
 
   // Format time from seconds to MM:SS

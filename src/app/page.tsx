@@ -3,9 +3,15 @@ import { Puzzle } from "lucide-react";
 
 const difficultyLevels = [
   {
+    name: "Beginner",
+    href: "/play/beginner",
+    description: "Learn the basics with a bot that makes predictable moves.",
+    color: "bg-emerald-500/30 hover:bg-emerald-500/20 border-emerald-500/50",
+  },
+  {
     name: "Easy",
     href: "/play/easy",
-    description: "Learn the basics with a bot that makes predictable moves.",
+    description: "Practice basic strategies with slightly improved moves.",
     color: "bg-green-500/30 hover:bg-green-500/20 border-green-500/50",
   },
   {
@@ -13,6 +19,12 @@ const difficultyLevels = [
     href: "/play/intermediate",
     description:
       "Test your skills against a bot with moderate tactical awareness.",
+    color: "bg-cyan-500/30 hover:bg-cyan-500/20 border-cyan-500/50",
+  },
+  {
+    name: "Advanced",
+    href: "/play/advanced",
+    description: "Face stronger tactical play and strategic planning.",
     color: "bg-blue-500/30 hover:bg-blue-500/20 border-blue-500/50",
   },
   {
@@ -20,13 +32,26 @@ const difficultyLevels = [
     href: "/play/hard",
     description:
       "Challenge yourself with advanced strategies and combinations.",
-    color: "bg-orange-500/30 hover:bg-orange-500/20 border-orange-500/50",
+    color: "bg-violet-500/30 hover:bg-violet-500/20 border-violet-500/50",
   },
   {
     name: "Expert",
     href: "/play/expert",
     description:
-      "Face the strongest bot with sophisticated chess understanding.",
+      "Test yourself against sophisticated positional understanding.",
+    color: "bg-purple-500/30 hover:bg-purple-500/20 border-purple-500/50",
+  },
+  {
+    name: "Master",
+    href: "/play/master",
+    description:
+      "Face the second strongest bot with sophisticated chess understanding.",
+    color: "bg-orange-500/30 hover:bg-orange-500/20 border-orange-500/50",
+  },
+  {
+    name: "Grandmaster",
+    href: "/play/grandmaster",
+    description: "Challenge the ultimate bot with masterful chess execution.",
     color: "bg-red-500/30 hover:bg-red-500/20 border-red-500/50",
   },
 ];

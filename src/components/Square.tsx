@@ -1,17 +1,33 @@
 const difficultyColors = {
+  beginner: {
+    light: "bg-emerald-200 dark:bg-emerald-900",
+    dark: "bg-emerald-300 dark:bg-emerald-800",
+  },
   easy: {
     light: "bg-green-200 dark:bg-green-900",
     dark: "bg-green-300 dark:bg-green-800",
   },
   intermediate: {
+    light: "bg-cyan-200 dark:bg-cyan-900",
+    dark: "bg-cyan-300 dark:bg-cyan-800",
+  },
+  advanced: {
     light: "bg-blue-200 dark:bg-blue-900",
     dark: "bg-blue-300 dark:bg-blue-800",
   },
   hard: {
+    light: "bg-violet-200 dark:bg-violet-900",
+    dark: "bg-violet-300 dark:bg-violet-800",
+  },
+  expert: {
+    light: "bg-purple-200 dark:bg-purple-900",
+    dark: "bg-purple-300 dark:bg-purple-800",
+  },
+  master: {
     light: "bg-orange-200 dark:bg-orange-900",
     dark: "bg-orange-300 dark:bg-orange-800",
   },
-  expert: {
+  grandmaster: {
     light: "bg-red-200 dark:bg-red-900",
     dark: "bg-red-300 dark:bg-red-800",
   },

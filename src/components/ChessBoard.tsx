@@ -43,10 +43,14 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Update engine skill level
     const skillLevel =
       {
-        easy: 2,
+        beginner: 2,
+        easy: 5,
         intermediate: 8,
+        advanced: 11,
         hard: 14,
-        expert: 20,
+        expert: 17,
+        master: 20,
+        grandmaster: 23,
       }[newDifficulty] || 10;
 
     if (engine) {
@@ -100,10 +104,14 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Set difficulty
     const skillLevel =
       {
-        easy: 2,
+        beginner: 2,
+        easy: 5,
         intermediate: 8,
+        advanced: 11,
         hard: 14,
-        expert: 20,
+        expert: 17,
+        master: 20,
+        grandmaster: 23,
       }[difficulty] || 10;
 
     stockfish.postMessage("uci");
