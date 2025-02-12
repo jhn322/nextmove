@@ -8,10 +8,11 @@ import {
   DEFAULT_STATE,
   DIFFICULTY_LEVELS,
 } from "./ChessBoard/constants";
+import type { HistoryEntry } from "./ChessBoard/types";
 import { useRouter } from "next/navigation";
 import { useChessGame } from "./ChessBoard/hooks/useChessGame";
 import { useGameTimer } from "./ChessBoard/hooks/useGameTimer";
-import type { HistoryEntry } from "./ChessBoard/types";
+import { useGameDialogs } from "./ChessBoard/hooks/useGameDialogs";
 import GameDialogs from "./ChessBoard/GameDialogs";
 import GameControls from "@/components/GameControls";
 import SquareComponent from "@/components/Square";
@@ -20,6 +21,7 @@ import Piece from "@/components/Piece";
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const router = useRouter();
 
+  // Hooks ----------------------------------------------------
   const {
     game,
     board,
@@ -39,25 +41,35 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setPlayerColor,
   } = useChessGame(difficulty);
 
-  // Hooks ----------------------------------------------------
   const { engine, getBotMove, setSkillLevel } = useStockfish(
     game,
     difficulty,
     makeMove
   );
+
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
     game,
     gameStarted
   );
+
+  const {
+    showResignDialog,
+    showDifficultyDialog,
+    showColorDialog,
+    pendingDifficulty,
+    pendingColor,
+    setPendingDifficulty,
+    setPendingColor,
+    handleCancelDialog,
+    handleResign,
+    handleDifficultyDialogOpen,
+    handleColorDialogOpen,
+    setShowResignDialog,
+    setShowDifficultyDialog,
+    setShowColorDialog,
+  } = useGameDialogs();
   // -----------------------------------------------------------
 
-  const [showResignDialog, setShowResignDialog] = useState(false);
-  const [showDifficultyDialog, setShowDifficultyDialog] = useState(false);
-  const [pendingDifficulty, setPendingDifficulty] = useState<string | null>(
-    null
-  );
-  const [showColorDialog, setShowColorDialog] = useState(false);
-  const [pendingColor, setPendingColor] = useState<"w" | "b" | null>(null);
   const [selectedPiece, setSelectedPiece] = useState<{
     row: number;
     col: number;
@@ -94,8 +106,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   const handleDifficultyChange = (newDifficulty: string) => {
     if (gameStarted) {
-      setPendingDifficulty(newDifficulty);
-      setShowDifficultyDialog(true);
+      handleDifficultyDialogOpen(newDifficulty);
     } else {
       if (engine) {
         setSkillLevel(
@@ -106,6 +117,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
   };
+
   const handleConfirmDifficultyChange = () => {
     if (pendingDifficulty) {
       localStorage.removeItem("chess-game-state");
@@ -114,12 +126,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setShowDifficultyDialog(false);
     setPendingDifficulty(null);
     setGameStarted(false); // Reset game started state
-  };
-
-  const handleCancelDialog = () => {
-    setShowResignDialog(false);
-    setShowDifficultyDialog(false);
-    setShowColorDialog(false);
   };
 
   // Clear lastMove when opponent's turn starts
@@ -213,7 +219,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   const handleColorChange = (color: "w" | "b") => {
     if (gameStarted) {
-      setPendingColor(color);
+      handleColorDialogOpen(color);
       setShowColorDialog(true);
     } else {
       // If no game in progress, change color directly
@@ -263,11 +269,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
     setShowColorDialog(false);
     setPendingColor(null);
-  };
-
-  // Start resign dialog
-  const handleResign = () => {
-    setShowResignDialog(true);
   };
 
   // Confirm resign and reset game
