@@ -2,13 +2,21 @@ import { useState, useCallback, Dispatch, SetStateAction } from "react";
 import { Chess, Square } from "chess.js";
 import type { BoardSquare } from "../types/types";
 
+type HistoryEntry = {
+  fen: string;
+  lastMove: {
+    from: string;
+    to: string;
+  };
+};
+
 export const useMoveHandler = (
   game: Chess,
   board: BoardSquare[][],
   setBoard: Dispatch<SetStateAction<BoardSquare[][]>>,
   playerColor: "w" | "b",
   makeMove: (from: string, to: string) => boolean,
-  setHistory: (fn: (prev: any[]) => any[]) => void,
+  setHistory: (fn: (prev: HistoryEntry[]) => HistoryEntry[]) => void,
   setCurrentMove: (fn: (prev: number) => number) => void,
   setLastMove: (move: { from: string; to: string } | null) => void,
   setGameStarted: (started: boolean) => void,

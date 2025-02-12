@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Chess, Square } from "chess.js";
+import { Chess } from "chess.js";
 import { STORAGE_KEY, DEFAULT_STATE } from "../config/game";
 import type { HistoryEntry, SavedGameState } from "../types/types";
 

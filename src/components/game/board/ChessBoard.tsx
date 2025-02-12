@@ -150,7 +150,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         setLastMove(null);
       }
     }
-  }, [game.turn(), playerColor, lastMove, game]);
+  }, [game.turn(), playerColor, lastMove, game, setLastMove]);
 
   // Game status display
   const getGameStatus = () => {

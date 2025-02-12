@@ -1,9 +1,9 @@
 import { Square, PieceSymbol, Color } from "chess.js";
 
-export type HistoryEntry = {
+interface HistoryEntry {
   fen: string;
   lastMove: { from: string; to: string } | null;
-};
+}
 
 export type StockfishEngine = Worker;
 
