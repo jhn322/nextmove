@@ -2,20 +2,16 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Chess, Square } from "chess.js";
+import {
+  STORAGE_KEY,
+  DEFAULT_STATE,
+  DIFFICULTY_LEVELS,
+} from "./ChessBoard/constants";
+import { useRouter } from "next/navigation";
+import GameDialogs from "./ChessBoard/GameDialogs";
+import GameControls from "@/components/GameControls";
 import SquareComponent from "@/components/Square";
 import Piece from "@/components/Piece";
-import GameControls from "@/components/GameControls";
-import { useRouter } from "next/navigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 type StockfishEngine = Worker;
 
@@ -24,35 +20,12 @@ type HistoryEntry = {
   lastMove: { from: string; to: string } | null;
 };
 
-const STORAGE_KEY = "chess-game-state";
-const DEFAULT_STATE = {
-  fen: new Chess().fen(),
-  playerColor: "w",
-  gameTime: 0,
-  whiteTime: 0,
-  blackTime: 0,
-  difficulty: "beginner",
-  gameStarted: false,
-  history: [{ fen: new Chess().fen(), lastMove: null }],
-  currentMove: 1,
-  lastMove: null,
-};
-
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const router = useRouter();
 
+  // Get skill level based on difficulty
   const skillLevel = useMemo(
-    () =>
-      ({
-        beginner: 2,
-        easy: 5,
-        intermediate: 8,
-        advanced: 11,
-        hard: 14,
-        expert: 17,
-        master: 20,
-        grandmaster: 23,
-      }[difficulty] || 10),
+    () => DIFFICULTY_LEVELS[difficulty as keyof typeof DIFFICULTY_LEVELS] || 10,
     [difficulty]
   );
 
@@ -182,6 +155,12 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setShowDifficultyDialog(false);
     setPendingDifficulty(null);
     setGameStarted(false); // Reset game started state
+  };
+
+  const handleCancelDialog = () => {
+    setShowResignDialog(false);
+    setShowDifficultyDialog(false);
+    setShowColorDialog(false);
   };
 
   // Make a move and update the board
@@ -502,71 +481,15 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         </div>
       </main>
 
-      {/* Resign Dialog */}
-      <AlertDialog open={showResignDialog} onOpenChange={setShowResignDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-center">
-              Resign Game?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center">
-              Are you sure you want to resign? This will count as a loss and
-              start a new game.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmResign}>
-              Resign
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Difficulty Change Dialog */}
-      <AlertDialog
-        open={showDifficultyDialog}
-        onOpenChange={setShowDifficultyDialog}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-center">
-              Change Difficulty?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center">
-              Your current game will be lost by changing difficulty. Are you
-              sure you want to continue?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDifficultyChange}>
-              Continue
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Color Change Dialog */}
-      <AlertDialog open={showColorDialog} onOpenChange={setShowColorDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-center">
-              Change Color?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center">
-              Your current game will be lost by changing colors. Are you sure
-              you want to continue?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmColorChange}>
-              Continue
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <GameDialogs
+        showResignDialog={showResignDialog}
+        showDifficultyDialog={showDifficultyDialog}
+        showColorDialog={showColorDialog}
+        onConfirmResign={handleConfirmResign}
+        onConfirmDifficultyChange={handleConfirmDifficultyChange}
+        onConfirmColorChange={handleConfirmColorChange}
+        onCancelDialog={handleCancelDialog}
+      />
     </>
   );
 };
