@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Chess, Square } from "chess.js";
+import { useState, useEffect } from "react";
+import { Square } from "chess.js";
+import { useStockfish } from "./ChessBoard/hooks/useStockfish";
 import {
   STORAGE_KEY,
   DEFAULT_STATE,
@@ -9,7 +10,7 @@ import {
 } from "./ChessBoard/constants";
 import { useRouter } from "next/navigation";
 import { useChessGame } from "./ChessBoard/hooks/useChessGame";
-import type { StockfishEngine, HistoryEntry } from "./ChessBoard/types";
+import type { HistoryEntry } from "./ChessBoard/types";
 import GameDialogs from "./ChessBoard/GameDialogs";
 import GameControls from "@/components/GameControls";
 import SquareComponent from "@/components/Square";
@@ -37,10 +38,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setPlayerColor,
   } = useChessGame(difficulty);
 
-  // Get skill level based on difficulty
-  const skillLevel = useMemo(
-    () => DIFFICULTY_LEVELS[difficulty as keyof typeof DIFFICULTY_LEVELS] || 10,
-    [difficulty]
+  const { engine, getBotMove, setSkillLevel } = useStockfish(
+    game,
+    difficulty,
+    makeMove
   );
 
   const [showResignDialog, setShowResignDialog] = useState(false);
@@ -54,7 +55,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     row: number;
     col: number;
   } | null>(null);
-  const [engine, setEngine] = useState<StockfishEngine | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
   const [gameTime, setGameTime] = useState(0);
   const [whiteTime, setWhiteTime] = useState(0);
@@ -110,14 +110,14 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setShowDifficultyDialog(true);
     } else {
       if (engine) {
-        engine.postMessage("setoption name Skill Level value " + skillLevel);
+        setSkillLevel(
+          DIFFICULTY_LEVELS[newDifficulty as keyof typeof DIFFICULTY_LEVELS]
+        );
       }
-      // Reset the game and navigate to new difficulty
       handleRestart();
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
   };
-
   const handleConfirmDifficultyChange = () => {
     if (pendingDifficulty) {
       localStorage.removeItem("chess-game-state");
@@ -133,39 +133,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setShowDifficultyDialog(false);
     setShowColorDialog(false);
   };
-
-  // Get bot's move
-  const getBotMove = useCallback(() => {
-    if (engine && !game.isGameOver()) {
-      engine.postMessage("position fen " + game.fen());
-      engine.postMessage("go movetime 1000"); // Think for 1 second
-    }
-  }, [engine, game]);
-
-  // Initialize Stockfish
-  useEffect(() => {
-    const stockfish = new Worker("/stockfish.js");
-
-    stockfish.onmessage = (event: MessageEvent) => {
-      const message = event.data;
-      // When Stockfish finds the best move
-      if (message.startsWith("bestmove")) {
-        const moveStr = message.split(" ")[1];
-        if (!game.isGameOver()) {
-          // Add check to prevent moves after game over
-          makeMove(moveStr.slice(0, 2), moveStr.slice(2, 4));
-        }
-      }
-    };
-
-    setEngine(stockfish);
-    stockfish.postMessage("uci");
-    stockfish.postMessage("setoption name Skill Level value " + skillLevel);
-
-    return () => {
-      stockfish.terminate();
-    };
-  }, [difficulty, makeMove, game, skillLevel]);
 
   // Clear lastMove when opponent's turn starts
   useEffect(() => {
