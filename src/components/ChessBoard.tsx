@@ -10,6 +10,7 @@ import {
 } from "./ChessBoard/constants";
 import { useRouter } from "next/navigation";
 import { useChessGame } from "./ChessBoard/hooks/useChessGame";
+import { useGameTimer } from "./ChessBoard/hooks/useGameTimer";
 import type { HistoryEntry } from "./ChessBoard/types";
 import GameDialogs from "./ChessBoard/GameDialogs";
 import GameControls from "@/components/GameControls";
@@ -38,11 +39,17 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setPlayerColor,
   } = useChessGame(difficulty);
 
+  // Hooks ----------------------------------------------------
   const { engine, getBotMove, setSkillLevel } = useStockfish(
     game,
     difficulty,
     makeMove
   );
+  const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
+    game,
+    gameStarted
+  );
+  // -----------------------------------------------------------
 
   const [showResignDialog, setShowResignDialog] = useState(false);
   const [showDifficultyDialog, setShowDifficultyDialog] = useState(false);
@@ -56,9 +63,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     col: number;
   } | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
-  const [gameTime, setGameTime] = useState(0);
-  const [whiteTime, setWhiteTime] = useState(0);
-  const [blackTime, setBlackTime] = useState(0);
 
   // Save state
   useEffect(() => {
@@ -87,22 +91,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     currentMove,
     lastMove,
   ]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (gameStarted && !game.isGameOver()) {
-        // Only count if game has started
-        setGameTime((prev) => prev + 1);
-        if (game.turn() === "w") {
-          setWhiteTime((prev) => prev + 1);
-        } else {
-          setBlackTime((prev) => prev + 1);
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [game, gameStarted]);
 
   const handleDifficultyChange = (newDifficulty: string) => {
     if (gameStarted) {
@@ -204,9 +192,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setBoard(game.board());
     setSelectedPiece(null);
     setPossibleMoves([]);
-    setGameTime(0);
-    setWhiteTime(0);
-    setBlackTime(0);
+    resetTimers();
     setGameStarted(false);
     setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
     setCurrentMove(1);
@@ -236,9 +222,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
-      setGameTime(0);
-      setWhiteTime(0);
-      setBlackTime(0);
+      resetTimers();
       setGameStarted(false);
 
       // Save the new state with updated color
@@ -262,9 +246,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
-      setGameTime(0);
-      setWhiteTime(0);
-      setBlackTime(0);
+      resetTimers();
       setGameStarted(false);
 
       // Save the new state with updated color
