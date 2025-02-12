@@ -350,6 +350,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setGameStarted(false);
     setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
     setCurrentMove(1);
+    setLastMove(null);
 
     // Save state with preserved player color
     const currentState = {

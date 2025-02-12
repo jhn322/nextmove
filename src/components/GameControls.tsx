@@ -54,6 +54,7 @@ const GameControls = ({
     "grandmaster",
   ];
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
+  const isGameOver = game.isGameOver();
 
   // Format time from seconds to MM:SS
   const formatTime = (seconds: number) => {
@@ -198,7 +199,7 @@ const GameControls = ({
                 variant="outline"
                 size="default"
                 onClick={onMoveBack}
-                disabled={!canMoveBack}
+                disabled={!canMoveBack || isGameOver}
                 className="flex-1 flex items-center justify-center gap-2"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -208,7 +209,7 @@ const GameControls = ({
                 variant="outline"
                 size="default"
                 onClick={onMoveForward}
-                disabled={!canMoveForward}
+                disabled={!canMoveForward || isGameOver}
                 className="flex-1 flex items-center justify-center gap-2"
               >
                 Forward
