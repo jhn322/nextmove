@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Chess } from "chess.js";
-import { DIFFICULTY_LEVELS } from "../constants";
+import { DIFFICULTY_LEVELS } from "../config/game";
 import type { StockfishEngine } from "../types/types";
 
 export const useStockfish = (

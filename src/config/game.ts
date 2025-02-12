@@ -1,5 +1,5 @@
 import { Chess } from "chess.js";
-import { SavedGameState } from "./types/types";
+import { SavedGameState } from "../types/types";
 
 export const STORAGE_KEY = "chess-game-state";
 

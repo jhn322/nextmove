@@ -1,23 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Square } from "chess.js";
-import { useStockfish } from "./ChessBoard/hooks/useStockfish";
+import { useEffect } from "react";
+import { useStockfish } from "../../../hooks/useStockfish";
 import {
   STORAGE_KEY,
   DEFAULT_STATE,
   DIFFICULTY_LEVELS,
-} from "./ChessBoard/constants";
-import type { HistoryEntry } from "./ChessBoard/types/types";
+} from "../../../config/game";
 import { useRouter } from "next/navigation";
-import { useChessGame } from "./ChessBoard/hooks/useChessGame";
-import { useGameTimer } from "./ChessBoard/hooks/useGameTimer";
-import { useGameDialogs } from "./ChessBoard/hooks/useGameDialogs";
-import { useMoveHandler } from "./ChessBoard/hooks/useMoveHandler";
-import GameDialogs from "./ChessBoard/GameDialogs";
-import GameControls from "@/components/GameControls";
-import SquareComponent from "@/components/Square";
-import Piece from "@/components/Piece";
+import { useChessGame } from "../../../hooks/useChessGame";
+import { useGameTimer } from "../../../hooks/useGameTimer";
+import { useGameDialogs } from "../../../hooks/useGameDialogs";
+import { useMoveHandler } from "../../../hooks/useMoveHandler";
+import GameDialogs from "../dialogs/GameDialogs";
+import GameControls from "@/components/game/controls/GameControls";
+import SquareComponent from "@/components/game/board/Square";
+import Piece from "@/components/game/board/Piece";
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const router = useRouter();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ChessBoard from "@/components/ChessBoard";
+import ChessBoard from "@/components/game/board/ChessBoard";
 
 export default function ChessGame() {
   const params = useParams();
