@@ -8,11 +8,12 @@ import {
   DEFAULT_STATE,
   DIFFICULTY_LEVELS,
 } from "./ChessBoard/constants";
-import type { HistoryEntry } from "./ChessBoard/types";
+import type { HistoryEntry } from "./ChessBoard/types/types";
 import { useRouter } from "next/navigation";
 import { useChessGame } from "./ChessBoard/hooks/useChessGame";
 import { useGameTimer } from "./ChessBoard/hooks/useGameTimer";
 import { useGameDialogs } from "./ChessBoard/hooks/useGameDialogs";
+import { useMoveHandler } from "./ChessBoard/hooks/useMoveHandler";
 import GameDialogs from "./ChessBoard/GameDialogs";
 import GameControls from "@/components/GameControls";
 import SquareComponent from "@/components/Square";
@@ -68,13 +69,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setShowDifficultyDialog,
     setShowColorDialog,
   } = useGameDialogs();
-  // -----------------------------------------------------------
 
-  const [selectedPiece, setSelectedPiece] = useState<{
-    row: number;
-    col: number;
-  } | null>(null);
-  const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
+  const {
+    selectedPiece,
+    setSelectedPiece,
+    possibleMoves,
+    setPossibleMoves,
+    handleSquareClick,
+  } = useMoveHandler(
+    game,
+    board,
+    setBoard,
+    playerColor,
+    makeMove,
+    setHistory,
+    setCurrentMove,
+    setLastMove,
+    setGameStarted,
+    getBotMove
+  );
+  // -----------------------------------------------------------
 
   // Save state
   useEffect(() => {
@@ -139,48 +153,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       }
     }
   }, [game.turn(), playerColor, lastMove, game]);
-
-  const handleSquareClick = (row: number, col: number) => {
-    if (game.turn() !== playerColor) return;
-
-    if (!selectedPiece) {
-      const piece = board[row][col];
-      if (piece && piece.color === playerColor) {
-        setSelectedPiece({ row, col });
-        const from = `${"abcdefgh"[col]}${8 - row}` as Square;
-        const moves = game.moves({ square: from, verbose: true });
-        setPossibleMoves(moves.map((move) => move.to));
-      }
-    } else {
-      const from = `${"abcdefgh"[selectedPiece.col]}${
-        8 - selectedPiece.row
-      }` as Square;
-      const to = `${"abcdefgh"[col]}${8 - row}` as Square;
-
-      try {
-        const move = game.move({ from, to, promotion: "q" });
-        if (move) {
-          setBoard(game.board());
-          setHistory((prev: HistoryEntry[]) => [
-            ...prev,
-            { fen: game.fen(), lastMove: { from, to } },
-          ]);
-          setCurrentMove((prev: number) => prev + 1);
-          setLastMove({ from, to });
-
-          if (!gameStarted) {
-            setGameStarted(true);
-          }
-          setTimeout(getBotMove, 1000);
-        }
-      } catch {
-        console.log("Invalid move");
-      }
-
-      setSelectedPiece(null);
-      setPossibleMoves([]);
-    }
-  };
 
   // Game status display
   const getGameStatus = () => {

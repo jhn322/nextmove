@@ -1,3 +1,5 @@
+import { Square, PieceSymbol, Color } from "chess.js";
+
 export type HistoryEntry = {
   fen: string;
   lastMove: { from: string; to: string } | null;
@@ -17,3 +19,9 @@ export type SavedGameState = {
   currentMove: number;
   lastMove: { from: string; to: string } | null;
 };
+
+export type BoardSquare = {
+  square: Square;
+  type: PieceSymbol;
+  color: Color;
+} | null;

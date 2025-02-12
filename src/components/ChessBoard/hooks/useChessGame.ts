@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Chess, Square } from "chess.js";
 import { STORAGE_KEY, DEFAULT_STATE } from "../constants";
-import type { HistoryEntry, SavedGameState } from "../types";
+import type { HistoryEntry, SavedGameState } from "../types/types";
 
 export const useChessGame = (difficulty: string) => {
   // Load initial state from localStorage or use defaults
