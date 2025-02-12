@@ -1,10 +1,11 @@
 import { Chess } from "chess.js";
+import { SavedGameState } from "./types";
 
 export const STORAGE_KEY = "chess-game-state";
 
-export const DEFAULT_STATE = {
+export const DEFAULT_STATE: SavedGameState = {
   fen: new Chess().fen(),
-  playerColor: "w",
+  playerColor: "w" as "w" | "b",
   gameTime: 0,
   whiteTime: 0,
   blackTime: 0,
