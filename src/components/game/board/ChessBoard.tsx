@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
 import {
   STORAGE_KEY,
@@ -16,6 +16,7 @@ import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
 import SquareComponent from "@/components/game/board/Square";
 import Piece from "@/components/game/board/Piece";
+import VictoryModal from "../modal/VictoryModal";
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const router = useRouter();
@@ -59,13 +60,19 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     pendingColor,
     setPendingDifficulty,
     setPendingColor,
-    handleCancelDialog,
     handleResign,
     handleDifficultyDialogOpen,
     handleColorDialogOpen,
+    handleRestart: handleModalClose,
     setShowResignDialog,
     setShowDifficultyDialog,
     setShowColorDialog,
+    showVictoryModal,
+    isResignationModal,
+    handleCancelDialog,
+    handleConfirmResign,
+    setShowVictoryModal,
+    setIsResignationModal,
   } = useGameDialogs();
 
   const {
@@ -125,7 +132,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           DIFFICULTY_LEVELS[newDifficulty as keyof typeof DIFFICULTY_LEVELS]
         );
       }
-      handleRestart();
+      handleGameReset();
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
   };
@@ -162,8 +169,13 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     return `${game.turn() === "w" ? "White" : "Black"} turn to move`;
   };
 
+  const handleRematch = () => {
+    handleModalClose();
+    setTimeout(handleGameReset, 0);
+  };
+
   // Game restart
-  const handleRestart = () => {
+  const handleGameReset = () => {
     game.reset();
     setBoard(game.board());
     setSelectedPiece(null);
@@ -241,10 +253,38 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setPendingColor(null);
   };
 
-  // Confirm resign and reset game
-  const handleConfirmResign = () => {
-    handleRestart();
-    setShowResignDialog(false);
+  // Add useEffect to show modal on game over
+  useEffect(() => {
+    if (game.isGameOver() && gameStarted) {
+      setShowVictoryModal(true);
+      setIsResignationModal(false);
+    }
+  }, [
+    game.isGameOver(),
+    gameStarted,
+    setShowVictoryModal,
+    setIsResignationModal,
+  ]);
+
+  // Add handlers for the modal
+  const handleCloseVictoryModal = () => {
+    setShowVictoryModal(false);
+    setIsResignationModal(false);
+  };
+
+  const handleNewBot = () => {
+    handleModalClose();
+    setTimeout(() => {
+      handleGameReset();
+      // highlight the difficulty section
+      const difficultySection = document.querySelector(
+        "[data-highlight-difficulty]"
+      );
+      difficultySection?.classList.add("highlight-difficulty");
+      setTimeout(() => {
+        difficultySection?.classList.remove("highlight-difficulty");
+      }, 8000);
+    }, 0);
   };
 
   return (
@@ -311,15 +351,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
             onMoveForward={moveForward}
             canMoveBack={currentMove > 1}
             canMoveForward={currentMove < history.length}
+            onRematch={handleGameReset}
           />
         </div>
       </main>
 
+      <VictoryModal
+        isOpen={showVictoryModal}
+        onClose={handleCancelDialog}
+        onRematch={handleRematch}
+        onNewBot={handleNewBot}
+        game={game}
+        difficulty={difficulty}
+        isResignation={isResignationModal}
+        onConfirmResign={handleConfirmResign}
+        playerColor={playerColor}
+      />
+
       <GameDialogs
-        showResignDialog={showResignDialog}
         showDifficultyDialog={showDifficultyDialog}
         showColorDialog={showColorDialog}
-        onConfirmResign={handleConfirmResign}
         onConfirmDifficultyChange={handleConfirmDifficultyChange}
         onConfirmColorChange={handleConfirmColorChange}
         onCancelDialog={handleCancelDialog}

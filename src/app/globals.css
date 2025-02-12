@@ -62,6 +62,32 @@ body {
   }
 }
 
+@keyframes pulsateSection {
+  0%,
+  20%,
+  40%,
+  60%,
+  80%,
+  100% {
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--border));
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    background-color: hsl(var(--accent) / 0.1);
+    border-color: hsl(var(--primary));
+  }
+}
+
+.highlight-difficulty {
+  animation: pulsateSection 8s ease-in-out 1;
+  border: 1px solid;
+  border-radius: 0.5rem;
+}
+
 @layer base {
   * {
     @apply border-border;

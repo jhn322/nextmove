@@ -25,6 +25,7 @@ interface GameControlsProps {
   onMoveForward: () => void;
   canMoveBack: boolean;
   canMoveForward: boolean;
+  onRematch: () => void;
 }
 
 const GameControls = ({
@@ -42,6 +43,7 @@ const GameControls = ({
   onMoveForward,
   canMoveBack,
   canMoveForward,
+  onRematch,
 }: GameControlsProps) => {
   const difficulties = [
     "beginner",
@@ -217,6 +219,17 @@ const GameControls = ({
               </Button>
             </div>
 
+            {/* Rematch Button - Only show when game is over */}
+            {isGameOver && (
+              <Button
+                onClick={onRematch}
+                variant="default"
+                className="w-full py-6 text-lg font-medium"
+              >
+                Rematch
+              </Button>
+            )}
+
             {/* Resign Button */}
             <Button
               onClick={onResign}
@@ -233,7 +246,7 @@ const GameControls = ({
       <div className="h-px bg-border" />
 
       {/* Settings Group */}
-      <div className="space-y-2">
+      <div className="space-y-2" data-highlight-difficulty>
         <Card className="border-0 shadow-none">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="flex items-center gap-2">

@@ -3,20 +3,29 @@ import { useState } from "react";
 export const useGameDialogs = () => {
   const [showResignDialog, setShowResignDialog] = useState(false);
   const [showDifficultyDialog, setShowDifficultyDialog] = useState(false);
+  const [showColorDialog, setShowColorDialog] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<string | null>(
     null
   );
-  const [showColorDialog, setShowColorDialog] = useState(false);
   const [pendingColor, setPendingColor] = useState<"w" | "b" | null>(null);
+  const [showVictoryModal, setShowVictoryModal] = useState(false);
+  const [isResignationModal, setIsResignationModal] = useState(false);
 
   const handleCancelDialog = () => {
     setShowResignDialog(false);
     setShowDifficultyDialog(false);
     setShowColorDialog(false);
+    setShowVictoryModal(false);
+    setIsResignationModal(false);
   };
 
   const handleResign = () => {
-    setShowResignDialog(true);
+    setShowVictoryModal(true);
+    setIsResignationModal(true);
+  };
+
+  const handleConfirmResign = () => {
+    setIsResignationModal(false);
   };
 
   const handleDifficultyDialogOpen = (newDifficulty: string) => {
@@ -29,20 +38,33 @@ export const useGameDialogs = () => {
     setShowColorDialog(true);
   };
 
+  const handleRestart = () => {
+    Promise.resolve().then(() => {
+      setShowVictoryModal(false);
+      setIsResignationModal(false);
+    });
+  };
+
   return {
     showResignDialog,
     showDifficultyDialog,
     showColorDialog,
     pendingDifficulty,
     pendingColor,
+    showVictoryModal,
+    isResignationModal,
     setPendingDifficulty,
     setPendingColor,
     handleCancelDialog,
     handleResign,
+    handleConfirmResign,
     handleDifficultyDialogOpen,
     handleColorDialogOpen,
+    handleRestart,
     setShowResignDialog,
     setShowDifficultyDialog,
     setShowColorDialog,
+    setShowVictoryModal,
+    setIsResignationModal,
   };
 };
