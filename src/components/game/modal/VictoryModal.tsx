@@ -1,4 +1,4 @@
-import React from "react";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,7 +37,7 @@ const VictoryModal = ({
 }: VictoryModalProps) => {
   const [message, setMessage] = useState<string | React.ReactNode>("");
 
-  const renderWinnerText = () => {
+  const renderWinnerText = useCallback(() => {
     if (isResignation) {
       return "Are you sure you want to resign?";
     }
@@ -49,11 +49,7 @@ const VictoryModal = ({
         ) : (
           <span className="text-red-400">Bot</span>
         );
-      return (
-        <>
-          {coloredText} ({winningColor}) Won!
-        </>
-      );
+      return <>{coloredText} Won!</>;
     }
     if (game.isDraw()) {
       if (game.isStalemate()) return "Draw by Stalemate!";
@@ -63,7 +59,13 @@ const VictoryModal = ({
       return "Game is a Draw!";
     }
     return "Game Over!";
-  };
+  }, [game, isResignation, playerColor]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMessage(renderWinnerText());
+    }
+  }, [isOpen, renderWinnerText]);
 
   useEffect(() => {
     if (isOpen) {
@@ -90,8 +92,14 @@ const VictoryModal = ({
               <div className="flex items-center justify-center gap-2 text-lg font-semibold text-foreground">
                 <Crown className="h-6 w-6 text-blue-400" strokeWidth={2} />
                 <span>Player</span>
+                <span className="text-muted-foreground">
+                  ({playerColor === "w" ? "White" : "Black"})
+                </span>
                 <span className="text-muted-foreground mx-2">vs</span>
                 <span>Bot</span>
+                <span className="text-muted-foreground">
+                  ({playerColor === "w" ? "Black" : "White"})
+                </span>
                 <Crown className="h-6 w-6 text-red-400" strokeWidth={2} />
               </div>
               <div className="text-base font-medium text-muted-foreground capitalize">

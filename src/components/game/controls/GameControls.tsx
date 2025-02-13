@@ -1,8 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Chess } from "chess.js";
-import { Info } from "lucide-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  Flag,
+  Info,
+  Baby,
+  Gamepad2,
+  Swords,
+  Sword,
+  Crosshair,
+  Target,
+  Trophy,
+  Award,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -58,6 +71,17 @@ const GameControls = ({
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
   const isGameOver = game.isGameOver();
 
+  const difficultyIcons = {
+    beginner: { icon: Baby, color: "text-emerald-500" },
+    easy: { icon: Gamepad2, color: "text-green-500" },
+    intermediate: { icon: Swords, color: "text-cyan-500" },
+    advanced: { icon: Sword, color: "text-blue-500" },
+    hard: { icon: Crosshair, color: "text-violet-500" },
+    expert: { icon: Target, color: "text-purple-500" },
+    master: { icon: Trophy, color: "text-orange-500" },
+    grandmaster: { icon: Award, color: "text-red-500" },
+  };
+
   // Format time from seconds to MM:SS
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -75,11 +99,11 @@ const GameControls = ({
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="flex items-center gap-3">
-              <div
-                className={`w-3 h-3 rounded-full ${
+              <Crown
+                className={`h-5 w-5 ${
                   currentTurn === "w"
-                    ? "bg-blue-400 animate-pulse"
-                    : "bg-blue-400/30"
+                    ? "text-blue-400 animate-pulse"
+                    : "text-blue-400/30"
                 }`}
               />
               <span
@@ -92,11 +116,11 @@ const GameControls = ({
                 White
               </span>
               <span className="text-muted-foreground mx-1">vs</span>
-              <div
-                className={`w-3 h-3 rounded-full ${
+              <Crown
+                className={`h-5 w-5 ${
                   currentTurn === "b"
-                    ? "bg-red-400 animate-pulse"
-                    : "bg-red-400/30"
+                    ? "text-red-400 animate-pulse"
+                    : "text-red-400/30"
                 }`}
               />
               <span
@@ -173,17 +197,19 @@ const GameControls = ({
               <Button
                 onClick={() => onColorChange("w")}
                 variant={playerColor === "w" ? "default" : "outline"}
-                className="flex-1"
+                className="flex-1 flex items-center justify-center gap-2"
                 disabled={playerColor === "w"}
               >
+                <Crown className="h-4 w-4" />
                 White
               </Button>
               <Button
                 onClick={() => onColorChange("b")}
                 variant={playerColor === "b" ? "default" : "outline"}
-                className="flex-1"
+                className="flex-1 flex items-center justify-center gap-2"
                 disabled={playerColor === "b"}
               >
+                <Crown className="h-4 w-4" />
                 Black
               </Button>
             </div>
@@ -234,8 +260,9 @@ const GameControls = ({
             <Button
               onClick={onResign}
               variant="destructive"
-              className="w-full py-6 text-lg font-medium"
+              className="w-full py-6 text-lg font-medium flex items-center justify-center gap-2"
             >
+              <Flag className="h-5 w-5" />
               Resign
             </Button>
           </CardContent>
@@ -265,17 +292,49 @@ const GameControls = ({
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="grid grid-cols-2 gap-2">
-              {difficulties.map((diff) => (
-                <Button
-                  key={diff}
-                  onClick={() => onDifficultyChange(diff)}
-                  variant={difficulty === diff ? "default" : "outline"}
-                  className="w-full capitalize"
-                  disabled={difficulty === diff}
-                >
-                  {diff}
-                </Button>
-              ))}
+              {difficulties.map((diff) => {
+                const { icon: Icon, color } =
+                  difficultyIcons[diff as keyof typeof difficultyIcons];
+                return (
+                  <TooltipProvider key={diff}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => onDifficultyChange(diff)}
+                          variant={difficulty === diff ? "default" : "outline"}
+                          className="w-full capitalize flex items-center justify-center gap-2"
+                          disabled={difficulty === diff}
+                        >
+                          <Icon
+                            className={`h-4 w-4 ${
+                              difficulty === diff ? "" : color
+                            }`}
+                          />
+                          {diff}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {diff === "beginner" &&
+                          "Learn the basics with a bot that makes predictable moves."}
+                        {diff === "easy" &&
+                          "Practice basic strategies with slightly improved moves."}
+                        {diff === "intermediate" &&
+                          "Test your skills against a bot with moderate tactical awareness."}
+                        {diff === "advanced" &&
+                          "Face stronger tactical play and strategic planning."}
+                        {diff === "hard" &&
+                          "Challenge yourself with advanced strategies and combinations."}
+                        {diff === "expert" &&
+                          "Test yourself against sophisticated positional understanding."}
+                        {diff === "master" &&
+                          "Face the second strongest bot with sophisticated chess understanding."}
+                        {diff === "grandmaster" &&
+                          "Challenge the ultimate bot with masterful chess execution."}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

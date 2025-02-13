@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
 import {
   STORAGE_KEY,
@@ -53,7 +53,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   );
 
   const {
-    showResignDialog,
     showDifficultyDialog,
     showColorDialog,
     pendingDifficulty,
@@ -64,7 +63,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     handleDifficultyDialogOpen,
     handleColorDialogOpen,
     handleRestart: handleModalClose,
-    setShowResignDialog,
     setShowDifficultyDialog,
     setShowColorDialog,
     showVictoryModal,
@@ -265,12 +263,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setShowVictoryModal,
     setIsResignationModal,
   ]);
-
-  // Add handlers for the modal
-  const handleCloseVictoryModal = () => {
-    setShowVictoryModal(false);
-    setIsResignationModal(false);
-  };
 
   const handleNewBot = () => {
     handleModalClose();
