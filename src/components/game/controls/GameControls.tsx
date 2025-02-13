@@ -78,8 +78,8 @@ const GameControls = ({
     advanced: { icon: Sword, color: "text-blue-500" },
     hard: { icon: Crosshair, color: "text-violet-500" },
     expert: { icon: Target, color: "text-purple-500" },
-    master: { icon: Trophy, color: "text-orange-500" },
-    grandmaster: { icon: Award, color: "text-red-500" },
+    master: { icon: Award, color: "text-orange-500" },
+    grandmaster: { icon: Trophy, color: "text-red-500" },
   };
 
   // Format time from seconds to MM:SS
