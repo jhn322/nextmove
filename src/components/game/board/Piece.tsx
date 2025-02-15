@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 interface PieceProps {
   type: string;
   variant?: "board" | "symbol";
@@ -49,10 +51,13 @@ const Piece = ({
 
   return (
     <div className="w-full h-full flex items-center justify-center">
-      <img
+      <Image
         src={getPieceSVG(type)}
         alt={`${type} chess piece`}
+        width={80}
+        height={80}
         className="w-[80%] h-[80%] object-contain"
+        priority
       />
     </div>
   );

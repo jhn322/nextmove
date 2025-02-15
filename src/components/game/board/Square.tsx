@@ -86,7 +86,7 @@ const Square = ({
       {/* Add coordinate labels */}
       {(showRank || showFile) && (
         <div
-          className={`absolute text-sm md:text-base font-semibold
+          className={`absolute text-sm md:text-xl font-semibold
     ${
       isLight
         ? "text-gray-600 dark:text-gray-300"
