@@ -17,12 +17,12 @@ export const DEFAULT_STATE: SavedGameState = {
 };
 
 export const DIFFICULTY_LEVELS = {
-  beginner: 2,
-  easy: 5,
-  intermediate: 8,
-  advanced: 11,
-  hard: 14,
-  expert: 17,
-  master: 20,
+  beginner: 1,
+  easy: 3,
+  intermediate: 6,
+  advanced: 9,
+  hard: 13,
+  expert: 16,
+  master: 19,
   grandmaster: 23,
 } as const;
