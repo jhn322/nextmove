@@ -1,10 +1,20 @@
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 
-export const useGameTimer = (game: Chess, gameStarted: boolean) => {
-  const [gameTime, setGameTime] = useState(0);
-  const [whiteTime, setWhiteTime] = useState(0);
-  const [blackTime, setBlackTime] = useState(0);
+interface TimerState {
+  gameTime: number;
+  whiteTime: number;
+  blackTime: number;
+}
+
+export const useGameTimer = (
+  game: Chess,
+  gameStarted: boolean,
+  initialState?: TimerState
+) => {
+  const [gameTime, setGameTime] = useState(initialState?.gameTime ?? 0);
+  const [whiteTime, setWhiteTime] = useState(initialState?.whiteTime ?? 0);
+  const [blackTime, setBlackTime] = useState(initialState?.blackTime ?? 0);
 
   useEffect(() => {
     const timer = setInterval(() => {

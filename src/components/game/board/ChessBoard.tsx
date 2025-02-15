@@ -47,9 +47,19 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     makeMove
   );
 
+  // Load saved state for game timer
+  const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
     game,
-    gameStarted
+    gameStarted,
+    savedState
+      ? {
+          gameTime: savedState.gameTime,
+          whiteTime: savedState.whiteTime,
+          blackTime: savedState.blackTime,
+        }
+      : undefined
   );
 
   const {
@@ -356,6 +366,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
             canMoveBack={currentMove > 1}
             canMoveForward={currentMove < history.length}
             onRematch={handleGameReset}
+            history={history}
           />
         </div>
       </main>

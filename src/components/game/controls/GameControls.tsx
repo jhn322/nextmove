@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Chess } from "chess.js";
+import Piece from "@/components/game/board/Piece";
+import { Chess, Square } from "chess.js";
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface GameControlsProps {
   difficulty: string;
@@ -39,6 +42,7 @@ interface GameControlsProps {
   canMoveBack: boolean;
   canMoveForward: boolean;
   onRematch: () => void;
+  history: { fen: string; lastMove: { from: string; to: string } | null }[];
 }
 
 const GameControls = ({
@@ -57,6 +61,7 @@ const GameControls = ({
   canMoveBack,
   canMoveForward,
   onRematch,
+  history,
 }: GameControlsProps) => {
   const difficulties = [
     "beginner",
@@ -70,6 +75,15 @@ const GameControls = ({
   ];
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
   const isGameOver = game.isGameOver();
+
+  useEffect(() => {
+    const scrollArea = document.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    );
+    if (scrollArea) {
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
+  }, [history.length]);
 
   const difficultyIcons = {
     beginner: { icon: Baby, color: "text-emerald-500" },
@@ -87,6 +101,21 @@ const GameControls = ({
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const getMoveNumber = (index: number) => {
+    return Math.ceil((index + 1) / 2);
+  };
+
+  const formatMove = (move: { from: string; to: string } | null) => {
+    if (!move) return "-";
+    return `${move.from}-${move.to}`;
+  };
+
+  const getPieceMoved = (fen: string, move: { from: string; to: string }) => {
+    const tempGame = new Chess(fen);
+    const piece = tempGame.get(move.from as Square);
+    return piece ? piece.type : null;
   };
 
   return (
@@ -182,6 +211,82 @@ const GameControls = ({
           </CardContent>
         </Card>
       </div>
+
+      {/* Move History */}
+      <Card className="border-0 shadow-none">
+        <CardHeader className="p-4 pb-2">
+          <CardTitle>Move History</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <ScrollArea className="h-[200px] w-full rounded-md border">
+            <div className="p-4 space-y-1">
+              {history.slice(1).map((historyItem, index) => {
+                const pieceType = historyItem.lastMove
+                  ? getPieceMoved(history[index].fen, historyItem.lastMove)
+                  : null;
+
+                const isLatestMove = index === history.length - 2;
+
+                return (
+                  <div key={index} className="flex items-center text-sm">
+                    {index % 2 === 0 ? (
+                      // White's move
+                      <div className="flex items-center w-full bg-accent/50 rounded-sm">
+                        <span className="text-muted-foreground w-4 text-right mr-4 pl-2">
+                          {getMoveNumber(index)}.
+                        </span>
+                        <div className="flex items-center gap-1 text-blue-400 w-full py-1 pr-2">
+                          <div className="flex-1 flex items-center">
+                            <span
+                              className={`${
+                                isLatestMove
+                                  ? "bg-primary/20 rounded-[2px] px-1 -ml-1"
+                                  : ""
+                              }`}
+                            >
+                              {formatMove(historyItem.lastMove)}
+                            </span>
+                          </div>
+                          {pieceType && (
+                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center dark:invert-0">
+                              <Piece type={pieceType.toUpperCase()} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      // Black's move
+                      <div className="flex items-center w-full bg-background">
+                        <span className="text-muted-foreground w-4 text-right mr-4 pl-2">
+                          {getMoveNumber(index)}.
+                        </span>
+                        <div className="flex items-center gap-1 text-red-400 w-full py-1 pr-2">
+                          <div className="flex-1 flex items-center">
+                            <span
+                              className={`${
+                                isLatestMove
+                                  ? "bg-primary/20 rounded-[2px] px-1 -ml-1"
+                                  : ""
+                              }`}
+                            >
+                              {formatMove(historyItem.lastMove)}
+                            </span>
+                          </div>
+                          {pieceType && (
+                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center invert dark:invert">
+                              <Piece type={pieceType.toLowerCase()} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
       {/* Divider */}
       <div className="h-px bg-border" />
