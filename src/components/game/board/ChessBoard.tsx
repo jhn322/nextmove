@@ -296,6 +296,15 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     lastMove &&
                     (square === lastMove.from || square === lastMove.to);
 
+                  // Coordinate display logic
+                  const showRank = colIndex === 0;
+                  const showFile = rowIndex === 7;
+                  const coordinate = showRank
+                    ? `${8 - rowIndex}`
+                    : showFile
+                    ? `${"abcdefgh"[colIndex]}`
+                    : "";
+
                   return (
                     <SquareComponent
                       key={`${rowIndex}-${colIndex}`}
@@ -309,6 +318,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                       difficulty={difficulty}
                       isCheck={isKingInCheck}
                       isLastMove={isLastMove ?? false}
+                      showRank={showRank}
+                      showFile={showFile}
+                      coordinate={coordinate}
                     >
                       {piece && (
                         <Piece

@@ -42,6 +42,9 @@ interface SquareProps {
   isPossibleMove: boolean;
   isCheck: boolean;
   isLastMove: boolean;
+  coordinate?: string;
+  showRank?: boolean;
+  showFile?: boolean;
 }
 
 const Square = ({
@@ -53,6 +56,9 @@ const Square = ({
   isPossibleMove,
   isCheck,
   isLastMove,
+  coordinate,
+  showRank,
+  showFile,
 }: SquareProps) => {
   const colors = difficultyColors[difficulty as keyof typeof difficultyColors];
 
@@ -77,6 +83,22 @@ const Square = ({
       hover:brightness-110
     `}
     >
+      {/* Add coordinate labels */}
+      {(showRank || showFile) && (
+        <div
+          className={`absolute text-sm md:text-base font-semibold
+    ${
+      isLight
+        ? "text-gray-600 dark:text-gray-300"
+        : "text-gray-700 dark:text-gray-200"
+    }
+    ${showRank ? "left-2 top-2" : ""}
+    ${showFile ? "right-2 bottom-2" : ""}
+  `}
+        >
+          {coordinate}
+        </div>
+      )}
       <div className="absolute inset-0 flex items-center justify-center z-5">
         {children}
         {isPossibleMove && !children && (
