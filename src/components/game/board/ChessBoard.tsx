@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
 import {
   STORAGE_KEY,
@@ -47,9 +47,14 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     makeMove
   );
 
+  // Load saved state for piece set
+  const [pieceSet, setPieceSet] = useState<string>(() => {
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    return savedState?.pieceSet || "staunty";
+  });
+
   // Load saved state for game timer
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
     game,
     gameStarted,
@@ -116,6 +121,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       history,
       currentMove,
       lastMove,
+      pieceSet,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
   }, [
@@ -129,6 +135,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     history,
     currentMove,
     lastMove,
+    pieceSet,
   ]);
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -339,6 +346,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                               ? piece.type.toUpperCase()
                               : piece.type.toLowerCase()
                           }
+                          pieceSet={pieceSet}
                         />
                       )}
                     </SquareComponent>
@@ -367,6 +375,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
             canMoveForward={currentMove < history.length}
             onRematch={handleGameReset}
             history={history}
+            pieceSet={pieceSet}
+            onPieceSetChange={setPieceSet}
           />
         </div>
       </main>

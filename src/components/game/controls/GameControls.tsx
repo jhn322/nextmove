@@ -1,6 +1,13 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Piece from "@/components/game/board/Piece";
 import { Chess, Square } from "chess.js";
 import {
@@ -17,6 +24,8 @@ import {
   Target,
   Trophy,
   Award,
+  Palette,
+  Check,
 } from "lucide-react";
 import {
   Tooltip,
@@ -43,6 +52,8 @@ interface GameControlsProps {
   canMoveForward: boolean;
   onRematch: () => void;
   history: { fen: string; lastMove: { from: string; to: string } | null }[];
+  pieceSet: string;
+  onPieceSetChange: (set: string) => void;
 }
 
 const GameControls = ({
@@ -62,6 +73,8 @@ const GameControls = ({
   canMoveForward,
   onRematch,
   history,
+  pieceSet,
+  onPieceSetChange,
 }: GameControlsProps) => {
   const difficulties = [
     "beginner",
@@ -72,6 +85,26 @@ const GameControls = ({
     "expert",
     "master",
     "grandmaster",
+  ];
+  const pieceSets = [
+    "california",
+    "cardinal",
+    "cburnett",
+    "chessicons",
+    "chessmonk",
+    "chessnut",
+    "freestaunton",
+    "fresca",
+    "gioco",
+    "governor",
+    "icpieces",
+    "kosal",
+    "maestro",
+    "merida_new",
+    "pixel",
+    "riohacha",
+    "staunty",
+    "tatiana",
   ];
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
   const isGameOver = game.isGameOver();
@@ -248,8 +281,11 @@ const GameControls = ({
                             </span>
                           </div>
                           {pieceType && (
-                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center dark:invert-0">
-                              <Piece type={pieceType.toUpperCase()} />
+                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center brightness-0 dark:brightness-0 dark:invert">
+                              <Piece
+                                type={pieceType.toUpperCase()}
+                                variant="symbol"
+                              />
                             </div>
                           )}
                         </div>
@@ -273,8 +309,11 @@ const GameControls = ({
                             </span>
                           </div>
                           {pieceType && (
-                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center invert dark:invert">
-                              <Piece type={pieceType.toLowerCase()} />
+                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center brightness-0 dark:brightness-0 dark:invert">
+                              <Piece
+                                type={pieceType.toUpperCase()}
+                                variant="symbol"
+                              />
                             </div>
                           )}
                         </div>
@@ -381,65 +420,102 @@ const GameControls = ({
       <div className="space-y-2" data-highlight-difficulty>
         <Card className="border-0 shadow-none">
           <CardHeader className="p-4 pb-2">
-            <CardTitle className="flex items-center gap-2">
-              Difficulty
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Change the bot opponent&apos;s skill level.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </CardTitle>
+            <CardTitle>Settings</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="grid grid-cols-2 gap-2">
-              {difficulties.map((diff) => {
-                const { icon: Icon, color } =
-                  difficultyIcons[diff as keyof typeof difficultyIcons];
-                return (
-                  <TooltipProvider key={diff}>
+            <div className="flex flex-col gap-4">
+              {/* Difficulty Dropdown */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  Difficulty
+                  <TooltipProvider>
                     <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => onDifficultyChange(diff)}
-                          variant={difficulty === diff ? "default" : "outline"}
-                          className="w-full justify-start gap-1.5 pl-2 pr-2 text-xs font-medium"
-                          disabled={difficulty === diff}
-                        >
-                          <Icon
-                            className={`h-4 w-4 shrink-0 ${
-                              difficulty === diff ? "" : color
-                            }`}
-                          />
-                          <span className="truncate capitalize">{diff}</span>
-                        </Button>
+                      <TooltipTrigger>
+                        <Info className="h-4 w-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        {diff === "beginner" &&
-                          "Learn the basics with a bot that makes predictable moves."}
-                        {diff === "easy" &&
-                          "Practice basic strategies with slightly improved moves."}
-                        {diff === "intermediate" &&
-                          "Test your skills against a bot with moderate tactical awareness."}
-                        {diff === "advanced" &&
-                          "Face stronger tactical play and strategic planning."}
-                        {diff === "hard" &&
-                          "Challenge yourself with advanced strategies and combinations."}
-                        {diff === "expert" &&
-                          "Test yourself against sophisticated positional understanding."}
-                        {diff === "master" &&
-                          "Face the second strongest bot with sophisticated chess understanding."}
-                        {diff === "grandmaster" &&
-                          "Challenge the ultimate bot with masterful chess execution."}
+                        <p>Change the bot opponent's skill level.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                );
-              })}
+                </div>
+                <Select value={difficulty} onValueChange={onDifficultyChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const { icon: Icon, color } =
+                            difficultyIcons[
+                              difficulty as keyof typeof difficultyIcons
+                            ];
+                          return (
+                            <Icon
+                              className={`h-4 w-4 flex-shrink-0 ${color}`}
+                            />
+                          );
+                        })()}
+                        <span className="capitalize truncate">
+                          {difficulty}
+                        </span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {difficulties.map((diff) => {
+                      const { icon: Icon, color } =
+                        difficultyIcons[diff as keyof typeof difficultyIcons];
+                      return (
+                        <SelectItem key={diff} value={diff}>
+                          <div className="flex items-center gap-2">
+                            <Icon className={`h-4 w-4 ${color}`} />
+                            <span className="capitalize">{diff}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Piece Set Dropdown */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  Piece Set
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Change the appearance of the chess pieces.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Select value={pieceSet} onValueChange={onPieceSetChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      <div className="flex items-center gap-2">
+                        <Palette className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <span className="capitalize truncate">
+                          {pieceSet.replace("_", " ")}
+                        </span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pieceSets.map((set) => (
+                      <SelectItem key={set} value={set}>
+                        <div className="flex items-center gap-2">
+                          <span className="capitalize">
+                            {set.replace("_", " ")}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
