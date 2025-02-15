@@ -169,7 +169,7 @@ export default function Home() {
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             Can you conquer all eight levels of bot opponents? Start your
-            journey as a beginner and work your way up to face our formidable
+            journey as a beginner and work your way up to face the formidable
             Grandmaster bot. Each level presents unique challenges and learning
             opportunities. Do you have what it takes to become a true chess
             master?
