@@ -77,7 +77,7 @@ const Square = ({
       hover:brightness-110
     `}
     >
-      <div className="absolute inset-0 flex items-center justify-center z-10">
+      <div className="absolute inset-0 flex items-center justify-center z-5">
         {children}
         {isPossibleMove && !children && (
           <div className="w-8 h-8 rounded-full bg-black bg-opacity-40" />

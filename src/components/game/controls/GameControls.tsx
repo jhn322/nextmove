@@ -302,15 +302,15 @@ const GameControls = ({
                         <Button
                           onClick={() => onDifficultyChange(diff)}
                           variant={difficulty === diff ? "default" : "outline"}
-                          className="w-full justify-start pl-3 pr-2 text-xs font-medium"
+                          className="w-full justify-start gap-1.5 pl-2 pr-2 text-xs font-medium"
                           disabled={difficulty === diff}
                         >
                           <Icon
-                            className={`h-4 w-4 shrink-0  ${
+                            className={`h-4 w-4 shrink-0 ${
                               difficulty === diff ? "" : color
                             }`}
                           />
-                          <span className="capitalize">{diff}</span>
+                          <span className="truncate capitalize">{diff}</span>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>

@@ -25,6 +25,14 @@ import {
   Sun,
   Moon,
   Laptop,
+  Baby,
+  Gamepad2,
+  Swords,
+  Sword,
+  Crosshair,
+  Target,
+  Trophy,
+  Award,
 } from "lucide-react";
 import {
   Collapsible,
@@ -48,14 +56,54 @@ const Navbar = () => {
   const { setTheme } = useTheme();
 
   const playItems = [
-    { title: "Beginner Bot", href: "/play/beginner" },
-    { title: "Easy Bot", href: "/play/easy" },
-    { title: "Intermediate Bot", href: "/play/intermediate" },
-    { title: "Advanced Bot", href: "/play/advanced" },
-    { title: "Hard Bot", href: "/play/hard" },
-    { title: "Expert Bot", href: "/play/expert" },
-    { title: "Master Bot", href: "/play/master" },
-    { title: "Grandmaster Bot", href: "/play/grandmaster" },
+    {
+      title: "Beginner Bot",
+      href: "/play/beginner",
+      icon: Baby,
+      color: "text-emerald-500",
+    },
+    {
+      title: "Easy Bot",
+      href: "/play/easy",
+      icon: Gamepad2,
+      color: "text-green-500",
+    },
+    {
+      title: "Intermediate Bot",
+      href: "/play/intermediate",
+      icon: Swords,
+      color: "text-cyan-500",
+    },
+    {
+      title: "Advanced Bot",
+      href: "/play/advanced",
+      icon: Sword,
+      color: "text-blue-500",
+    },
+    {
+      title: "Hard Bot",
+      href: "/play/hard",
+      icon: Crosshair,
+      color: "text-violet-500",
+    },
+    {
+      title: "Expert Bot",
+      href: "/play/expert",
+      icon: Target,
+      color: "text-purple-500",
+    },
+    {
+      title: "Master Bot",
+      href: "/play/master",
+      icon: Award,
+      color: "text-orange-500",
+    },
+    {
+      title: "Grandmaster Bot",
+      href: "/play/grandmaster",
+      icon: Trophy,
+      color: "text-red-500",
+    },
   ];
 
   return (
@@ -88,7 +136,10 @@ const Navbar = () => {
                           href={item.href}
                           className="block select-none rounded-xl p-2.5 text-base font-medium hover:bg-accent hover:text-accent-foreground"
                         >
-                          {item.title}
+                          <span className="flex items-center gap-2">
+                            <item.icon className={`h-4 w-4 ${item.color}`} />
+                            {item.title}
+                          </span>
                         </Link>
                       </li>
                     ))}
@@ -241,7 +292,10 @@ const Navbar = () => {
                         className="block py-2 text-base font-medium text-muted-foreground hover:text-primary transition-colors"
                         onClick={() => setIsOpen(false)}
                       >
-                        {item.title}
+                        <span className="flex items-center gap-2">
+                          <item.icon className={`h-4 w-4 ${item.color}`} />
+                          {item.title}
+                        </span>
                       </Link>
                     ))}
                   </CollapsibleContent>
