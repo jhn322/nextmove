@@ -39,6 +39,7 @@ const VictoryModal = ({
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isRecycling, setIsRecycling] = useState(false);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate() || game.isGameOver()) {
@@ -72,14 +73,30 @@ const VictoryModal = ({
     return "Game Over!";
   }, [game, isResignation, playerColor]);
 
+  // Confetti on victory
   useEffect(() => {
     if (isOpen) {
       setMessage(renderWinnerText());
       setShowConfetti(isPlayerWinner());
+      setIsRecycling(true);
+
+      const recycleTimer = setTimeout(() => {
+        setIsRecycling(false);
+      }, 2000);
+
+      const confettiTimer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 4000);
+
+      return () => {
+        clearTimeout(recycleTimer);
+        clearTimeout(confettiTimer);
+      };
     } else {
       setShowConfetti(false);
+      setIsRecycling(false);
     }
-  }, [isOpen, renderWinnerText, isPlayerWinner]);
+  }, [isOpen, renderWinnerText, game, isPlayerWinner]);
 
   return (
     <>
@@ -87,9 +104,10 @@ const VictoryModal = ({
         <Confetti
           width={width}
           height={height}
-          recycle={false}
-          numberOfPieces={200}
-          gravity={0.3}
+          recycle={isRecycling}
+          numberOfPieces={400}
+          gravity={0.1}
+          style={{ position: "fixed", zIndex: 100 }}
         />
       )}
       <Dialog open={isOpen} onOpenChange={onClose}>
