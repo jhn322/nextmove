@@ -53,6 +53,13 @@ const VictoryModal = ({
     if (isResignation) {
       return "Are you sure you want to resign?";
     }
+    if (game.isDraw()) {
+      if (game.isStalemate()) return "Stalemate - game is a draw!";
+      if (game.isThreefoldRepetition()) return "Draw by repetition!";
+      if (game.isInsufficientMaterial())
+        return "Draw by insufficient material!";
+      return "Game is a draw!";
+    }
     if (game.isCheckmate() || game.isGameOver()) {
       const winningColor = game.turn() === "w" ? "Black" : "White";
       const coloredText =
@@ -61,16 +68,13 @@ const VictoryModal = ({
         ) : (
           <span className="text-red-400">Bot</span>
         );
-      return <>{coloredText} Won!</>;
+      return <>{coloredText} won!</>;
     }
-    if (game.isDraw()) {
-      if (game.isStalemate()) return "Draw by Stalemate!";
-      if (game.isThreefoldRepetition()) return "Draw by Repetition!";
-      if (game.isInsufficientMaterial())
-        return "Draw by Insufficient Material!";
-      return "Game is a Draw!";
-    }
-    return "Game Over!";
+    return (
+      <>
+        <span className="text-red-400">Bot</span> won by resignation!
+      </>
+    );
   }, [game, isResignation, playerColor]);
 
   // Confetti on victory

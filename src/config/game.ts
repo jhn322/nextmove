@@ -17,12 +17,44 @@ export const DEFAULT_STATE: SavedGameState = {
 };
 
 export const DIFFICULTY_LEVELS = {
-  beginner: 1,
-  easy: 3,
-  intermediate: 6,
-  advanced: 9,
-  hard: 13,
-  expert: 16,
-  master: 19,
-  grandmaster: 23,
+  beginner: {
+    skillLevel: 1,
+    depth: 1,
+    moveTime: 100,
+  },
+  easy: {
+    skillLevel: 3,
+    depth: 2,
+    moveTime: 200,
+  },
+  intermediate: {
+    skillLevel: 6,
+    depth: 3,
+    moveTime: 400,
+  },
+  advanced: {
+    skillLevel: 9,
+    depth: 4,
+    moveTime: 600,
+  },
+  hard: {
+    skillLevel: 13,
+    depth: 5,
+    moveTime: 800,
+  },
+  expert: {
+    skillLevel: 16,
+    depth: 6,
+    moveTime: 1000,
+  },
+  master: {
+    skillLevel: 19,
+    depth: 8,
+    moveTime: 1200,
+  },
+  grandmaster: {
+    skillLevel: 23,
+    depth: 10,
+    moveTime: 1500,
+  },
 } as const;

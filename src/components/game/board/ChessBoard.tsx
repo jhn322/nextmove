@@ -143,9 +143,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       handleDifficultyDialogOpen(newDifficulty);
     } else {
       if (engine) {
-        setSkillLevel(
-          DIFFICULTY_LEVELS[newDifficulty as keyof typeof DIFFICULTY_LEVELS]
-        );
+        setSkillLevel(newDifficulty);
       }
       handleGameReset();
       router.push(`/play/${newDifficulty.toLowerCase()}`);

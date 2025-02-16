@@ -10,26 +10,40 @@ export const useStockfish = (
 ) => {
   const [engine, setEngine] = useState<StockfishEngine | null>(null);
 
-  // Get skill level based on difficulty
-  const skillLevel =
-    DIFFICULTY_LEVELS[difficulty as keyof typeof DIFFICULTY_LEVELS] || 10;
+  // Get settings based on difficulty
+  const settings = DIFFICULTY_LEVELS[
+    difficulty as keyof typeof DIFFICULTY_LEVELS
+  ] || {
+    skillLevel: 10,
+    depth: 5,
+    moveTime: 1000,
+  };
 
-  const setSkillLevel = useCallback(
-    (level: number) => {
-      if (engine) {
-        engine.postMessage("setoption name Skill Level value " + level);
-      }
+  const setEngineOptions = useCallback(
+    (engine: StockfishEngine) => {
+      // Set skill level (0-20)
+      engine.postMessage(
+        "setoption name Skill Level value " + settings.skillLevel
+      );
+      // Consider multiple moves, making play less perfect
+      engine.postMessage("setoption name MultiPV value 3");
+      // Make engine more willing to accept draws/less aggressive
+      engine.postMessage("setoption name Contempt value 0");
     },
-    [engine]
+    [settings]
   );
 
   // Get bot's move
   const getBotMove = useCallback(() => {
     if (engine && !game.isGameOver()) {
+      // Send current position
       engine.postMessage("position fen " + game.fen());
-      engine.postMessage("go movetime 1000"); // Think for 1 second
+      // Start calculating with depth and time limits
+      engine.postMessage(
+        `go depth ${settings.depth} movetime ${settings.moveTime}`
+      );
     }
-  }, [engine, game]);
+  }, [engine, game, settings]);
 
   // Initialize Stockfish
   useEffect(() => {
@@ -49,16 +63,22 @@ export const useStockfish = (
 
     setEngine(stockfish);
     stockfish.postMessage("uci");
-    stockfish.postMessage("setoption name Skill Level value " + skillLevel);
+    setEngineOptions(stockfish);
 
     return () => {
       stockfish.terminate();
     };
-  }, [difficulty, makeMove, game, skillLevel]);
+  }, [difficulty, makeMove, game, setEngineOptions]);
 
   return {
     engine,
     getBotMove,
-    setSkillLevel,
+    setSkillLevel: (newDifficulty: string) => {
+      if (engine) {
+        const settings =
+          DIFFICULTY_LEVELS[newDifficulty as keyof typeof DIFFICULTY_LEVELS];
+        setEngineOptions(engine);
+      }
+    },
   };
 };
