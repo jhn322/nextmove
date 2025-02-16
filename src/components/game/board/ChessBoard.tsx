@@ -13,6 +13,7 @@ import GameControls from "@/components/game/controls/GameControls";
 import SquareComponent from "@/components/game/board/Square";
 import Piece from "@/components/game/board/Piece";
 import VictoryModal from "../modal/VictoryModal";
+import PlayerProfile from "./PlayerProfile";
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const router = useRouter();
@@ -293,12 +294,36 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   return (
     <>
       <main className="flex flex-col w-full lg:flex-row items-center lg:items-start justify-center gap-4 p-4 min-h-[calc(90vh-4rem)]">
-        <div className="w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
+        {/* Desktop sidebar profiles */}
+        <div
+          className="hidden lg:flex flex-col min-w-[240px] justify-between"
+          style={{ height: "89vh" }}
+        >
+          <PlayerProfile difficulty={difficulty} isBot={true} />
+          <PlayerProfile difficulty={difficulty} isBot={false} />
+        </div>
+
+        <div className="relative w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
+          {/* Mobile profiles - top profile only */}
+          <div className="flex lg:hidden mb-4">
+            <PlayerProfile difficulty={difficulty} isBot={true} />
+          </div>
+
+          {/* Chess board */}
           <div className="w-full aspect-square">
             <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
               {board.map((row, rowIndex) =>
-                row.map((piece, colIndex) => {
-                  const square = `${"abcdefgh"[colIndex]}${8 - rowIndex}`;
+                row.map((_, colIndex) => {
+                  // Calculate actual indices based on player color
+                  const actualRowIndex =
+                    playerColor === "w" ? rowIndex : 7 - rowIndex;
+                  const actualColIndex =
+                    playerColor === "w" ? colIndex : 7 - colIndex;
+                  const piece = board[actualRowIndex][actualColIndex];
+
+                  const square = `${"abcdefgh"[actualColIndex]}${
+                    8 - actualRowIndex
+                  }`;
                   const isKingInCheck =
                     game.isCheck() &&
                     piece?.type.toLowerCase() === "k" &&
@@ -308,24 +333,28 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     (square === lastMove.from || square === lastMove.to);
 
                   // Coordinate display logic
-                  const showRank = colIndex === 0;
-                  const showFile = rowIndex === 7;
+                  const showRank =
+                    playerColor === "w" ? colIndex === 0 : colIndex === 7;
+                  const showFile =
+                    playerColor === "w" ? rowIndex === 7 : rowIndex === 0;
                   const coordinate = showRank
-                    ? `${8 - rowIndex}`
+                    ? `${8 - actualRowIndex}`
                     : showFile
-                    ? `${"abcdefgh"[colIndex]}`
+                    ? `${"abcdefgh"[actualColIndex]}`
                     : "";
 
                   return (
                     <SquareComponent
                       key={`${rowIndex}-${colIndex}`}
-                      isLight={(rowIndex + colIndex) % 2 === 0}
+                      isLight={(actualRowIndex + actualColIndex) % 2 === 0}
                       isSelected={
-                        selectedPiece?.row === rowIndex &&
-                        selectedPiece?.col === colIndex
+                        selectedPiece?.row === actualRowIndex &&
+                        selectedPiece?.col === actualColIndex
                       }
                       isPossibleMove={possibleMoves.includes(square)}
-                      onClick={() => handleSquareClick(rowIndex, colIndex)}
+                      onClick={() =>
+                        handleSquareClick(actualRowIndex, actualColIndex)
+                      }
                       difficulty={difficulty}
                       isCheck={isKingInCheck}
                       isLastMove={isLastMove ?? false}
@@ -348,6 +377,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 })
               )}
             </div>
+          </div>
+
+          {/* Mobile profiles - bottom profile only */}
+          <div className="flex lg:hidden mt-4">
+            <PlayerProfile difficulty={difficulty} isBot={false} />
           </div>
         </div>
 
