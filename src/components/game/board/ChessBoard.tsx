@@ -2,11 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
-import {
-  STORAGE_KEY,
-  DEFAULT_STATE,
-  DIFFICULTY_LEVELS,
-} from "../../../config/game";
+import { STORAGE_KEY, DEFAULT_STATE } from "../../../config/game";
 import { useRouter } from "next/navigation";
 import { useChessGame } from "../../../hooks/useChessGame";
 import { useGameTimer } from "../../../hooks/useGameTimer";

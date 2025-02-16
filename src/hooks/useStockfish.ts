@@ -75,9 +75,13 @@ export const useStockfish = (
     getBotMove,
     setSkillLevel: (newDifficulty: string) => {
       if (engine) {
-        const settings =
+        const newSettings =
           DIFFICULTY_LEVELS[newDifficulty as keyof typeof DIFFICULTY_LEVELS];
-        setEngineOptions(engine);
+        if (newSettings) {
+          engine.postMessage(
+            "setoption name Skill Level value " + newSettings.skillLevel
+          );
+        }
       }
     },
   };
