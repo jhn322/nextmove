@@ -156,7 +156,24 @@ const GameControls = ({
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
           <CardHeader className="p-4 pb-2">
-            <CardTitle>Game Status</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Game Status
+              {game.isCheck() && (
+                <span className="text-yellow-500 font-medium">
+                  <span className="mr-1.5">•</span>Check!
+                </span>
+              )}
+              {game.isCheckmate() && (
+                <span className="text-red-500 font-medium">
+                  <span className="mr-1.5">•</span>Checkmate!
+                </span>
+              )}
+              {game.isDraw() && (
+                <span className="text-blue-500 font-medium">
+                  <span className="mr-1.5">•</span>Draw!
+                </span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="flex items-center gap-3">
@@ -194,15 +211,6 @@ const GameControls = ({
                 Black
               </span>
             </div>
-            {game.isCheck() && (
-              <p className="text-yellow-500 font-medium mt-2">Check!</p>
-            )}
-            {game.isCheckmate() && (
-              <p className="text-red-500 font-medium mt-2">Checkmate!</p>
-            )}
-            {game.isDraw() && (
-              <p className="text-blue-500 font-medium mt-2">Draw!</p>
-            )}
           </CardContent>
         </Card>
 
