@@ -8,7 +8,6 @@ import { useChessGame } from "../../../hooks/useChessGame";
 import { useGameTimer } from "../../../hooks/useGameTimer";
 import { useGameDialogs } from "../../../hooks/useGameDialogs";
 import { useMoveHandler } from "../../../hooks/useMoveHandler";
-import { CardTitle } from "@/components/ui/card";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
@@ -48,7 +47,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setPlayerColor,
   } = useChessGame(difficulty);
 
-  const { engine, getBotMove } = useStockfish(game, selectedBot, makeMove);
+  const { getBotMove } = useStockfish(game, selectedBot, makeMove);
 
   // Load saved state for piece set
   const [pieceSet, setPieceSet] = useState<string>(() => {

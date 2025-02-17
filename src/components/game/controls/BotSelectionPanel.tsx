@@ -23,7 +23,6 @@ import {
   Target,
   Trophy,
   Award,
-  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

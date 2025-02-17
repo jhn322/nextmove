@@ -51,11 +51,9 @@ interface GameControlsProps {
 }
 
 const GameControls = ({
-  difficulty,
   gameStatus,
   onResign,
   onColorChange,
-  onDifficultyChange,
   playerColor,
   gameTime,
   whiteTime,
@@ -69,7 +67,6 @@ const GameControls = ({
   history,
   pieceSet,
   onPieceSetChange,
-  onNewBot,
   handleNewBotDialog,
 }: GameControlsProps) => {
   const pieceSets = [

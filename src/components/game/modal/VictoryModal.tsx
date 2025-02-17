@@ -104,12 +104,6 @@ const VictoryModal = ({
     }
   }, [isOpen, renderWinnerText, game, isPlayerWinner]);
 
-  const handleNewBotClick = () => {
-    // Remove selected bot from localStorage
-    localStorage.removeItem("selectedBot");
-    onNewBot();
-  };
-
   return (
     <>
       {showConfetti && (
