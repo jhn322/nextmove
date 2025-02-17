@@ -88,6 +88,30 @@ body {
   border-radius: 0.5rem;
 }
 
+@keyframes pulse-border {
+  0%,
+  20%,
+  40%,
+  60%,
+  80%,
+  100% {
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    border-color: rgba(255, 255, 255, 1);
+  }
+}
+
+.pulse-border {
+  animation: pulse-border 12s ease-in-out 1;
+  border: 1px solid;
+  border-radius: 8px;
+}
+
 @layer base {
   * {
     @apply border-border;

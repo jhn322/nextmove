@@ -102,7 +102,7 @@ const Square = ({
       <div className="absolute inset-0 flex items-center justify-center z-5">
         {children}
         {isPossibleMove && !children && (
-          <div className="w-8 h-8 rounded-full bg-black bg-opacity-40" />
+          <div className="w-10 h-10 max-lg:w-8 max-lg:h-8 rounded-full bg-black bg-opacity-40" />
         )}
       </div>
     </div>
