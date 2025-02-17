@@ -75,32 +75,57 @@ const BotSelectionPanel = ({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-4">
+    <div className="space-y-4 rounded-lg border border-border bg-card p-3 lg:p-4">
       <Card className="border-0 shadow-none">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle>Select a {capitalizedDifficulty} Bot</CardTitle>
+        <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
+          <CardTitle className="text-lg lg:text-xl">
+            Select a {capitalizedDifficulty} Bot
+          </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0 space-y-4">
-          {bots.map((bot) => (
-            <div key={bot.name} className="flex items-center gap-4">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={bot.image} alt={bot.name} />
-                <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="text-sm font-medium">{bot.name}</div>
-                {/* <div className="text-xs text-muted-foreground">
-                  {bot.description}
-                </div> */}
-                <div className="text-xs">Rating: {bot.rating}</div>
+        <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
+          {/* Mobile Layout (< 1024px) */}
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {bots.map((bot) => (
+              <div
+                key={bot.name}
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors"
+              >
+                <Avatar className="h-10 w-10 flex-shrink-0">
+                  <AvatarImage src={bot.image} alt={bot.name} />
+                  <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">{bot.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Rating: {bot.rating}
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => onSelectBot(bot)}>
+                  Select
+                </Button>
               </div>
-              <Button onClick={() => onSelectBot(bot)}>Select</Button>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Desktop Layout (≥ 1024px) */}
+          <div className="hidden lg:block space-y-4">
+            {bots.map((bot) => (
+              <div key={bot.name} className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={bot.image} alt={bot.name} />
+                  <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="text-sm font-medium">{bot.name}</div>
+                  <div className="text-xs">Rating: {bot.rating}</div>
+                </div>
+                <Button onClick={() => onSelectBot(bot)}>Select</Button>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Difficulty Dropdown */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-sm font-medium">
           Difficulty category
@@ -147,5 +172,4 @@ const BotSelectionPanel = ({
     </div>
   );
 };
-
 export default BotSelectionPanel;
