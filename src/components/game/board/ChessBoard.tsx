@@ -334,9 +334,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   return (
     <>
-      <main className="flex flex-col w-full items-center justify-center gap-4 p-1 min-h-[calc(85vh-4rem)]">
+      <main className="flex flex-col w-full items-center justify-center gap-4 p-1 min-h-[calc(90vh-4rem)]">
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4">
-          <div className="relative w-full max-w-[min(85vh,85vw)] lg:max-w-[85vh]">
+          <div className="relative w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
             {/* Chess board and profiles */}
             <div className="flex mb-4 lg:hidden">
               <PlayerProfile
