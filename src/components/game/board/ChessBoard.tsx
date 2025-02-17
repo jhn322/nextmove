@@ -8,14 +8,24 @@ import { useChessGame } from "../../../hooks/useChessGame";
 import { useGameTimer } from "../../../hooks/useGameTimer";
 import { useGameDialogs } from "../../../hooks/useGameDialogs";
 import { useMoveHandler } from "../../../hooks/useMoveHandler";
+import { Button } from "@/components/ui/button";
+import { CardTitle } from "@/components/ui/card";
+import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
 import SquareComponent from "@/components/game/board/Square";
 import Piece from "@/components/game/board/Piece";
 import VictoryModal from "../modal/VictoryModal";
 import PlayerProfile from "./PlayerProfile";
+import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
+  const [selectedBot, setSelectedBot] = useState<Bot | null>(() => {
+    const savedBot = localStorage.getItem("selectedBot");
+    return savedBot ? JSON.parse(savedBot) : null;
+  });
+  const [showBotSelection, setShowBotSelection] = useState(!selectedBot);
+
   const router = useRouter();
 
   // Hooks ----------------------------------------------------
@@ -38,11 +48,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setPlayerColor,
   } = useChessGame(difficulty);
 
-  const { engine, getBotMove, setSkillLevel } = useStockfish(
-    game,
-    difficulty,
-    makeMove
-  );
+  const { engine, getBotMove } = useStockfish(game, selectedBot, makeMove);
 
   // Load saved state for piece set
   const [pieceSet, setPieceSet] = useState<string>(() => {
@@ -135,13 +141,23 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     pieceSet,
   ]);
 
+  useEffect(() => {
+    if (selectedBot) {
+      localStorage.setItem("selectedBot", JSON.stringify(selectedBot));
+    } else {
+      localStorage.removeItem("selectedBot");
+    }
+  }, [selectedBot]);
+
+  const handleSelectBot = (bot: Bot) => {
+    setSelectedBot(bot);
+    setShowBotSelection(false);
+  };
+
   const handleDifficultyChange = (newDifficulty: string) => {
     if (gameStarted) {
       handleDifficultyDialogOpen(newDifficulty);
     } else {
-      if (engine) {
-        setSkillLevel(newDifficulty);
-      }
       handleGameReset();
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
@@ -280,6 +296,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     handleModalClose();
     setTimeout(() => {
       handleGameReset();
+      setShowBotSelection(true); // Show bot selection again
       // highlight the difficulty section
       const difficultySection = document.querySelector(
         "[data-highlight-difficulty]"
@@ -291,121 +308,138 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }, 0);
   };
 
+  /* Bot Selection Panel */
+  <BotSelectionPanel
+    bots={BOTS_BY_DIFFICULTY[difficulty]}
+    onSelectBot={handleSelectBot}
+    difficulty={difficulty}
+  />;
+
   return (
     <>
-      <main className="flex flex-col w-full lg:flex-row items-center lg:items-start justify-center gap-4 p-4 min-h-[calc(90vh-4rem)]">
-        {/* Desktop sidebar profiles */}
-        <div
-          className="hidden lg:flex flex-col min-w-[240px] justify-between"
-          style={{ height: "89vh" }}
-        >
-          <PlayerProfile difficulty={difficulty} isBot={true} />
-          <PlayerProfile difficulty={difficulty} isBot={false} />
-        </div>
+      <main className="flex flex-col w-full items-center justify-center gap-4 p-1 min-h-[calc(85vh-4rem)]">
+        <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4">
+          <div className="relative w-full max-w-[min(85vh,85vw)] lg:max-w-[85vh]">
+            {/* Overlay when no bot is selected */}
+            {!selectedBot && (
+              <div className="absolute inset-0 bg-black bg-opacity-70 z-10 flex items-center justify-center">
+                <span className="text-white text-4xl">
+                  <CardTitle>Select a Bot to Play</CardTitle>
+                </span>
+              </div>
+            )}
+            {/* Chess board and profiles */}
+            <div className="flex mb-4 lg:hidden">
+              <PlayerProfile
+                difficulty={difficulty}
+                isBot={true}
+                selectedBot={selectedBot}
+              />
+            </div>
+            <div className="relative w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
+              <div className="w-full aspect-square">
+                <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
+                  {board.map((row, rowIndex) =>
+                    row.map((_, colIndex) => {
+                      const actualRowIndex =
+                        playerColor === "w" ? rowIndex : 7 - rowIndex;
+                      const actualColIndex =
+                        playerColor === "w" ? colIndex : 7 - colIndex;
+                      const piece = board[actualRowIndex][actualColIndex];
+                      const square = `${"abcdefgh"[actualColIndex]}${
+                        8 - actualRowIndex
+                      }`;
+                      const isKingInCheck =
+                        game.isCheck() &&
+                        piece?.type.toLowerCase() === "k" &&
+                        piece?.color === game.turn();
+                      const isLastMove =
+                        lastMove &&
+                        (square === lastMove.from || square === lastMove.to);
+                      const showRank =
+                        playerColor === "w" ? colIndex === 0 : colIndex === 7;
+                      const showFile =
+                        playerColor === "w" ? rowIndex === 7 : rowIndex === 0;
+                      const coordinate = showRank
+                        ? `${8 - actualRowIndex}`
+                        : showFile
+                        ? `${"abcdefgh"[actualColIndex]}`
+                        : "";
 
-        <div className="relative w-full max-w-[min(90vh,90vw)] lg:max-w-[89vh]">
-          {/* Mobile profiles - top profile only */}
-          <div className="flex lg:hidden mb-4">
-            <PlayerProfile difficulty={difficulty} isBot={true} />
-          </div>
-
-          {/* Chess board */}
-          <div className="w-full aspect-square">
-            <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
-              {board.map((row, rowIndex) =>
-                row.map((_, colIndex) => {
-                  // Calculate actual indices based on player color
-                  const actualRowIndex =
-                    playerColor === "w" ? rowIndex : 7 - rowIndex;
-                  const actualColIndex =
-                    playerColor === "w" ? colIndex : 7 - colIndex;
-                  const piece = board[actualRowIndex][actualColIndex];
-
-                  const square = `${"abcdefgh"[actualColIndex]}${
-                    8 - actualRowIndex
-                  }`;
-                  const isKingInCheck =
-                    game.isCheck() &&
-                    piece?.type.toLowerCase() === "k" &&
-                    piece?.color === game.turn();
-                  const isLastMove =
-                    lastMove &&
-                    (square === lastMove.from || square === lastMove.to);
-
-                  // Coordinate display logic
-                  const showRank =
-                    playerColor === "w" ? colIndex === 0 : colIndex === 7;
-                  const showFile =
-                    playerColor === "w" ? rowIndex === 7 : rowIndex === 0;
-                  const coordinate = showRank
-                    ? `${8 - actualRowIndex}`
-                    : showFile
-                    ? `${"abcdefgh"[actualColIndex]}`
-                    : "";
-
-                  return (
-                    <SquareComponent
-                      key={`${rowIndex}-${colIndex}`}
-                      isLight={(actualRowIndex + actualColIndex) % 2 === 0}
-                      isSelected={
-                        selectedPiece?.row === actualRowIndex &&
-                        selectedPiece?.col === actualColIndex
-                      }
-                      isPossibleMove={possibleMoves.includes(square)}
-                      onClick={() =>
-                        handleSquareClick(actualRowIndex, actualColIndex)
-                      }
-                      difficulty={difficulty}
-                      isCheck={isKingInCheck}
-                      isLastMove={isLastMove ?? false}
-                      showRank={showRank}
-                      showFile={showFile}
-                      coordinate={coordinate}
-                    >
-                      {piece && (
-                        <Piece
-                          type={
-                            piece.color === "w"
-                              ? piece.type.toUpperCase()
-                              : piece.type.toLowerCase()
+                      return (
+                        <SquareComponent
+                          key={`${rowIndex}-${colIndex}`}
+                          isLight={(actualRowIndex + actualColIndex) % 2 === 0}
+                          isSelected={
+                            selectedPiece?.row === actualRowIndex &&
+                            selectedPiece?.col === actualColIndex
                           }
-                          pieceSet={pieceSet}
-                        />
-                      )}
-                    </SquareComponent>
-                  );
-                })
-              )}
+                          isPossibleMove={possibleMoves.includes(square)}
+                          onClick={() =>
+                            handleSquareClick(actualRowIndex, actualColIndex)
+                          }
+                          difficulty={difficulty}
+                          isCheck={isKingInCheck}
+                          isLastMove={isLastMove ?? false}
+                          showRank={showRank}
+                          showFile={showFile}
+                          coordinate={coordinate}
+                        >
+                          {piece && (
+                            <Piece
+                              type={
+                                piece.color === "w"
+                                  ? piece.type.toUpperCase()
+                                  : piece.type.toLowerCase()
+                              }
+                              pieceSet={pieceSet}
+                            />
+                          )}
+                        </SquareComponent>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex mt-4 lg:hidden">
+              <PlayerProfile difficulty={difficulty} isBot={false} />
             </div>
           </div>
 
-          {/* Mobile profiles - bottom profile only */}
-          <div className="flex lg:hidden mt-4">
-            <PlayerProfile difficulty={difficulty} isBot={false} />
+          {/* Game Controls on the right */}
+          <div className="lg:flex flex-col min-w-[240px] justify-between">
+            {showBotSelection ? (
+              <BotSelectionPanel
+                bots={BOTS_BY_DIFFICULTY[difficulty]}
+                onSelectBot={handleSelectBot}
+                difficulty={difficulty}
+              />
+            ) : (
+              <div>
+                <GameControls
+                  difficulty={difficulty}
+                  gameStatus={getGameStatus()}
+                  onResign={handleResign}
+                  onColorChange={handleColorChange}
+                  onDifficultyChange={handleDifficultyChange}
+                  playerColor={playerColor}
+                  gameTime={gameTime}
+                  whiteTime={whiteTime}
+                  blackTime={blackTime}
+                  game={game}
+                  onMoveBack={moveBack}
+                  onMoveForward={moveForward}
+                  canMoveBack={currentMove > 1}
+                  canMoveForward={currentMove < history.length}
+                  onRematch={handleGameReset}
+                  history={history}
+                  pieceSet={pieceSet}
+                  onPieceSetChange={setPieceSet}
+                />
+              </div>
+            )}
           </div>
-        </div>
-
-        <div className="w-full lg:w-80 rounded-lg">
-          <GameControls
-            difficulty={difficulty}
-            gameStatus={getGameStatus()}
-            onResign={handleResign}
-            onColorChange={handleColorChange}
-            onDifficultyChange={handleDifficultyChange}
-            playerColor={playerColor}
-            gameTime={gameTime}
-            whiteTime={whiteTime}
-            blackTime={blackTime}
-            game={game}
-            onMoveBack={moveBack}
-            onMoveForward={moveForward}
-            canMoveBack={currentMove > 1}
-            canMoveForward={currentMove < history.length}
-            onRematch={handleGameReset}
-            history={history}
-            pieceSet={pieceSet}
-            onPieceSetChange={setPieceSet}
-          />
         </div>
       </main>
 

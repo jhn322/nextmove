@@ -434,14 +434,14 @@ const GameControls = ({
               {/* Difficulty Dropdown */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  Difficulty
+                  Difficulty category
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="h-4 w-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Change the bot opponent&apos;s skill level.</p>
+                        <p>Change the skill level category of the bot.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

@@ -5,6 +5,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bot } from "@/components/game/data/bots";
 
 interface PlayerProfileProps {
   difficulty: string;
@@ -12,6 +13,7 @@ interface PlayerProfileProps {
   rating?: number;
   capturedPieces?: string[];
   flag?: string;
+  selectedBot?: Bot | null;
 }
 
 const PlayerProfile = ({
@@ -20,56 +22,45 @@ const PlayerProfile = ({
   rating = 1500,
   capturedPieces = [],
   flag = "US",
+  selectedBot,
 }: PlayerProfileProps) => {
-  const difficultyAnimals = {
-    beginner: "deer",
-    easy: "rabbit",
-    intermediate: "fox",
-    advanced: "wolf",
-    hard: "lion",
-    expert: "tiger",
-    master: "eagle",
-    grandmaster: "goat",
-  };
-
   const capitalizedDifficulty =
     difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
   return (
-    <Card className="w-full sm:w-[240px] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <CardHeader className="flex flex-row items-center gap-3 space-y-0 p-4">
-        <Avatar className="h-12 w-12 sm:h-14 sm:w-14">
+    <Card className=" sm:w-[180px] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <CardHeader className="flex flex-row items-center gap-2 space-y-0 p-2">
+        <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
           <AvatarImage
-            src={
+            src={isBot && selectedBot ? selectedBot.image : "/default-pfp.png"}
+            alt={
               isBot
-                ? `/animals/${
-                    difficultyAnimals[
-                      difficulty as keyof typeof difficultyAnimals
-                    ]
-                  }.png`
-                : "/default-pfp.png"
+                ? selectedBot?.name || `${capitalizedDifficulty} Bot`
+                : "Player"
             }
-            alt={isBot ? `${capitalizedDifficulty} Bot` : "Player"}
             className="object-contain bg-gray-800 dark:bg-gray-700"
           />
           <AvatarFallback>
             {isBot ? difficulty.substring(0, 2).toUpperCase() : "P"}
           </AvatarFallback>
         </Avatar>
-        <div className="flex flex-col gap-1">
-          <div className="text-sm font-medium leading-none">
-            {isBot ? `${capitalizedDifficulty} Bot` : "Player"}
+        <div className="flex flex-col gap-0.5">
+          <div className="text-[12px] font-medium leading-none">
+            {isBot
+              ? selectedBot?.name || `${capitalizedDifficulty} Bot`
+              : "Player"}
           </div>
-          <CardDescription className="text-xs">
-            Rating: {rating} {flag && `• ${flag}`}
+          <CardDescription className="text-[11px]">
+            Rating: {isBot && selectedBot ? selectedBot.rating : rating}{" "}
+            {flag && `• ${flag}`}
           </CardDescription>
         </div>
       </CardHeader>
       {capturedPieces.length > 0 && (
-        <CardContent className="p-4 pt-0">
-          <div className="flex flex-wrap gap-1">
+        <CardContent className="p-1 pt-0">
+          <div className="flex flex-wrap gap-0.5">
             {capturedPieces.map((piece, index) => (
-              <div key={index} className="w-4 h-4"></div>
+              <div key={index} className="w-2 h-2"></div>
             ))}
           </div>
         </CardContent>
