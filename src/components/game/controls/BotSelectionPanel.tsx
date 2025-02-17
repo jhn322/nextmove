@@ -60,8 +60,15 @@ const BotSelectionPanel = ({
     "master",
     "grandmaster",
   ];
+
+  // Determine if the word starts with a vowel
+  const getGrammar = (word: string) => {
+    return /^[aeiou]/i.test(word) ? "an" : "a";
+  };
+
   const capitalizedDifficulty =
     difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  const grammar = getGrammar(difficulty);
 
   const difficultyIcons = {
     beginner: { icon: Baby, color: "text-emerald-500" },
@@ -79,7 +86,7 @@ const BotSelectionPanel = ({
       <Card className="border-0 shadow-none">
         <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
           <CardTitle className="text-lg lg:text-xl">
-            Select a {capitalizedDifficulty} Bot
+            Select {grammar} {capitalizedDifficulty} Bot
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
