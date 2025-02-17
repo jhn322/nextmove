@@ -23,6 +23,7 @@ interface VictoryModalProps {
   isResignation?: boolean;
   onConfirmResign?: () => void;
   playerColor: "w" | "b";
+  handleNewBotDialog: () => void;
 }
 
 const VictoryModal = ({
@@ -35,6 +36,7 @@ const VictoryModal = ({
   isResignation = false,
   onConfirmResign,
   playerColor,
+  handleNewBotDialog,
 }: VictoryModalProps) => {
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
@@ -101,6 +103,12 @@ const VictoryModal = ({
       setIsRecycling(false);
     }
   }, [isOpen, renderWinnerText, game, isPlayerWinner]);
+
+  const handleNewBotClick = () => {
+    // Remove selected bot from localStorage
+    localStorage.removeItem("selectedBot");
+    onNewBot();
+  };
 
   return (
     <>
@@ -171,7 +179,11 @@ const VictoryModal = ({
                 >
                   Rematch
                 </Button>
-                <Button onClick={onNewBot} variant="outline" className="flex-1">
+                <Button
+                  onClick={handleNewBotDialog}
+                  variant="outline"
+                  className="flex-1"
+                >
                   New Bot
                 </Button>
               </>

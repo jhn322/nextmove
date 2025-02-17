@@ -4,6 +4,7 @@ export const useGameDialogs = () => {
   const [showResignDialog, setShowResignDialog] = useState(false);
   const [showDifficultyDialog, setShowDifficultyDialog] = useState(false);
   const [showColorDialog, setShowColorDialog] = useState(false);
+  const [showNewBotDialog, setShowNewBotDialog] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<string | null>(
     null
   );
@@ -15,6 +16,7 @@ export const useGameDialogs = () => {
     setShowResignDialog(false);
     setShowDifficultyDialog(false);
     setShowColorDialog(false);
+    setShowNewBotDialog(false);
     setShowVictoryModal(false);
     setIsResignationModal(false);
   };
@@ -45,6 +47,11 @@ export const useGameDialogs = () => {
     });
   };
 
+  const handleNewBotDialog = () => {
+    localStorage.removeItem("selectedBot");
+    setShowNewBotDialog(true);
+  };
+
   return {
     showResignDialog,
     showDifficultyDialog,
@@ -66,5 +73,8 @@ export const useGameDialogs = () => {
     setShowColorDialog,
     setShowVictoryModal,
     setIsResignationModal,
+    showNewBotDialog,
+    setShowNewBotDialog,
+    handleNewBotDialog,
   };
 };

@@ -8,7 +8,6 @@ import { useChessGame } from "../../../hooks/useChessGame";
 import { useGameTimer } from "../../../hooks/useGameTimer";
 import { useGameDialogs } from "../../../hooks/useGameDialogs";
 import { useMoveHandler } from "../../../hooks/useMoveHandler";
-import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import GameDialogs from "../dialogs/GameDialogs";
@@ -89,6 +88,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     handleConfirmResign,
     setShowVictoryModal,
     setIsResignationModal,
+    showNewBotDialog,
+    setShowNewBotDialog,
+    handleNewBotDialog,
   } = useGameDialogs();
 
   const {
@@ -308,11 +310,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }, 0);
   };
 
+  const confirmNewBot = () => {
+    // Remove selected bot from localStorage
+    localStorage.removeItem("selectedBot");
+
+    // Reset game and show bot selection
+    handleModalClose();
+    setSelectedBot(null);
+    setShowBotSelection(true);
+    handleGameReset();
+
+    // Close dialog if it was open
+    setShowNewBotDialog(false);
+  };
+
   /* Bot Selection Panel */
   <BotSelectionPanel
     bots={BOTS_BY_DIFFICULTY[difficulty]}
     onSelectBot={handleSelectBot}
     difficulty={difficulty}
+    onDifficultyChange={handleDifficultyChange}
   />;
 
   return (
@@ -320,8 +337,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       <main className="flex flex-col w-full items-center justify-center gap-4 p-1 min-h-[calc(85vh-4rem)]">
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4">
           <div className="relative w-full max-w-[min(85vh,85vw)] lg:max-w-[85vh]">
-            {/* Overlay when no bot is selected */}
-            {!selectedBot && (
+            {/* Show overlay when no bot is selected OR when bot selection is showing */}
+            {(!selectedBot || showBotSelection) && (
               <div className="absolute inset-0 bg-black bg-opacity-70 z-10 flex items-center justify-center">
                 <span className="text-white text-4xl">
                   <CardTitle>Select a Bot to Play</CardTitle>
@@ -414,6 +431,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 bots={BOTS_BY_DIFFICULTY[difficulty]}
                 onSelectBot={handleSelectBot}
                 difficulty={difficulty}
+                onDifficultyChange={handleDifficultyChange}
               />
             ) : (
               <div>
@@ -436,6 +454,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                   history={history}
                   pieceSet={pieceSet}
                   onPieceSetChange={setPieceSet}
+                  onNewBot={handleNewBot}
+                  handleNewBotDialog={handleNewBotDialog}
                 />
               </div>
             )}
@@ -453,13 +473,16 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         isResignation={isResignationModal}
         onConfirmResign={handleConfirmResign}
         playerColor={playerColor}
+        handleNewBotDialog={handleNewBotDialog}
       />
 
       <GameDialogs
         showDifficultyDialog={showDifficultyDialog}
         showColorDialog={showColorDialog}
+        showNewBotDialog={showNewBotDialog}
         onConfirmDifficultyChange={handleConfirmDifficultyChange}
         onConfirmColorChange={handleConfirmColorChange}
+        onConfirmNewBot={confirmNewBot}
         onCancelDialog={handleCancelDialog}
       />
     </>

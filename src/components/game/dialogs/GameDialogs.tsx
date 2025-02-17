@@ -12,17 +12,21 @@ import {
 interface GameDialogsProps {
   showDifficultyDialog: boolean;
   showColorDialog: boolean;
+  showNewBotDialog: boolean;
   onConfirmDifficultyChange: () => void;
   onConfirmColorChange: () => void;
   onCancelDialog: () => void;
+  onConfirmNewBot: () => void;
 }
 
 const GameDialogs = ({
   showDifficultyDialog,
   showColorDialog,
+  showNewBotDialog,
   onConfirmDifficultyChange,
   onConfirmColorChange,
   onCancelDialog,
+  onConfirmNewBot,
 }: GameDialogsProps) => {
   return (
     <>
@@ -58,6 +62,26 @@ const GameDialogs = ({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={onConfirmColorChange}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showNewBotDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Choose New Bot?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will reset the current game and let you select a new bot.
+              Your current game will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={onCancelDialog}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={onConfirmNewBot}>
               Continue
             </AlertDialogAction>
           </AlertDialogFooter>

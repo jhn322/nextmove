@@ -16,15 +16,8 @@ import {
   Crown,
   Flag,
   Info,
-  Baby,
-  Gamepad2,
-  Swords,
-  Sword,
-  Crosshair,
-  Target,
-  Trophy,
-  Award,
   Palette,
+  UserPlus,
 } from "lucide-react";
 import {
   Tooltip,
@@ -53,6 +46,8 @@ interface GameControlsProps {
   history: { fen: string; lastMove: { from: string; to: string } | null }[];
   pieceSet: string;
   onPieceSetChange: (set: string) => void;
+  onNewBot: () => void;
+  handleNewBotDialog: () => void;
 }
 
 const GameControls = ({
@@ -74,17 +69,9 @@ const GameControls = ({
   history,
   pieceSet,
   onPieceSetChange,
+  onNewBot,
+  handleNewBotDialog,
 }: GameControlsProps) => {
-  const difficulties = [
-    "beginner",
-    "easy",
-    "intermediate",
-    "advanced",
-    "hard",
-    "expert",
-    "master",
-    "grandmaster",
-  ];
   const pieceSets = [
     "california",
     "cardinal",
@@ -116,17 +103,6 @@ const GameControls = ({
       scrollArea.scrollTop = scrollArea.scrollHeight;
     }
   }, [history.length]);
-
-  const difficultyIcons = {
-    beginner: { icon: Baby, color: "text-emerald-500" },
-    easy: { icon: Gamepad2, color: "text-green-500" },
-    intermediate: { icon: Swords, color: "text-cyan-500" },
-    advanced: { icon: Sword, color: "text-blue-500" },
-    hard: { icon: Crosshair, color: "text-violet-500" },
-    expert: { icon: Target, color: "text-purple-500" },
-    master: { icon: Award, color: "text-orange-500" },
-    grandmaster: { icon: Trophy, color: "text-red-500" },
-  };
 
   // Format time from seconds to MM:SS
   const formatTime = (seconds: number) => {
@@ -407,6 +383,16 @@ const GameControls = ({
               </Button>
             )}
 
+            {/* New Bot Button */}
+            <Button
+              onClick={handleNewBotDialog}
+              variant="secondary"
+              className="w-full py-6 text-lg font-medium flex items-center justify-center gap-2"
+            >
+              <UserPlus className="h-5 w-5" />
+              New Bot
+            </Button>
+
             {/* Resign Button */}
             <Button
               onClick={onResign}
@@ -431,59 +417,6 @@ const GameControls = ({
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="flex flex-col gap-4">
-              {/* Difficulty Dropdown */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  Difficulty category
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Change the skill level category of the bot.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <Select value={difficulty} onValueChange={onDifficultyChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue>
-                      <div className="flex items-center gap-2">
-                        {(() => {
-                          const { icon: Icon, color } =
-                            difficultyIcons[
-                              difficulty as keyof typeof difficultyIcons
-                            ];
-                          return (
-                            <Icon
-                              className={`h-4 w-4 flex-shrink-0 ${color}`}
-                            />
-                          );
-                        })()}
-                        <span className="capitalize truncate">
-                          {difficulty}
-                        </span>
-                      </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {difficulties.map((diff) => {
-                      const { icon: Icon, color } =
-                        difficultyIcons[diff as keyof typeof difficultyIcons];
-                      return (
-                        <SelectItem key={diff} value={diff}>
-                          <div className="flex items-center gap-2">
-                            <Icon className={`h-4 w-4 ${color}`} />
-                            <span className="capitalize">{diff}</span>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Piece Set Dropdown */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
