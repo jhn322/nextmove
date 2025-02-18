@@ -41,6 +41,7 @@ interface BotSelectionPanelProps {
   onSelectBot: (bot: Bot) => void;
   difficulty: string;
   onDifficultyChange: (difficulty: string) => void;
+  selectedBot: Bot | null;
 }
 
 const BotSelectionPanel = ({
@@ -48,6 +49,7 @@ const BotSelectionPanel = ({
   onSelectBot,
   difficulty,
   onDifficultyChange,
+  selectedBot,
 }: BotSelectionPanelProps) => {
   const difficulties = [
     "beginner",
@@ -106,8 +108,14 @@ const BotSelectionPanel = ({
                     Rating: {bot.rating}
                   </div>
                 </div>
-                <Button size="sm" onClick={() => onSelectBot(bot)}>
-                  Select
+                <Button
+                  size="sm"
+                  onClick={() => onSelectBot(bot)}
+                  variant={
+                    selectedBot?.name === bot.name ? "default" : "outline"
+                  }
+                >
+                  {selectedBot?.name === bot.name ? "Selected" : "Select"}
                 </Button>
               </div>
             ))}
@@ -125,7 +133,14 @@ const BotSelectionPanel = ({
                   <div className="text-sm font-medium">{bot.name}</div>
                   <div className="text-xs">Rating: {bot.rating}</div>
                 </div>
-                <Button onClick={() => onSelectBot(bot)}>Select</Button>
+                <Button
+                  onClick={() => onSelectBot(bot)}
+                  variant={
+                    selectedBot?.name === bot.name ? "default" : "outline"
+                  }
+                >
+                  {selectedBot?.name === bot.name ? "Selected" : "Select"}
+                </Button>
               </div>
             ))}
           </div>

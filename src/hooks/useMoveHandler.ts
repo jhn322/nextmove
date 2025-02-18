@@ -12,7 +12,9 @@ export const useMoveHandler = (
   setCurrentMove: (fn: (prev: number) => number) => void,
   setLastMove: (move: { from: string; to: string } | null) => void,
   setGameStarted: (started: boolean) => void,
-  getBotMove: () => void
+  getBotMove: () => void,
+  setShowBotSelection: (show: boolean) => void,
+  showBotSelection: boolean
 ) => {
   const [selectedPiece, setSelectedPiece] = useState<{
     row: number;
@@ -41,6 +43,11 @@ export const useMoveHandler = (
         try {
           const move = game.move({ from, to, promotion: "q" });
           if (move) {
+            // Hide bot selection panel when first move is made
+            if (showBotSelection) {
+              setShowBotSelection(false);
+            }
+
             setBoard(game.board());
             setHistory((prev) => [
               ...prev,
@@ -76,6 +83,8 @@ export const useMoveHandler = (
       setLastMove,
       setGameStarted,
       getBotMove,
+      showBotSelection,
+      setShowBotSelection,
     ]
   );
 

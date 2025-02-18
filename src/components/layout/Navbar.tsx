@@ -57,49 +57,49 @@ const Navbar = () => {
 
   const playItems = [
     {
-      title: "Beginner Bot",
+      title: "Beginner",
       href: "/play/beginner",
       icon: Baby,
       color: "text-emerald-500",
     },
     {
-      title: "Easy Bot",
+      title: "Easy",
       href: "/play/easy",
       icon: Gamepad2,
       color: "text-green-500",
     },
     {
-      title: "Intermediate Bot",
+      title: "Intermediate",
       href: "/play/intermediate",
       icon: Swords,
       color: "text-cyan-500",
     },
     {
-      title: "Advanced Bot",
+      title: "Advanced",
       href: "/play/advanced",
       icon: Sword,
       color: "text-blue-500",
     },
     {
-      title: "Hard Bot",
+      title: "Hard",
       href: "/play/hard",
       icon: Crosshair,
       color: "text-violet-500",
     },
     {
-      title: "Expert Bot",
+      title: "Expert",
       href: "/play/expert",
       icon: Target,
       color: "text-purple-500",
     },
     {
-      title: "Master Bot",
+      title: "Master",
       href: "/play/master",
       icon: Award,
       color: "text-orange-500",
     },
     {
-      title: "Grandmaster Bot",
+      title: "Grandmaster",
       href: "/play/grandmaster",
       icon: Trophy,
       color: "text-red-500",

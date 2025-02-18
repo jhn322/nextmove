@@ -35,7 +35,7 @@ const VictoryModal = ({
   isResignation = false,
   onConfirmResign,
   playerColor,
-  handleNewBotDialog,
+  onNewBot,
 }: VictoryModalProps) => {
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
@@ -172,11 +172,7 @@ const VictoryModal = ({
                 >
                   Rematch
                 </Button>
-                <Button
-                  onClick={handleNewBotDialog}
-                  variant="outline"
-                  className="flex-1"
-                >
+                <Button onClick={onNewBot} variant="outline" className="flex-1">
                   New Bot
                 </Button>
               </>

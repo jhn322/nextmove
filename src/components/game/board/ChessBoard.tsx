@@ -21,9 +21,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [shouldPulse, setShouldPulse] = useState(false);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(() => {
     const savedBot = localStorage.getItem("selectedBot");
-    return savedBot ? JSON.parse(savedBot) : null;
+    // If there's a saved bot, use it, otherwise use the first bot from the difficulty category
+    return savedBot ? JSON.parse(savedBot) : BOTS_BY_DIFFICULTY[difficulty][0];
   });
-  const [showBotSelection, setShowBotSelection] = useState(!selectedBot);
+  const [showBotSelection, setShowBotSelection] = useState(true);
 
   const router = useRouter();
 
@@ -109,7 +110,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setCurrentMove,
     setLastMove,
     setGameStarted,
-    getBotMove
+    getBotMove,
+    setShowBotSelection,
+    showBotSelection
   );
   // -----------------------------------------------------------
 
@@ -339,6 +342,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     onSelectBot={handleSelectBot}
     difficulty={difficulty}
     onDifficultyChange={handleDifficultyChange}
+    selectedBot={selectedBot}
   />;
 
   return (
@@ -358,7 +362,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
             <div className="relative w-full aspect-square">
               {/* Show overlay when no bot is selected OR when bot selection is showing */}
               {(!selectedBot || showBotSelection) && (
-                <div className="absolute inset-0  z-10 rounded-lg flex items-center justify-center">
+                <div className="absolute  z-10 rounded-lg flex items-center justify-center">
                   <span className="text-white text-4xl">
                     {/* <CardTitle>Select a Bot to Play</CardTitle> */}
                   </span>
@@ -471,6 +475,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                   onSelectBot={handleSelectBot}
                   difficulty={difficulty}
                   onDifficultyChange={handleDifficultyChange}
+                  selectedBot={selectedBot}
                 />
               </div>
             ) : (
