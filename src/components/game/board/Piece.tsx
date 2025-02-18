@@ -54,9 +54,9 @@ const Piece = ({
       <Image
         src={getPieceSVG(type)}
         alt={`${type} chess piece`}
-        width={80}
-        height={80}
-        className="w-[80%] h-[80%] object-contain"
+        width={90}
+        height={90}
+        className="w-[90%] h-[90%] object-contain"
         priority
       />
     </div>
