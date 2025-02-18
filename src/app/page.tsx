@@ -203,11 +203,12 @@ export default function Home() {
                 The Ultimate Chess Challenge
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Can you conquer all eight levels of bot opponents? Start your
-                journey as a beginner and work your way up to face the
-                formidable Grandmaster bot. Each level presents unique
-                challenges and learning opportunities. Do you have what it takes
-                to become a true chess master?
+                Can you conquer all eight categories of bot opponents? With a
+                total of 48 unique bots, your journey begins at the beginner
+                level and progresses toward the formidable Grandmaster bot. Each
+                category presents new challenges and learning opportunities. Do
+                you have what it takes to master them all and prove yourself as
+                a true chess master?
               </p>
             </div>
           </div>
