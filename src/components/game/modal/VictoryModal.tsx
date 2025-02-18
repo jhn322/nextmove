@@ -30,7 +30,6 @@ const VictoryModal = ({
   isOpen,
   onClose,
   onRematch,
-  onNewBot,
   game,
   difficulty,
   isResignation = false,
