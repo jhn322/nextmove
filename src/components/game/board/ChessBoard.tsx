@@ -519,6 +519,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         onConfirmResign={handleConfirmResign}
         playerColor={playerColor}
         handleNewBotDialog={handleNewBotDialog}
+        selectedBot={selectedBot}
+        playerName="Player"
       />
 
       <GameDialogs

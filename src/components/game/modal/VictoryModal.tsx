@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { Bot } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -8,9 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { X } from "lucide-react";
 import { Chess } from "chess.js";
-import { Crown } from "lucide-react";
 import Confetti from "react-confetti";
 
 interface VictoryModalProps {
@@ -24,6 +24,8 @@ interface VictoryModalProps {
   onConfirmResign?: () => void;
   playerColor: "w" | "b";
   handleNewBotDialog: () => void;
+  selectedBot: Bot | null;
+  playerName: string;
 }
 
 const VictoryModal = ({
@@ -36,6 +38,8 @@ const VictoryModal = ({
   onConfirmResign,
   playerColor,
   onNewBot,
+  selectedBot,
+  playerName,
 }: VictoryModalProps) => {
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
@@ -63,22 +67,25 @@ const VictoryModal = ({
     }
     if (game.isCheckmate() || game.isGameOver()) {
       const winningColor = game.turn() === "w" ? "Black" : "White";
-      const coloredText =
-        winningColor.toLowerCase() === playerColor ? (
-          <span className="text-blue-400">Player</span>
-        ) : (
-          <span className="text-red-400">Bot</span>
-        );
-      return <>{coloredText} won!</>;
+      const isPlayerWon = winningColor.toLowerCase() === playerColor;
+      const winnerName = isPlayerWon ? playerName : selectedBot?.name || "Bot";
+      return (
+        <>
+          <span className={isPlayerWon ? "text-blue-400" : "text-red-400"}>
+            {winnerName}
+          </span>{" "}
+          won!
+        </>
+      );
     }
     return (
       <>
-        <span className="text-red-400">Bot</span> won by resignation!
+        <span className="text-red-400">{selectedBot?.name || "Bot"}</span> won
+        by resignation!
       </>
     );
-  }, [game, isResignation, playerColor]);
+  }, [game, isResignation, playerColor, selectedBot, playerName]);
 
-  // Confetti on victory
   useEffect(() => {
     if (isOpen) {
       setMessage(renderWinnerText());
@@ -116,50 +123,66 @@ const VictoryModal = ({
         />
       )}
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </button>
-          <DialogHeader>
-            <DialogTitle className="text-center text-2xl font-bold">
+        <DialogContent className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg">
+          <div className="absolute right-2 top-2 sm:right-4 sm:top-4">
+            <button
+              onClick={onClose}
+              className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+            ></button>
+          </div>
+          <DialogHeader className="mt-1">
+            <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
               {message}
             </DialogTitle>
             {!isResignation && (
-              <DialogDescription className="text-center pt-4 space-y-2">
-                <div className="flex items-center justify-center gap-2 text-lg font-semibold text-foreground">
-                  <Crown className="h-6 w-6 text-blue-400" strokeWidth={2} />
-                  <span>Player</span>
-                  <span className="text-muted-foreground">
-                    ({playerColor === "w" ? "White" : "Black"})
-                  </span>
+              <DialogDescription className="text-center pt-2 sm:pt-4 space-y-2">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold text-foreground">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
+                      <AvatarImage src="/default-pfp.png" alt="Player" />
+                      <AvatarFallback>P</AvatarFallback>
+                    </Avatar>
+                    <span>{playerName}</span>
+                    <span className="text-muted-foreground text-sm sm:text-base">
+                      ({playerColor === "w" ? "White" : "Black"})
+                    </span>
+                  </div>
                   <span className="text-muted-foreground mx-2">vs</span>
-                  <span>Bot</span>
-                  <span className="text-muted-foreground">
-                    ({playerColor === "w" ? "Black" : "White"})
-                  </span>
-                  <Crown className="h-6 w-6 text-red-400" strokeWidth={2} />
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
+                      <AvatarImage
+                        src={selectedBot?.image}
+                        alt={selectedBot?.name}
+                      />
+                      <AvatarFallback>B</AvatarFallback>
+                    </Avatar>
+                    <span>{selectedBot?.name || "Bot"}</span>
+                    <span className="text-muted-foreground text-sm sm:text-base">
+                      ({playerColor === "w" ? "Black" : "White"})
+                    </span>
+                  </div>
                 </div>
-                <div className="text-base font-medium text-muted-foreground capitalize">
+                <div className="text-sm sm:text-base font-medium text-muted-foreground capitalize">
                   {difficulty} Difficulty
                 </div>
               </DialogDescription>
             )}
           </DialogHeader>
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-2 sm:gap-3 pt-4">
             {isResignation ? (
               <>
                 <Button
                   onClick={onConfirmResign}
                   variant="destructive"
-                  className="flex-1"
+                  className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
                   Confirm
                 </Button>
-                <Button onClick={onClose} variant="outline" className="flex-1">
+                <Button
+                  onClick={onClose}
+                  variant="outline"
+                  className="flex-1 text-sm sm:text-base py-2 h-auto"
+                >
                   Cancel
                 </Button>
               </>
@@ -168,11 +191,15 @@ const VictoryModal = ({
                 <Button
                   onClick={onRematch}
                   variant="default"
-                  className="flex-1"
+                  className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
                   Rematch
                 </Button>
-                <Button onClick={onNewBot} variant="outline" className="flex-1">
+                <Button
+                  onClick={onNewBot}
+                  variant="outline"
+                  className="flex-1 text-sm sm:text-base py-2 h-auto"
+                >
                   New Bot
                 </Button>
               </>
