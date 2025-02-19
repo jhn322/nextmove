@@ -123,14 +123,22 @@ const PlayerProfile = ({
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-0.5">
-            <div className="text-[12px] font-medium leading-none">
-              {isBot
-                ? selectedBot?.name || `${capitalizedDifficulty} Bot`
-                : "Player"}
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-medium leading-none">
+                {isBot
+                  ? selectedBot?.name || `${capitalizedDifficulty} Bot`
+                  : "Player"}
+              </span>
+              {isBot && selectedBot && (
+                <img
+                  src={selectedBot.flag}
+                  alt={`${selectedBot.name} flag`}
+                  className="w-5 h-3"
+                />
+              )}
             </div>
             <CardDescription className="text-[11px]">
-              Rating: {isBot && selectedBot ? selectedBot.rating : rating}{" "}
-              {flag && `• ${flag}`}
+              Rating: {isBot && selectedBot ? selectedBot.rating : rating}
             </CardDescription>
           </div>
         </CardHeader>

@@ -34,6 +34,7 @@ interface Bot {
   skillLevel: number;
   depth: number;
   moveTime: number;
+  flag: string;
 }
 
 interface BotSelectionPanelProps {
@@ -107,6 +108,11 @@ const BotSelectionPanel = ({
                   <div className="text-xs text-muted-foreground">
                     Rating: {bot.rating}
                   </div>
+                  <img
+                    src={bot.flag}
+                    alt={`${bot.name} flag`}
+                    className="w-4 h-4 mt-1"
+                  />
                 </div>
                 <Button
                   size="sm"
@@ -130,7 +136,14 @@ const BotSelectionPanel = ({
                   <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="text-sm font-medium">{bot.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{bot.name}</span>
+                    <img
+                      src={bot.flag}
+                      alt={`${bot.name} flag`}
+                      className="w-5 h-3"
+                    />
+                  </div>
                   <div className="text-xs">Rating: {bot.rating}</div>
                 </div>
                 <Button

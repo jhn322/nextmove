@@ -75,6 +75,14 @@ const VictoryModal = ({
             {winnerName}
           </span>{" "}
           won!
+          <br />
+          {isPlayerWon ? (
+            <span className="text-green-500">
+              Congratulations on your victory!
+            </span>
+          ) : (
+            <span className="text-yellow-500 ">You'll get them next time!</span>
+          )}
         </>
       );
     }

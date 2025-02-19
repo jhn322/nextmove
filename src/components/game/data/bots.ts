@@ -6,6 +6,7 @@ export interface Bot {
   skillLevel: number;
   depth: number;
   moveTime: number;
+  flag: string;
 }
 
 export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
@@ -18,6 +19,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 1,
       depth: 1,
       moveTime: 100,
+      flag: "/flags/lv.png",
     },
     {
       name: "Milo",
@@ -27,6 +29,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 2,
       depth: 1,
       moveTime: 150,
+      flag: "/flags/ua.png",
     },
     {
       name: "Luna",
@@ -36,6 +39,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 3,
       depth: 2,
       moveTime: 200,
+      flag: "/flags/rs.png",
     },
     {
       name: "Finn",
@@ -45,6 +49,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 4,
       depth: 2,
       moveTime: 250,
+      flag: "/flags/ad.png",
     },
     {
       name: "Juno",
@@ -54,6 +59,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 5,
       depth: 3,
       moveTime: 300,
+      flag: "/flags/ps.png",
     },
     {
       name: "Nova",
@@ -63,6 +69,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 6,
       depth: 3,
       moveTime: 350,
+      flag: "/flags/my.png",
     },
   ],
   easy: [
@@ -74,6 +81,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 7,
       depth: 3,
       moveTime: 400,
+      flag: "/flags/au.png",
     },
     {
       name: "Echo",
@@ -83,6 +91,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 8,
       depth: 3,
       moveTime: 450,
+      flag: "/flags/il.png",
     },
     {
       name: "Rex",
@@ -92,6 +101,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 9,
       depth: 4,
       moveTime: 500,
+      flag: "/flags/bg.png",
     },
     {
       name: "Skye",
@@ -101,6 +111,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 10,
       depth: 4,
       moveTime: 550,
+      flag: "/flags/ca.png",
     },
     {
       name: "Zephyr",
@@ -110,6 +121,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 11,
       depth: 5,
       moveTime: 600,
+      flag: "/flags/is.png",
     },
     {
       name: "Orion",
@@ -119,6 +131,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 12,
       depth: 5,
       moveTime: 650,
+      flag: "/flags/cu.png",
     },
   ],
   intermediate: [
@@ -130,6 +143,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 13,
       depth: 5,
       moveTime: 700,
+      flag: "/flags/ro.png",
     },
     {
       name: "Kai",
@@ -139,6 +153,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 14,
       depth: 5,
       moveTime: 750,
+      flag: "/flags/ug.png",
     },
     {
       name: "Zara",
@@ -148,6 +163,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 15,
       depth: 6,
       moveTime: 800,
+      flag: "/flags/ba.png",
     },
     {
       name: "Jax",
@@ -157,6 +173,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 16,
       depth: 6,
       moveTime: 850,
+      flag: "/flags/dk.png",
     },
     {
       name: "Ivy",
@@ -166,6 +183,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 17,
       depth: 7,
       moveTime: 900,
+      flag: "/flags/uy.png",
     },
     {
       name: "Raven",
@@ -175,6 +193,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 18,
       depth: 7,
       moveTime: 950,
+      flag: "/flags/fi.png",
     },
   ],
   advanced: [
@@ -186,6 +205,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 19,
       depth: 7,
       moveTime: 1000,
+      flag: "/flags/sct.png",
     },
     {
       name: "Sage",
@@ -195,6 +215,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 20,
       depth: 7,
       moveTime: 1050,
+      flag: "/flags/ge.png",
     },
     {
       name: "Quinn",
@@ -204,6 +225,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 21,
       depth: 8,
       moveTime: 1100,
+      flag: "/flags/gr.png",
     },
     {
       name: "Vega",
@@ -213,6 +235,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 22,
       depth: 8,
       moveTime: 1150,
+      flag: "/flags/ie.png",
     },
     {
       name: "Lyra",
@@ -222,6 +245,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 23,
       depth: 9,
       moveTime: 1200,
+      flag: "/flags/de.png",
     },
     {
       name: "Atlas",
@@ -231,6 +255,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 24,
       depth: 9,
       moveTime: 1250,
+      flag: "/flags/in.png",
     },
   ],
   hard: [
@@ -242,6 +267,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 25,
       depth: 9,
       moveTime: 1300,
+      flag: "/flags/cn.png",
     },
     {
       name: "Loki",
@@ -251,6 +277,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 26,
       depth: 9,
       moveTime: 1350,
+      flag: "/flags/it.png",
     },
     {
       name: "Nyx",
@@ -260,6 +287,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 27,
       depth: 10,
       moveTime: 1400,
+      flag: "/flags/jp.png",
     },
     {
       name: "Thor",
@@ -269,6 +297,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 28,
       depth: 10,
       moveTime: 1450,
+      flag: "/flags/kr.png",
     },
     {
       name: "Freya",
@@ -278,6 +307,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 29,
       depth: 11,
       moveTime: 1500,
+      flag: "/flags/pk.png",
     },
     {
       name: "Odin",
@@ -287,6 +317,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 30,
       depth: 11,
       moveTime: 1550,
+      flag: "/flags/lu.png",
     },
   ],
   expert: [
@@ -298,6 +329,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 31,
       depth: 11,
       moveTime: 1600,
+      flag: "/flags/ar.png",
     },
     {
       name: "Athena",
@@ -307,6 +339,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 32,
       depth: 11,
       moveTime: 1650,
+      flag: "/flags/nz.png",
     },
     {
       name: "Hermes",
@@ -316,6 +349,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 33,
       depth: 12,
       moveTime: 1700,
+      flag: "/flags/ph.png",
     },
     {
       name: "Artemis",
@@ -325,6 +359,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 34,
       depth: 12,
       moveTime: 1750,
+      flag: "/flags/lt.png",
     },
     {
       name: "Hera",
@@ -334,6 +369,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 35,
       depth: 13,
       moveTime: 1800,
+      flag: "/flags/pt.png",
     },
     {
       name: "Zeus",
@@ -343,6 +379,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 36,
       depth: 13,
       moveTime: 1850,
+      flag: "/flags/cy.png",
     },
   ],
   master: [
@@ -354,6 +391,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 37,
       depth: 13,
       moveTime: 1900,
+      flag: "/flags/sy.png",
     },
     {
       name: "Hades",
@@ -363,6 +401,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 38,
       depth: 13,
       moveTime: 1950,
+      flag: "/flags/tr.png",
     },
     {
       name: "Demeter",
@@ -372,6 +411,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 39,
       depth: 14,
       moveTime: 2000,
+      flag: "/flags/am.png",
     },
     {
       name: "Ares",
@@ -381,6 +421,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 40,
       depth: 14,
       moveTime: 2050,
+      flag: "/flags/cz.png",
     },
     {
       name: "Hephaestus",
@@ -390,6 +431,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 41,
       depth: 15,
       moveTime: 2100,
+      flag: "/flags/us.png",
     },
     {
       name: "Dionysus",
@@ -399,6 +441,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 42,
       depth: 15,
       moveTime: 2150,
+      flag: "/flags/ec.png",
     },
   ],
   grandmaster: [
@@ -410,6 +453,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 43,
       depth: 15,
       moveTime: 2200,
+      flag: "/flags/wls.png",
     },
     {
       name: "Gaia",
@@ -419,6 +463,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 44,
       depth: 15,
       moveTime: 2250,
+      flag: "/flags/eng.png",
     },
     {
       name: "Uranus",
@@ -428,6 +473,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 45,
       depth: 16,
       moveTime: 2300,
+      flag: "/flags/fr.png",
     },
     {
       name: "Hyperion",
@@ -437,6 +483,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 46,
       depth: 16,
       moveTime: 2350,
+      flag: "/flags/ru.png",
     },
     {
       name: "Rhea",
@@ -446,6 +493,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 47,
       depth: 17,
       moveTime: 2400,
+      flag: "/flags/se.png",
     },
     {
       name: "Helios",
@@ -455,6 +503,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
       skillLevel: 48,
       depth: 17,
       moveTime: 2450,
+      flag: "/flags/no.png",
     },
   ],
 };
