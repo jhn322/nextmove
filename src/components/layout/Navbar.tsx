@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/sheet";
 import {
   Menu,
-  Puzzle,
   History,
   Settings,
   LogIn,
