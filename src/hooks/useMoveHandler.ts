@@ -40,32 +40,30 @@ export const useMoveHandler = (
         }` as Square;
         const to = `${"abcdefgh"[col]}${8 - row}` as Square;
 
-        try {
-          const move = game.move({ from, to, promotion: "q" });
-          if (move) {
-            // Hide bot selection panel when first move is made
-            if (showBotSelection) {
-              setShowBotSelection(false);
-            }
+        // Use makeMove instead of directly calling game.move
+        const moveSuccessful = makeMove(from, to);
 
-            setBoard(game.board());
-            setHistory((prev) => [
-              ...prev,
-              { fen: game.fen(), lastMove: { from, to } },
-            ]);
-            setCurrentMove((prev) => prev + 1);
-            setLastMove({ from, to });
-
-            if (!game.isGameOver()) {
-              setTimeout(getBotMove, 1000);
-            }
-
-            if (!game.isGameOver()) {
-              setGameStarted(true);
-            }
+        if (moveSuccessful) {
+          // Hide bot selection panel when first move is made
+          if (showBotSelection) {
+            setShowBotSelection(false);
           }
-        } catch {
-          console.log("Invalid move");
+
+          setBoard(game.board());
+          setHistory((prev) => [
+            ...prev,
+            { fen: game.fen(), lastMove: { from, to } },
+          ]);
+          setCurrentMove((prev) => prev + 1);
+          setLastMove({ from, to });
+
+          if (!game.isGameOver()) {
+            setTimeout(getBotMove, 1000);
+          }
+
+          if (!game.isGameOver()) {
+            setGameStarted(true);
+          }
         }
 
         setSelectedPiece(null);
@@ -77,6 +75,7 @@ export const useMoveHandler = (
       board,
       playerColor,
       selectedPiece,
+      makeMove,
       setBoard,
       setHistory,
       setCurrentMove,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useGameSounds } from "@/hooks/useGameSounds";
 
 export const useGameDialogs = () => {
   const [showResignDialog, setShowResignDialog] = useState(false);
@@ -11,6 +12,9 @@ export const useGameDialogs = () => {
   const [pendingColor, setPendingColor] = useState<"w" | "b" | null>(null);
   const [showVictoryModal, setShowVictoryModal] = useState(false);
   const [isResignationModal, setIsResignationModal] = useState(false);
+
+  // Hook for playing sounds
+  const { playSound } = useGameSounds();
 
   const handleCancelDialog = () => {
     setShowResignDialog(false);
@@ -28,6 +32,7 @@ export const useGameDialogs = () => {
 
   const handleConfirmResign = () => {
     setIsResignationModal(false);
+    playSound("game-end");
   };
 
   const handleDifficultyDialogOpen = (newDifficulty: string) => {

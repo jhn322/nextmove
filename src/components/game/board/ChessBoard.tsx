@@ -9,6 +9,7 @@ import { useGameTimer } from "../../../hooks/useGameTimer";
 import { useGameDialogs } from "../../../hooks/useGameDialogs";
 import { useMoveHandler } from "../../../hooks/useMoveHandler";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
+import { useGameSounds } from "@/hooks/useGameSounds";
 import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
 import SquareComponent from "@/components/game/board/Square";
@@ -114,7 +115,16 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setShowBotSelection,
     showBotSelection
   );
+
+  const { playSound } = useGameSounds();
   // -----------------------------------------------------------
+
+  // Add sound to game start
+  useEffect(() => {
+    if (gameStarted && !showBotSelection) {
+      playSound("game-start");
+    }
+  }, [gameStarted, showBotSelection, playSound]);
 
   // Save state
   useEffect(() => {
@@ -155,6 +165,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   }, [selectedBot]);
 
   const handleSelectBot = (bot: Bot) => {
+    playSound("choice");
     setSelectedBot(bot);
     setShowBotSelection(false);
   };

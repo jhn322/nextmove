@@ -25,10 +25,12 @@ export const useStockfish = (
 
   const getBotMove = useCallback(() => {
     if (engine && !game.isGameOver() && selectedBot) {
-      engine.postMessage("position fen " + game.fen());
-      engine.postMessage(
-        `go depth ${selectedBot.depth} movetime ${selectedBot.moveTime}`
-      );
+      setTimeout(() => {
+        engine.postMessage("position fen " + game.fen());
+        engine.postMessage(
+          `go depth ${selectedBot.depth} movetime ${selectedBot.moveTime}`
+        );
+      }, 1500);
     }
   }, [engine, game, selectedBot]);
 

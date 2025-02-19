@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Chess } from "chess.js";
 import { STORAGE_KEY, DEFAULT_STATE } from "../config/game";
+import { useGameSounds } from "./useGameSounds";
 import type { HistoryEntry, SavedGameState } from "../types/types";
 
 export const useChessGame = (difficulty: string) => {
@@ -47,32 +48,60 @@ export const useChessGame = (difficulty: string) => {
     savedState.playerColor
   );
 
+  // Hook for playing sounds
+  const { playSound } = useGameSounds();
+
   // Make a move and update the board
   const makeMove = useCallback(
     (from: string, to: string) => {
       try {
-        const move = game.move({
+        const moveDetails = game.move({
           from,
           to,
           promotion: "q",
         });
 
-        if (move) {
+        if (moveDetails) {
           setBoard(game.board());
           setHistory((prev) => [
             ...prev,
             { fen: game.fen(), lastMove: { from, to } },
           ]);
-          setCurrentMove((prev: number) => prev + 1);
+          setCurrentMove((prev) => prev + 1);
           setLastMove({ from, to });
+
+          // Play appropriate sound based on move type and who's moving
+          if (moveDetails.captured) {
+            playSound("capture");
+          } else if (moveDetails.san.includes("O-O")) {
+            playSound("castle");
+          } else {
+            // Different sounds for player and bot moves
+            playSound(
+              game.turn() === playerColor ? "move-opponent" : "move-self"
+            );
+          }
+
+          // Check for special game states
+          if (game.isCheck()) {
+            setTimeout(() => playSound("check"), 100);
+          }
+          if (game.isCheckmate()) {
+            setTimeout(() => playSound("game-end"), 200);
+          }
+          if (game.isDraw()) {
+            setTimeout(() => playSound("game-draw"), 200);
+          }
+
           return true;
         }
       } catch {
+        playSound("illegal");
         console.log("Invalid move");
       }
       return false;
     },
-    [game]
+    [game, playSound, playerColor]
   );
 
   // Move back to the previous position in history
