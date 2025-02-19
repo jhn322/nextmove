@@ -25,6 +25,7 @@ import {
   Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface Bot {
   name: string;
@@ -108,10 +109,12 @@ const BotSelectionPanel = ({
                   <div className="text-xs text-muted-foreground">
                     Rating: {bot.rating}
                   </div>
-                  <img
+                  <Image
                     src={bot.flag}
                     alt={`${bot.name} flag`}
-                    className="w-4 h-4 mt-1"
+                    className="w-5 h-3 mt-1"
+                    width={20}
+                    height={12}
                   />
                 </div>
                 <Button
@@ -138,10 +141,12 @@ const BotSelectionPanel = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{bot.name}</span>
-                    <img
+                    <Image
                       src={bot.flag}
                       alt={`${bot.name} flag`}
                       className="w-5 h-3"
+                      width={20}
+                      height={12}
                     />
                   </div>
                   <div className="text-xs">Rating: {bot.rating}</div>

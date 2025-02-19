@@ -11,6 +11,7 @@ import { Chess } from "chess.js";
 import BotMessageBubble from "../board/botMessageBubble";
 import { botMessages } from "@/components/game/data/botMessages";
 import type { MessageCondition } from "@/components/game/data/botMessages";
+import Image from "next/image";
 
 interface PlayerProfileProps {
   difficulty: string;
@@ -29,7 +30,6 @@ const PlayerProfile = ({
   isBot,
   rating = 1500,
   capturedPieces = [],
-  flag = "US",
   selectedBot,
   lastMove,
   game,
@@ -130,10 +130,12 @@ const PlayerProfile = ({
                   : "Player"}
               </span>
               {isBot && selectedBot && (
-                <img
+                <Image
                   src={selectedBot.flag}
                   alt={`${selectedBot.name} flag`}
                   className="w-5 h-3"
+                  width={20}
+                  height={12}
                 />
               )}
             </div>

@@ -81,7 +81,9 @@ const VictoryModal = ({
               Congratulations on your victory!
             </span>
           ) : (
-            <span className="text-yellow-500 ">You'll get them next time!</span>
+            <span className="text-yellow-500 ">
+              You&apos;ll get them next time!
+            </span>
           )}
         </>
       );
