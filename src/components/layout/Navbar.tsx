@@ -276,14 +276,14 @@ const Navbar = () => {
                 >
                   <div className="relative w-8 h-8">
                     <Image
-                      src="/queen.svg"
-                      alt="Queen Icon"
+                      src="/king.svg"
+                      alt="King Icon"
                       objectFit="contain"
                       width={40}
                       height={40}
                     />
                   </div>
-                  <span className="font-bold text-xl">Chess-Next</span>
+                  <span className="font-bold text-xl">NextMove</span>
                 </Link>
               </SheetHeader>
 
