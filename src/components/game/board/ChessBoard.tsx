@@ -356,6 +356,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 difficulty={difficulty}
                 isBot={true}
                 selectedBot={selectedBot}
+                lastMove={lastMove}
+                game={game}
+                playerColor={playerColor}
               />
             </div>
 
@@ -374,6 +377,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     difficulty={difficulty}
                     isBot={true}
                     selectedBot={selectedBot}
+                    lastMove={lastMove}
+                    game={game}
+                    playerColor={playerColor}
                   />
                   <div className="mt-4">
                     <PlayerProfile
