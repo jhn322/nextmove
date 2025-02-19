@@ -33,13 +33,14 @@ import {
   Target,
   Trophy,
   Award,
+  ChevronDown,
+  icons,
 } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -317,6 +318,17 @@ const Navbar = () => {
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
+                </Link>
+
+                {/* GitHub Link */}
+                <Link
+                  href="https://github.com/jhn322/chess-next"
+                  className="py-2 px-3 text-base font-medium rounded-xl hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center border"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <icons.Github className="h-4 w-4 mr-2" />
+                  <span>Code</span>
                 </Link>
 
                 <div className="pt-4 mt-4 border-t">
