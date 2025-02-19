@@ -18,6 +18,9 @@ import {
   Info,
   Palette,
   UserPlus,
+  AlertCircle,
+  Swords,
+  HandshakeIcon,
 } from "lucide-react";
 import {
   Tooltip,
@@ -49,6 +52,83 @@ interface GameControlsProps {
   onNewBot: () => void;
   handleNewBotDialog: () => void;
 }
+
+interface GameStatusIndicatorProps {
+  game: Chess;
+}
+
+interface PlayerIndicatorProps {
+  color: "w" | "b";
+  isActive: boolean;
+  children: React.ReactNode;
+}
+
+// Game Status UI
+const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
+  if (game.isCheckmate()) {
+    return (
+      <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-3 py-1.5 rounded-full animate-pulse">
+        <Swords className="h-4 w-4" />
+        <span className="font-semibold">Checkmate!</span>
+      </div>
+    );
+  }
+
+  if (game.isCheck()) {
+    return (
+      <div className="inline-flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-3 py-1.5 rounded-full animate-bounce">
+        <AlertCircle className="h-4 w-4" />
+        <span className="font-semibold">Check!</span>
+      </div>
+    );
+  }
+
+  if (game.isDraw()) {
+    return (
+      <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-500 px-3 py-1.5 rounded-full">
+        <HandshakeIcon className="h-4 w-4" />
+        <span className="font-semibold">Draw!</span>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+// Player(s) UI
+const PlayerIndicator = ({
+  color,
+  isActive,
+  children,
+}: PlayerIndicatorProps) => {
+  const getColors = () => {
+    if (color === "w") {
+      return {
+        bg: isActive ? "bg-blue-500/10" : "bg-blue-500/5",
+        text: isActive ? "text-blue-500" : "text-blue-500/50",
+        border: isActive ? "border-blue-500/20" : "border-transparent",
+      };
+    }
+    return {
+      bg: isActive ? "bg-red-500/10" : "bg-red-500/5",
+      text: isActive ? "text-red-500" : "text-red-500/50",
+      border: isActive ? "border-red-500/20" : "border-transparent",
+    };
+  };
+
+  const { bg, text, border } = getColors();
+
+  return (
+    <div
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${bg} ${text} ${border} transition-all duration-200`}
+    >
+      <Crown
+        className={`h-5 w-5 ${isActive ? "animate-pulse" : "opacity-50"}`}
+      />
+      <span className="font-medium">{children}</span>
+    </div>
+  );
+};
 
 const GameControls = ({
   gameStatus,
@@ -131,58 +211,18 @@ const GameControls = ({
           <CardHeader className="p-4 pb-2">
             <CardTitle className="flex items-center gap-2">
               Game Status
-              {game.isCheck() && (
-                <span className="text-yellow-500 font-medium">
-                  <span className="mr-1.5">•</span>Check!
-                </span>
-              )}
-              {game.isCheckmate() && (
-                <span className="text-red-500 font-medium">
-                  <span className="mr-1.5">•</span>Checkmate!
-                </span>
-              )}
-              {game.isDraw() && (
-                <span className="text-blue-500 font-medium">
-                  <span className="mr-1.5">•</span>Draw!
-                </span>
-              )}
+              <GameStatusIndicator game={game} />
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="flex items-center gap-3">
-              <Crown
-                className={`h-5 w-5 ${
-                  currentTurn === "w"
-                    ? "text-blue-400 animate-pulse"
-                    : "text-blue-400/30"
-                }`}
-              />
-              <span
-                className={`font-medium ${
-                  currentTurn === "w"
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
+              <PlayerIndicator color="w" isActive={currentTurn === "w"}>
                 White
-              </span>
-              <span className="text-muted-foreground mx-1">vs</span>
-              <Crown
-                className={`h-5 w-5 ${
-                  currentTurn === "b"
-                    ? "text-red-400 animate-pulse"
-                    : "text-red-400/30"
-                }`}
-              />
-              <span
-                className={`font-medium ${
-                  currentTurn === "b"
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
+              </PlayerIndicator>
+              <span className="text-muted-foreground font-medium">vs</span>
+              <PlayerIndicator color="b" isActive={currentTurn === "b"}>
                 Black
-              </span>
+              </PlayerIndicator>
             </div>
           </CardContent>
         </Card>

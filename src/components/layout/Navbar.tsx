@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -116,8 +117,16 @@ const Navbar = () => {
             href="/"
             className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
           >
-            <Puzzle className="h-7 w-7" />
-            <span className="font-bold text-xl tracking-tight">Chess-Next</span>
+            <div className="relative w-8 h-8">
+              <Image
+                src="/king.svg"
+                alt="King Icon"
+                objectFit="contain"
+                width={40}
+                height={40}
+              />
+            </div>
+            <span className="font-bold text-xl tracking-tight">NextMove</span>
           </Link>
         </div>
 
@@ -266,7 +275,15 @@ const Navbar = () => {
                   href="/"
                   className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
                 >
-                  <Puzzle className="h-7 w-7" />
+                  <div className="relative w-8 h-8">
+                    <Image
+                      src="/queen.svg"
+                      alt="Queen Icon"
+                      objectFit="contain"
+                      width={40}
+                      height={40}
+                    />
+                  </div>
                   <span className="font-bold text-xl">Chess-Next</span>
                 </Link>
               </SheetHeader>

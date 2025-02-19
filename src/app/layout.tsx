@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chess-Next",
+  title: "NextMove",
   description: "A modern chess app built with Next.js",
   icons: {
     icon: "/favicon.svg",

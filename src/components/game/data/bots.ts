@@ -14,7 +14,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Ziggy",
       image: "/animals/sloth.png",
-      rating: 800,
+      rating: 1000,
       description: "A very basic bot.",
       skillLevel: 1,
       depth: 1,
@@ -24,7 +24,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Milo",
       image: "/animals/hen.png",
-      rating: 810,
+      rating: 1030,
       description: "A slightly better beginner bot.",
       skillLevel: 2,
       depth: 1,
@@ -34,7 +34,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Luna",
       image: "/animals/beaver.png",
-      rating: 820,
+      rating: 1060,
       description: "A beginner bot with some skills.",
       skillLevel: 3,
       depth: 2,
@@ -44,7 +44,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Finn",
       image: "/animals/lemur.png",
-      rating: 830,
+      rating: 1090,
       description: "A competent beginner bot.",
       skillLevel: 4,
       depth: 2,
@@ -54,7 +54,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Juno",
       image: "/animals/hippopotamus.png",
-      rating: 840,
+      rating: 1120,
       description: "A challenging beginner bot.",
       skillLevel: 5,
       depth: 3,
@@ -64,7 +64,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Nova",
       image: "/animals/dog.png",
-      rating: 850,
+      rating: 1150,
       description: "The best beginner bot.",
       skillLevel: 6,
       depth: 3,
@@ -76,7 +76,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Blaze",
       image: "/animals/koala.png",
-      rating: 900,
+      rating: 1200,
       description: "An easy bot.",
       skillLevel: 7,
       depth: 3,
@@ -86,7 +86,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Echo",
       image: "/animals/camel.png",
-      rating: 910,
+      rating: 1230,
       description: "A slightly better easy bot.",
       skillLevel: 8,
       depth: 3,
@@ -96,7 +96,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Rex",
       image: "/animals/pig.png",
-      rating: 920,
+      rating: 1260,
       description: "An easy bot with some skills.",
       skillLevel: 9,
       depth: 4,
@@ -106,7 +106,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Skye",
       image: "/animals/horse.png",
-      rating: 930,
+      rating: 1290,
       description: "A competent easy bot.",
       skillLevel: 10,
       depth: 4,
@@ -116,7 +116,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Zephyr",
       image: "/animals/llama.png",
-      rating: 940,
+      rating: 1320,
       description: "A challenging easy bot.",
       skillLevel: 11,
       depth: 5,
@@ -126,7 +126,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Orion",
       image: "/animals/monkey.png",
-      rating: 950,
+      rating: 1350,
       description: "The best easy bot.",
       skillLevel: 12,
       depth: 5,
@@ -138,7 +138,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Axel",
       image: "/animals/giraffe.png",
-      rating: 1000,
+      rating: 1400,
       description: "An intermediate bot.",
       skillLevel: 13,
       depth: 5,
@@ -148,7 +148,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Kai",
       image: "/animals/duck.png",
-      rating: 1010,
+      rating: 1450,
       description: "A slightly better intermediate bot.",
       skillLevel: 14,
       depth: 5,
@@ -158,7 +158,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Zara",
       image: "/animals/penguin.png",
-      rating: 1020,
+      rating: 1500,
       description: "An intermediate bot with some skills.",
       skillLevel: 15,
       depth: 6,
@@ -168,7 +168,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Jax",
       image: "/animals/panda.png",
-      rating: 1030,
+      rating: 1550,
       description: "A competent intermediate bot.",
       skillLevel: 16,
       depth: 6,
@@ -178,7 +178,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Ivy",
       image: "/animals/rabbit.png",
-      rating: 1040,
+      rating: 1600,
       description: "A challenging intermediate bot.",
       skillLevel: 17,
       depth: 7,
@@ -188,7 +188,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Raven",
       image: "/animals/raccoon.png",
-      rating: 1050,
+      rating: 1650,
       description: "The best intermediate bot.",
       skillLevel: 18,
       depth: 7,
@@ -200,7 +200,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Phoenix",
       image: "/animals/walrus.png",
-      rating: 1100,
+      rating: 1700,
       description: "An advanced bot.",
       skillLevel: 19,
       depth: 7,
@@ -210,7 +210,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Sage",
       image: "/animals/swan.png",
-      rating: 1110,
+      rating: 1750,
       description: "A slightly better advanced bot.",
       skillLevel: 20,
       depth: 7,
@@ -220,7 +220,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Quinn",
       image: "/animals/sheep.png",
-      rating: 1120,
+      rating: 1800,
       description: "An advanced bot with some skills.",
       skillLevel: 21,
       depth: 8,
@@ -230,7 +230,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Vega",
       image: "/animals/frog.png",
-      rating: 1130,
+      rating: 1850,
       description: "A competent advanced bot.",
       skillLevel: 22,
       depth: 8,
@@ -240,7 +240,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Lyra",
       image: "/animals/owl.png",
-      rating: 1140,
+      rating: 1900,
       description: "A challenging advanced bot.",
       skillLevel: 23,
       depth: 9,
@@ -250,7 +250,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Atlas",
       image: "/animals/moose.png",
-      rating: 1150,
+      rating: 1950,
       description: "The best advanced bot.",
       skillLevel: 24,
       depth: 9,
@@ -262,7 +262,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Titan",
       image: "/animals/capybara.png",
-      rating: 1200,
+      rating: 2000,
       description: "A hard bot.",
       skillLevel: 25,
       depth: 9,
@@ -272,7 +272,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Loki",
       image: "/animals/cat.png",
-      rating: 1210,
+      rating: 2050,
       description: "A slightly better hard bot.",
       skillLevel: 26,
       depth: 9,
@@ -282,7 +282,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Nyx",
       image: "/animals/crocodile.png",
-      rating: 1220,
+      rating: 2100,
       description: "A hard bot with some skills.",
       skillLevel: 27,
       depth: 10,
@@ -292,7 +292,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Thor",
       image: "/animals/chameleon.png",
-      rating: 1230,
+      rating: 2150,
       description: "A competent hard bot.",
       skillLevel: 28,
       depth: 10,
@@ -302,7 +302,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Freya",
       image: "/animals/alpaca.png",
-      rating: 1240,
+      rating: 2200,
       description: "A challenging hard bot.",
       skillLevel: 29,
       depth: 11,
@@ -312,7 +312,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Odin",
       image: "/animals/wild-boar.png",
-      rating: 1250,
+      rating: 2250,
       description: "The best hard bot.",
       skillLevel: 30,
       depth: 11,
@@ -324,7 +324,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Apollo",
       image: "/animals/zebra.png",
-      rating: 1300,
+      rating: 2300,
       description: "An expert bot.",
       skillLevel: 31,
       depth: 11,
@@ -334,7 +334,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Athena",
       image: "/animals/elephant.png",
-      rating: 1310,
+      rating: 2350,
       description: "A slightly better expert bot.",
       skillLevel: 32,
       depth: 11,
@@ -344,7 +344,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Hermes",
       image: "/animals/polar-bear.png",
-      rating: 1320,
+      rating: 2400,
       description: "An expert bot with some skills.",
       skillLevel: 33,
       depth: 12,
@@ -354,7 +354,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Artemis",
       image: "/animals/deer.png",
-      rating: 1330,
+      rating: 2450,
       description: "A competent expert bot.",
       skillLevel: 34,
       depth: 12,
@@ -364,7 +364,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Hera",
       image: "/animals/eagle.png",
-      rating: 1340,
+      rating: 2500,
       description: "A challenging expert bot.",
       skillLevel: 35,
       depth: 13,
@@ -374,7 +374,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Zeus",
       image: "/animals/gorilla.png",
-      rating: 1350,
+      rating: 2550,
       description: "The best expert bot.",
       skillLevel: 36,
       depth: 13,
@@ -386,7 +386,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Poseidon",
       image: "/animals/kangaroo.png",
-      rating: 1400,
+      rating: 2600,
       description: "A master bot.",
       skillLevel: 37,
       depth: 13,
@@ -396,7 +396,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Hades",
       image: "/animals/wolf.png",
-      rating: 1410,
+      rating: 2650,
       description: "A slightly better master bot.",
       skillLevel: 38,
       depth: 13,
@@ -406,7 +406,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Demeter",
       image: "/animals/rhinoceros.png",
-      rating: 1420,
+      rating: 2700,
       description: "A master bot with some skills.",
       skillLevel: 39,
       depth: 14,
@@ -416,7 +416,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Ares",
       image: "/animals/ostrich.png",
-      rating: 1430,
+      rating: 2750,
       description: "A competent master bot.",
       skillLevel: 40,
       depth: 14,
@@ -426,7 +426,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Hephaestus",
       image: "/animals/shark.png",
-      rating: 1440,
+      rating: 2800,
       description: "A challenging master bot.",
       skillLevel: 41,
       depth: 15,
@@ -436,7 +436,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Dionysus",
       image: "/animals/bear.png",
-      rating: 1450,
+      rating: 2850,
       description: "The best master bot.",
       skillLevel: 42,
       depth: 15,
@@ -448,7 +448,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Chronos",
       image: "/animals/cheetah.png",
-      rating: 1500,
+      rating: 2950,
       description: "A grandmaster bot.",
       skillLevel: 43,
       depth: 15,
@@ -458,7 +458,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Gaia",
       image: "/animals/snake.png",
-      rating: 1510,
+      rating: 3000,
       description: "A slightly better grandmaster bot.",
       skillLevel: 44,
       depth: 15,
@@ -468,7 +468,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Uranus",
       image: "/animals/tiger.png",
-      rating: 1520,
+      rating: 3050,
       description: "A grandmaster bot with some skills.",
       skillLevel: 45,
       depth: 16,
@@ -478,7 +478,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Hyperion",
       image: "/animals/fox.png",
-      rating: 1530,
+      rating: 3100,
       description: "A competent grandmaster bot.",
       skillLevel: 46,
       depth: 16,
@@ -488,7 +488,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Rhea",
       image: "/animals/lion.png",
-      rating: 1540,
+      rating: 3150,
       description: "A challenging grandmaster bot.",
       skillLevel: 47,
       depth: 17,
@@ -498,7 +498,7 @@ export const BOTS_BY_DIFFICULTY: Record<string, Bot[]> = {
     {
       name: "Helios",
       image: "/animals/goat.png",
-      rating: 1550,
+      rating: 3200,
       description: "The best grandmaster bot.",
       skillLevel: 48,
       depth: 17,

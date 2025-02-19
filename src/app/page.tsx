@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  Puzzle,
   Baby,
   Gamepad2,
   Swords,
@@ -150,10 +149,9 @@ export default function Home() {
       <div className="max-w-7xl w-full space-y-6 sm:space-y-8">
         {/* Hero Section */}
         <div className="flex items-center gap-4 border-b border-border pb-6">
-          <Puzzle className="h-12 w-12 sm:h-16 sm:w-16 text-primary" />
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold">
-              Welcome to Chess-Next
+              Welcome to NextMove
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground">
               Master your chess skills against increasingly challenging bot
