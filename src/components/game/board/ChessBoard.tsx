@@ -358,9 +358,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   return (
     <>
-      <main className="flex flex-col w-full items-center justify-center gap-4 p-2 min-h-[calc(90vh-4rem)]">
-        <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4">
-          <div className="relative w-full max-w-[min(90vh,90vw)] lg:max-w-[105vh]">
+      <main className="flex flex-col w-full min-h-screen items-center justify-start p-2">
+        <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4">
+          <div className="relative w-full max-w-[min(80vh,90vw)] lg:max-w-[107vh]">
             {/* Chess board and profiles */}
             <div className="flex mb-4 lg:hidden">
               <PlayerProfile
@@ -376,7 +376,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
             <div className="relative w-full aspect-square">
               {/* Show overlay when no bot is selected OR when bot selection is showing */}
               {(!selectedBot || showBotSelection) && (
-                <div className="absolute  z-10 rounded-lg flex items-center justify-center">
+                <div className="absolute z-10 rounded-lg flex items-center justify-center">
                   <span className="text-white text-4xl">
                     {/* <CardTitle>Select a Bot to Play</CardTitle> */}
                   </span>
@@ -400,81 +400,67 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     />
                   </div>
                 </div>
-                <div className="relative w-full max-w-[min(90vh,90vw)] lg:max-w-[105vh]">
-                  <div className="w-full aspect-square">
-                    <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
-                      {board.map((row, rowIndex) =>
-                        row.map((_, colIndex) => {
-                          const actualRowIndex =
-                            playerColor === "w" ? rowIndex : 7 - rowIndex;
-                          const actualColIndex =
-                            playerColor === "w" ? colIndex : 7 - colIndex;
-                          const piece = board[actualRowIndex][actualColIndex];
-                          const square = `${"abcdefgh"[actualColIndex]}${
-                            8 - actualRowIndex
-                          }`;
-                          const isKingInCheck =
-                            game.isCheck() &&
-                            piece?.type.toLowerCase() === "k" &&
-                            piece?.color === game.turn();
-                          const isLastMove =
-                            lastMove &&
-                            (square === lastMove.from ||
-                              square === lastMove.to);
-                          const showRank =
-                            playerColor === "w"
-                              ? colIndex === 0
-                              : colIndex === 7;
-                          const showFile =
-                            playerColor === "w"
-                              ? rowIndex === 7
-                              : rowIndex === 0;
-                          const coordinate = showRank
-                            ? `${8 - actualRowIndex}`
-                            : showFile
-                            ? `${"abcdefgh"[actualColIndex]}`
-                            : "";
+                <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
+                  {board.map((row, rowIndex) =>
+                    row.map((_, colIndex) => {
+                      const actualRowIndex =
+                        playerColor === "w" ? rowIndex : 7 - rowIndex;
+                      const actualColIndex =
+                        playerColor === "w" ? colIndex : 7 - colIndex;
+                      const piece = board[actualRowIndex][actualColIndex];
+                      const square = `${"abcdefgh"[actualColIndex]}${
+                        8 - actualRowIndex
+                      }`;
+                      const isKingInCheck =
+                        game.isCheck() &&
+                        piece?.type.toLowerCase() === "k" &&
+                        piece?.color === game.turn();
+                      const isLastMove =
+                        lastMove &&
+                        (square === lastMove.from || square === lastMove.to);
+                      const showRank =
+                        playerColor === "w" ? colIndex === 0 : colIndex === 7;
+                      const showFile =
+                        playerColor === "w" ? rowIndex === 7 : rowIndex === 0;
+                      const coordinate = showRank
+                        ? `${8 - actualRowIndex}`
+                        : showFile
+                        ? `${"abcdefgh"[actualColIndex]}`
+                        : "";
 
-                          return (
-                            <SquareComponent
-                              key={`${rowIndex}-${colIndex}`}
-                              isLight={
-                                (actualRowIndex + actualColIndex) % 2 === 0
+                      return (
+                        <SquareComponent
+                          key={`${rowIndex}-${colIndex}`}
+                          isLight={(actualRowIndex + actualColIndex) % 2 === 0}
+                          isSelected={
+                            selectedPiece?.row === actualRowIndex &&
+                            selectedPiece?.col === actualColIndex
+                          }
+                          isPossibleMove={possibleMoves.includes(square)}
+                          onClick={() =>
+                            handleSquareClick(actualRowIndex, actualColIndex)
+                          }
+                          difficulty={difficulty}
+                          isCheck={isKingInCheck}
+                          isLastMove={isLastMove ?? false}
+                          showRank={showRank}
+                          showFile={showFile}
+                          coordinate={coordinate}
+                        >
+                          {piece && (
+                            <Piece
+                              type={
+                                piece.color === "w"
+                                  ? piece.type.toUpperCase()
+                                  : piece.type.toLowerCase()
                               }
-                              isSelected={
-                                selectedPiece?.row === actualRowIndex &&
-                                selectedPiece?.col === actualColIndex
-                              }
-                              isPossibleMove={possibleMoves.includes(square)}
-                              onClick={() =>
-                                handleSquareClick(
-                                  actualRowIndex,
-                                  actualColIndex
-                                )
-                              }
-                              difficulty={difficulty}
-                              isCheck={isKingInCheck}
-                              isLastMove={isLastMove ?? false}
-                              showRank={showRank}
-                              showFile={showFile}
-                              coordinate={coordinate}
-                            >
-                              {piece && (
-                                <Piece
-                                  type={
-                                    piece.color === "w"
-                                      ? piece.type.toUpperCase()
-                                      : piece.type.toLowerCase()
-                                  }
-                                  pieceSet={pieceSet}
-                                />
-                              )}
-                            </SquareComponent>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
+                              pieceSet={pieceSet}
+                            />
+                          )}
+                        </SquareComponent>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -484,7 +470,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           </div>
 
           {/* Game Controls on the right */}
-          <div className="w-full lg:w-80 lg:flex flex-col  justify-between">
+          <div className="w-full lg:w-80 lg:flex flex-col">
             {showBotSelection ? (
               <div className={shouldPulse ? "pulse-border" : ""}>
                 <BotSelectionPanel

@@ -109,7 +109,7 @@ const Navbar = () => {
 
   return (
     <nav className="border-b border-border bg-background">
-      <div className="flex items-center justify-between px-6 h-16">
+      <div className="flex items-center justify-between px-6 h-14">
         {/* Logo Section */}
         <div className="flex items-center space-x-3">
           <Link

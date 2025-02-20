@@ -85,7 +85,7 @@ const BotSelectionPanel = ({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-3 lg:p-4">
+    <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:min-w-[280px] lg:max-w-md lg:p-4">
       <Card className="border-0 shadow-none">
         <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
           <CardTitle className="text-lg lg:text-xl">
@@ -133,7 +133,7 @@ const BotSelectionPanel = ({
           {/* Desktop Layout (≥ 1024px) */}
           <div className="hidden lg:block space-y-4">
             {bots.map((bot) => (
-              <div key={bot.name} className="flex items-center gap-4">
+              <div key={bot.name} className="flex items-center gap-2">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={bot.image} alt={bot.name} />
                   <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>

@@ -104,8 +104,8 @@ const PlayerProfile = ({
 
   return (
     <div className="relative">
-      <Card className="sm:w-[180px] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <CardHeader className="flex flex-row items-center gap-2 space-y-0 p-2">
+      <Card className="sm:w-[180px] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
+        <CardHeader className="flex flex-row items-center gap-2 space-y-0 p-2 ">
           <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
             <AvatarImage
               src={
@@ -122,7 +122,7 @@ const PlayerProfile = ({
               {isBot ? difficulty.substring(0, 2).toUpperCase() : "P"}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0.5 ">
             <div className="flex items-center gap-2">
               <span className="text-[12px] font-medium leading-none">
                 {isBot
@@ -145,7 +145,7 @@ const PlayerProfile = ({
           </div>
         </CardHeader>
         {capturedPieces.length > 0 && (
-          <CardContent className="p-1 pt-0">
+          <CardContent className="p-1 pt-0 ">
             <div className="flex flex-wrap gap-0.5">
               {capturedPieces.map((piece, index) => (
                 <div key={index} className="w-2 h-2">
