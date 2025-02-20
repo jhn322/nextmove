@@ -358,7 +358,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   return (
     <>
-      <main className="flex flex-col w-full min-h-screen items-center justify-start p-2">
+      <main className="flex flex-col w-full items-center justify-start">
         <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4">
           <div className="relative w-full max-w-[min(80vh,90vw)] lg:max-w-[107vh]">
             {/* Chess board and profiles */}
