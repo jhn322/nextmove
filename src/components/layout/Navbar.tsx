@@ -118,9 +118,9 @@ const Navbar = () => {
           >
             <div className="relative w-8 h-8">
               <Image
-                src="/king.svg"
-                alt="King Icon"
-                objectFit="contain"
+                src="/favicon.svg"
+                alt="Pawn Icon"
+                style={{ objectFit: "contain" }}
                 width={40}
                 height={40}
               />
@@ -276,9 +276,9 @@ const Navbar = () => {
                 >
                   <div className="relative w-8 h-8">
                     <Image
-                      src="/king.svg"
-                      alt="King Icon"
-                      objectFit="contain"
+                      src="/favicon.svg"
+                      alt="Pawn Icon"
+                      style={{ objectFit: "contain" }}
                       width={40}
                       height={40}
                     />
