@@ -42,6 +42,7 @@ interface SquareProps {
   isPossibleMove: boolean;
   isCheck: boolean;
   isLastMove: boolean;
+  isHintMove?: boolean;
   coordinate?: string;
   showRank?: boolean;
   showFile?: boolean;
@@ -56,11 +57,26 @@ const Square = ({
   isPossibleMove,
   isCheck,
   isLastMove,
+  isHintMove = false,
   coordinate,
   showRank,
   showFile,
 }: SquareProps) => {
   const colors = difficultyColors[difficulty as keyof typeof difficultyColors];
+
+  // Determine the highlight class based on the square state
+  const getHighlightClass = () => {
+    if (isCheck) {
+      return "before:absolute before:inset-0 before:bg-red-500 before:bg-opacity-40 before:pointer-events-none before:z-20";
+    }
+    if (isHintMove) {
+      return "before:absolute before:inset-0 before:bg-purple-500 before:bg-opacity-50 before:pointer-events-none before:z-10 before:animate-pulse";
+    }
+    if (isSelected || isLastMove) {
+      return "before:absolute before:inset-0 before:bg-yellow-400 before:bg-opacity-40 before:pointer-events-none";
+    }
+    return "";
+  };
 
   return (
     <div
@@ -68,16 +84,7 @@ const Square = ({
       className={`
       relative aspect-square w-full
       ${isLight ? colors.light : colors.dark}
-      ${
-        isSelected || isLastMove
-          ? "before:absolute before:inset-0 before:bg-yellow-400 before:bg-opacity-40 before:pointer-events-none"
-          : ""
-      }
-      ${
-        isCheck
-          ? "before:absolute before:inset-0 before:bg-red-500 before:bg-opacity-40 before:pointer-events-none"
-          : ""
-      }
+      ${getHighlightClass()}
       cursor-pointer
       transition-all duration-150
       hover:brightness-110

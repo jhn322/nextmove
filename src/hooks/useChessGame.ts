@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Chess } from "chess.js";
 import { STORAGE_KEY, DEFAULT_STATE } from "../config/game";
 import { useGameSounds } from "./useGameSounds";
@@ -6,53 +6,71 @@ import type { HistoryEntry, SavedGameState } from "../types/types";
 import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
 
 export const useChessGame = (difficulty: string) => {
-  // Load initial state from localStorage or use defaults
-  const loadSavedState = (): SavedGameState => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const state = JSON.parse(saved) as SavedGameState;
-      if (state.difficulty === difficulty) {
-        const initialHistory = [{ fen: DEFAULT_STATE.fen, lastMove: null }];
-        return {
-          ...state,
-          history: Array.isArray(state.history)
-            ? state.history
-            : initialHistory,
-          currentMove: state.currentMove || 1,
-          lastMove: state.lastMove || null,
-          capturedPieces: state.capturedPieces || [],
-        };
-      }
-    }
-    return {
-      ...DEFAULT_STATE,
-      difficulty,
-      history: [{ fen: DEFAULT_STATE.fen, lastMove: null }],
-      currentMove: 1,
-      lastMove: null,
-      capturedPieces: [],
-    };
+  // Initialize with default state
+  const defaultState = {
+    ...DEFAULT_STATE,
+    difficulty,
+    history: [{ fen: DEFAULT_STATE.fen, lastMove: null }],
+    currentMove: 1,
+    lastMove: null,
+    capturedPieces: [],
   };
 
-  const savedState = loadSavedState();
-  const [history, setHistory] = useState<HistoryEntry[]>(savedState.history);
-  const [currentMove, setCurrentMove] = useState(savedState.currentMove);
+  const [history, setHistory] = useState<HistoryEntry[]>(defaultState.history);
+  const [currentMove, setCurrentMove] = useState(defaultState.currentMove);
   const [game] = useState(() => {
     const chess = new Chess();
-    chess.load(savedState.fen);
+    chess.load(defaultState.fen);
     return chess;
   });
   const [board, setBoard] = useState(game.board());
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(
-    savedState.lastMove
+    defaultState.lastMove
   );
-  const [gameStarted, setGameStarted] = useState(savedState.gameStarted);
+  const [gameStarted, setGameStarted] = useState(defaultState.gameStarted);
   const [playerColor, setPlayerColor] = useState<"w" | "b">(
-    savedState.playerColor
+    defaultState.playerColor
   );
   const [capturedPieces, setCapturedPieces] = useState<CapturedPiece[]>(
-    savedState.capturedPieces || []
+    defaultState.capturedPieces
   );
+
+  // Load saved state from localStorage after component mounts
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const loadSavedState = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const state = JSON.parse(saved) as SavedGameState;
+          if (state.difficulty === difficulty) {
+            const initialHistory = [{ fen: DEFAULT_STATE.fen, lastMove: null }];
+
+            // Update state with saved values
+            if (state.fen) {
+              game.load(state.fen);
+              setBoard(game.board());
+            }
+
+            setHistory(
+              Array.isArray(state.history) ? state.history : initialHistory
+            );
+
+            setCurrentMove(state.currentMove || 1);
+            setLastMove(state.lastMove || null);
+            setGameStarted(state.gameStarted || false);
+            setPlayerColor(state.playerColor || "w");
+            setCapturedPieces(state.capturedPieces || []);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading saved game state:", error);
+      }
+    };
+
+    loadSavedState();
+  }, [difficulty, game]);
 
   // Hook for playing sounds
   const { playSound } = useGameSounds();

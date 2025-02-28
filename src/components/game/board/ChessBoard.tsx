@@ -10,6 +10,7 @@ import { useGameDialogs } from "../../../hooks/useGameDialogs";
 import { useMoveHandler } from "../../../hooks/useMoveHandler";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useGameSounds } from "@/hooks/useGameSounds";
+import { useHintEngine } from "@/hooks/useHintEngine";
 import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
 import SquareComponent from "@/components/game/board/Square";
@@ -20,28 +21,11 @@ import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [shouldPulse, setShouldPulse] = useState(false);
-  const [selectedBot, setSelectedBot] = useState<Bot | null>(() => {
-    const savedBot = localStorage.getItem("selectedBot");
-    if (savedBot) {
-      const parsedBot = JSON.parse(savedBot);
-      // Check if the saved bot is from the current difficulty by comparing with available bots
-      const isFromCurrentDifficulty = BOTS_BY_DIFFICULTY[difficulty].some(
-        (bot) => bot.name === parsedBot.name
-      );
-      // Only use the saved bot if it's from the current difficulty
-      return isFromCurrentDifficulty
-        ? parsedBot
-        : BOTS_BY_DIFFICULTY[difficulty][0];
-    }
-    // If there's no saved bot, use the first bot from the difficulty category
-    return BOTS_BY_DIFFICULTY[difficulty][0];
-  });
-  const [showBotSelection, setShowBotSelection] = useState(() => {
-    // Check if there's a saved game state and if the game was started
-    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    // If there's a saved state and the game was started, don't show bot selection
-    return savedState?.gameStarted ? false : true;
-  });
+  const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
+  const [showBotSelection, setShowBotSelection] = useState(true);
+  const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
+    null
+  );
 
   const router = useRouter();
 
@@ -68,26 +52,45 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   } = useChessGame(difficulty);
 
   const { getBotMove } = useStockfish(game, selectedBot, makeMove);
+  const { getHint, isCalculating } = useHintEngine();
 
   // Load saved state for piece set
-  const [pieceSet, setPieceSet] = useState<string>(() => {
-    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    return savedState?.pieceSet || "staunty";
-  });
+  const [pieceSet, setPieceSet] = useState<string>("staunty");
 
-  // Load saved state for game timer
-  const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
     game,
     gameStarted,
-    savedState
-      ? {
-          gameTime: savedState.gameTime,
-          whiteTime: savedState.whiteTime,
-          blackTime: savedState.blackTime,
-        }
-      : undefined
+    undefined
   );
+
+  useEffect(() => {
+    // Load selected bot
+    const savedBot = localStorage.getItem("selectedBot");
+    if (savedBot) {
+      const parsedBot = JSON.parse(savedBot);
+      // Check if the saved bot is from the current difficulty by comparing with available bots
+      const isFromCurrentDifficulty = BOTS_BY_DIFFICULTY[difficulty].some(
+        (bot) => bot.name === parsedBot.name
+      );
+      // Only use the saved bot if it's from the current difficulty
+      setSelectedBot(
+        isFromCurrentDifficulty ? parsedBot : BOTS_BY_DIFFICULTY[difficulty][0]
+      );
+    } else {
+      // If there's no saved bot, use the first bot from the difficulty category
+      setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
+    }
+
+    // Check if there's a saved game state and if the game was started
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    // If there's a saved state and the game was started, don't show bot selection
+    setShowBotSelection(savedState?.gameStarted ? false : true);
+
+    if (savedState?.pieceSet) {
+      setPieceSet(savedState.pieceSet);
+    }
+  }, [difficulty]);
 
   const {
     showDifficultyDialog,
@@ -146,21 +149,23 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   // Save state
   useEffect(() => {
-    const gameState = {
-      fen: game.fen(),
-      playerColor,
-      gameTime,
-      whiteTime,
-      blackTime,
-      difficulty,
-      gameStarted,
-      history,
-      currentMove,
-      lastMove,
-      pieceSet,
-      capturedPieces,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+    if (typeof window !== "undefined") {
+      const gameState = {
+        fen: game.fen(),
+        playerColor,
+        gameTime,
+        whiteTime,
+        blackTime,
+        difficulty,
+        gameStarted,
+        history,
+        currentMove,
+        lastMove,
+        pieceSet,
+        capturedPieces,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+    }
   }, [
     game,
     playerColor,
@@ -177,12 +182,15 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   ]);
 
   useEffect(() => {
-    if (selectedBot) {
+    if (typeof window !== "undefined" && selectedBot) {
       localStorage.setItem("selectedBot", JSON.stringify(selectedBot));
-    } else {
-      localStorage.removeItem("selectedBot");
     }
   }, [selectedBot]);
+
+  // Clear hint move when a move is made
+  useEffect(() => {
+    setHintMove(null);
+  }, [lastMove]);
 
   const handleSelectBot = (bot: Bot) => {
     playSound("choice");
@@ -248,6 +256,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setCurrentMove(1);
     setLastMove(null);
     resetCapturedPieces();
+    setHintMove(null);
 
     // Save state with preserved player color
     const currentState = {
@@ -278,6 +287,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setGameStarted(false);
       resetCapturedPieces();
       setLastMove(null);
+      setHintMove(null);
 
       // Save the new state with updated color
       const newState = {
@@ -305,6 +315,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setGameStarted(false);
       resetCapturedPieces();
       setLastMove(null);
+      setHintMove(null);
 
       // Save the new state with updated color
       const newState = {
@@ -364,6 +375,15 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
     // Close dialog if it was open
     setShowNewBotDialog(false);
+  };
+
+  const handleHintRequest = () => {
+    if (game.turn() === playerColor && !game.isGameOver()) {
+      playSound("choice");
+      getHint(game, (from, to) => {
+        setHintMove({ from, to });
+      });
+    }
   };
 
   /* Bot Selection Panel */
@@ -443,6 +463,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                       const isLastMove =
                         lastMove &&
                         (square === lastMove.from || square === lastMove.to);
+                      const isHintMove =
+                        hintMove &&
+                        (square === hintMove.from || square === hintMove.to);
                       const showRank =
                         playerColor === "w" ? colIndex === 0 : colIndex === 7;
                       const showFile =
@@ -468,6 +491,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                           difficulty={difficulty}
                           isCheck={isKingInCheck}
                           isLastMove={isLastMove ?? false}
+                          isHintMove={isHintMove ?? false}
                           showRank={showRank}
                           showFile={showFile}
                           coordinate={coordinate}
@@ -535,6 +559,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                   onPieceSetChange={setPieceSet}
                   onNewBot={handleNewBot}
                   handleNewBotDialog={handleNewBotDialog}
+                  onHintRequested={handleHintRequest}
+                  isCalculatingHint={isCalculating}
                 />
               </div>
             )}

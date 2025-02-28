@@ -21,6 +21,7 @@ import {
   AlertCircle,
   Swords,
   HandshakeIcon,
+  Lightbulb,
 } from "lucide-react";
 import {
   Tooltip,
@@ -51,6 +52,8 @@ interface GameControlsProps {
   onPieceSetChange: (set: string) => void;
   onNewBot: () => void;
   handleNewBotDialog: () => void;
+  onHintRequested: () => void;
+  isCalculatingHint: boolean;
 }
 
 interface GameStatusIndicatorProps {
@@ -148,6 +151,8 @@ const GameControls = ({
   pieceSet,
   onPieceSetChange,
   handleNewBotDialog,
+  onHintRequested,
+  isCalculatingHint,
 }: GameControlsProps) => {
   const pieceSets = [
     "california",
@@ -411,6 +416,26 @@ const GameControls = ({
               </Button>
             </div>
 
+            {/* Hint Button */}
+            <Button
+              onClick={onHintRequested}
+              variant="outline"
+              size="default"
+              disabled={
+                game.isGameOver() ||
+                game.turn() !== playerColor ||
+                isCalculatingHint
+              }
+              className="w-full py-6 text-lg font-medium flex items-center justify-center gap-2"
+            >
+              <Lightbulb
+                className={`h-5 w-5 ${
+                  isCalculatingHint ? "animate-pulse" : ""
+                }`}
+              />
+              {isCalculatingHint ? "Thinking..." : "Hint"}
+            </Button>
+
             {/* Rematch Button - Only show when game is over */}
             {isGameOver && (
               <Button
@@ -437,6 +462,7 @@ const GameControls = ({
               onClick={onResign}
               variant="destructive"
               className="w-full py-6 text-lg font-medium flex items-center justify-center gap-2"
+              disabled={game.isGameOver()}
             >
               <Flag className="h-5 w-5" />
               Resign
