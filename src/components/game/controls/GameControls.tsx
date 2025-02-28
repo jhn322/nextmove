@@ -301,9 +301,10 @@ const GameControls = ({
                             </span>
                           </div>
                           {pieceType && (
-                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center brightness-0 dark:brightness-0 dark:invert">
+                            <div className="w-5 h-5 flex items-center justify-center brightness-0 dark:brightness-0 dark:invert">
                               <Piece
                                 type={pieceType.toUpperCase()}
+                                pieceSet={pieceSet}
                                 variant="symbol"
                               />
                             </div>
@@ -329,9 +330,10 @@ const GameControls = ({
                             </span>
                           </div>
                           {pieceType && (
-                            <div className="w-1 h-1 scale-[0.4] mr-5 flex items-center brightness-0 dark:brightness-0 dark:invert">
+                            <div className="w-5 h-5 flex items-center justify-center brightness-0 dark:brightness-0 dark:invert">
                               <Piece
                                 type={pieceType.toUpperCase()}
+                                pieceSet={pieceSet}
                                 variant="symbol"
                               />
                             </div>

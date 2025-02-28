@@ -8,7 +8,7 @@ export const useMoveHandler = (
   setBoard: Dispatch<SetStateAction<BoardSquare[][]>>,
   playerColor: "w" | "b",
   makeMove: (from: string, to: string) => boolean,
-  setHistory: Dispatch<SetStateAction<HistoryEntry[]>>, // <- Changed this line
+  setHistory: Dispatch<SetStateAction<HistoryEntry[]>>,
   setCurrentMove: (fn: (prev: number) => number) => void,
   setLastMove: (move: { from: string; to: string } | null) => void,
   setGameStarted: (started: boolean) => void,
@@ -50,12 +50,6 @@ export const useMoveHandler = (
           }
 
           setBoard(game.board());
-          setHistory((prev) => [
-            ...prev,
-            { fen: game.fen(), lastMove: { from, to } },
-          ]);
-          setCurrentMove((prev) => prev + 1);
-          setLastMove({ from, to });
 
           if (!game.isGameOver()) {
             setTimeout(getBotMove, 1000);
@@ -89,9 +83,6 @@ export const useMoveHandler = (
       selectedPiece,
       makeMove,
       setBoard,
-      setHistory,
-      setCurrentMove,
-      setLastMove,
       setGameStarted,
       getBotMove,
       showBotSelection,
