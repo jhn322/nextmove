@@ -1,4 +1,5 @@
 import { Square, PieceSymbol, Color } from "chess.js";
+import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
 
 export type HistoryEntry = {
   fen: string;
@@ -18,6 +19,7 @@ export type SavedGameState = {
   history: HistoryEntry[];
   currentMove: number;
   lastMove: { from: string; to: string } | null;
+  capturedPieces: CapturedPiece[];
 };
 
 export type BoardSquare = {

@@ -4,12 +4,14 @@ interface PieceProps {
   type: string;
   variant?: "board" | "symbol";
   pieceSet?: string;
+  forceColor?: "light" | "dark";
 }
 
 const Piece = ({
   type,
   variant = "board",
   pieceSet = "staunty",
+  forceColor,
 }: PieceProps) => {
   // Convert piece type to Unicode chess symbol
   const getPieceSymbol = (type: string) => {
@@ -40,9 +42,15 @@ const Piece = ({
   if (variant === "symbol") {
     return (
       <div
-        className={`text-[min(8vw,6vh)] md:text-[min(4vw,5vh)] ${
-          type.toUpperCase() === type ? "text-white" : "text-black"
-        }`}
+        className={`${
+          forceColor
+            ? forceColor === "dark"
+              ? "text-white dark:text-white"
+              : "text-black dark:text-white"
+            : type.toUpperCase() === type
+            ? "text-white dark:text-white"
+            : "text-black dark:text-black"
+        } text-xl sm:text-2xl`}
       >
         {getPieceSymbol(type)}
       </div>

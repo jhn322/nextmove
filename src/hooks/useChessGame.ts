@@ -3,6 +3,7 @@ import { Chess } from "chess.js";
 import { STORAGE_KEY, DEFAULT_STATE } from "../config/game";
 import { useGameSounds } from "./useGameSounds";
 import type { HistoryEntry, SavedGameState } from "../types/types";
+import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
 
 export const useChessGame = (difficulty: string) => {
   // Load initial state from localStorage or use defaults
@@ -19,6 +20,7 @@ export const useChessGame = (difficulty: string) => {
             : initialHistory,
           currentMove: state.currentMove || 1,
           lastMove: state.lastMove || null,
+          capturedPieces: state.capturedPieces || [],
         };
       }
     }
@@ -28,6 +30,7 @@ export const useChessGame = (difficulty: string) => {
       history: [{ fen: DEFAULT_STATE.fen, lastMove: null }],
       currentMove: 1,
       lastMove: null,
+      capturedPieces: [],
     };
   };
 
@@ -46,6 +49,9 @@ export const useChessGame = (difficulty: string) => {
   const [gameStarted, setGameStarted] = useState(savedState.gameStarted);
   const [playerColor, setPlayerColor] = useState<"w" | "b">(
     savedState.playerColor
+  );
+  const [capturedPieces, setCapturedPieces] = useState<CapturedPiece[]>(
+    savedState.capturedPieces || []
   );
 
   // Hook for playing sounds
@@ -69,6 +75,15 @@ export const useChessGame = (difficulty: string) => {
           ]);
           setCurrentMove((prev) => prev + 1);
           setLastMove({ from, to });
+
+          // Track captured pieces
+          if (moveDetails.captured) {
+            const capturedPiece: CapturedPiece = {
+              type: moveDetails.captured,
+              color: moveDetails.color === "w" ? "b" : "w",
+            };
+            setCapturedPieces((prev) => [...prev, capturedPiece]);
+          }
 
           // Play appropriate sound based on move type and who's moving
           if (moveDetails.captured) {
@@ -133,6 +148,11 @@ export const useChessGame = (difficulty: string) => {
     }
   }, [currentMove, game, history]);
 
+  // Reset captured pieces
+  const resetCapturedPieces = useCallback(() => {
+    setCapturedPieces([]);
+  }, []);
+
   return {
     game,
     board,
@@ -150,5 +170,8 @@ export const useChessGame = (difficulty: string) => {
     moveForward,
     playerColor,
     setPlayerColor,
+    capturedPieces,
+    setCapturedPieces,
+    resetCapturedPieces,
   };
 };

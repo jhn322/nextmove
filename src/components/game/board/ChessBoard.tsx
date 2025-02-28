@@ -47,6 +47,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     moveForward,
     playerColor,
     setPlayerColor,
+    capturedPieces,
+    setCapturedPieces,
+    resetCapturedPieces,
   } = useChessGame(difficulty);
 
   const { getBotMove } = useStockfish(game, selectedBot, makeMove);
@@ -140,6 +143,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       currentMove,
       lastMove,
       pieceSet,
+      capturedPieces,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
   }, [
@@ -154,6 +158,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     currentMove,
     lastMove,
     pieceSet,
+    capturedPieces,
   ]);
 
   useEffect(() => {
@@ -236,6 +241,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
     setCurrentMove(1);
     setLastMove(null);
+    resetCapturedPieces();
 
     // Save state with preserved player color
     const currentState = {
@@ -263,6 +269,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setPossibleMoves([]);
       resetTimers();
       setGameStarted(false);
+      resetCapturedPieces();
 
       // Save the new state with updated color
       const newState = {
@@ -287,6 +294,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setPossibleMoves([]);
       resetTimers();
       setGameStarted(false);
+      resetCapturedPieces();
 
       // Save the new state with updated color
       const newState = {
@@ -370,6 +378,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 lastMove={lastMove}
                 game={game}
                 playerColor={playerColor}
+                capturedPieces={capturedPieces}
+                pieceSet={pieceSet}
               />
             </div>
 
@@ -391,12 +401,16 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     lastMove={lastMove}
                     game={game}
                     playerColor={playerColor}
+                    capturedPieces={capturedPieces}
+                    pieceSet={pieceSet}
                   />
                   <div className="mt-4">
                     <PlayerProfile
                       difficulty={difficulty}
                       isBot={false}
-                      selectedBot={selectedBot}
+                      playerColor={playerColor}
+                      capturedPieces={capturedPieces}
+                      pieceSet={pieceSet}
                     />
                   </div>
                 </div>
@@ -465,7 +479,13 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
               </div>
             </div>
             <div className="flex mt-4 lg:hidden">
-              <PlayerProfile difficulty={difficulty} isBot={false} />
+              <PlayerProfile
+                difficulty={difficulty}
+                isBot={false}
+                playerColor={playerColor}
+                capturedPieces={capturedPieces}
+                pieceSet={pieceSet}
+              />
             </div>
           </div>
 

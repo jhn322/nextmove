@@ -14,6 +14,7 @@ export const DEFAULT_STATE: SavedGameState = {
   history: [{ fen: new Chess().fen(), lastMove: null }],
   currentMove: 1,
   lastMove: null,
+  capturedPieces: [],
 };
 
 export const DIFFICULTY_LEVELS = {
