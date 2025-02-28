@@ -133,25 +133,30 @@ const BotSelectionPanel = ({
           {/* Desktop Layout (≥ 1024px) */}
           <div className="hidden lg:block space-y-4">
             {bots.map((bot) => (
-              <div key={bot.name} className="flex items-center gap-2">
-                <Avatar className="h-12 w-12">
+              <div key={bot.name} className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 flex-shrink-0">
                   <AvatarImage src={bot.image} alt={bot.name} />
                   <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{bot.name}</span>
-                    <Image
-                      src={bot.flag}
-                      alt={`${bot.name} flag`}
-                      className="w-5 h-3"
-                      width={20}
-                      height={12}
-                    />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium truncate max-w-[100px]">
+                      {bot.name}
+                    </span>
+                    <div className="flex-shrink-0">
+                      <Image
+                        src={bot.flag}
+                        alt={`${bot.name} flag`}
+                        className="w-5 h-3"
+                        width={20}
+                        height={12}
+                      />
+                    </div>
                   </div>
                   <div className="text-xs">Rating: {bot.rating}</div>
                 </div>
                 <Button
+                  className="flex-shrink-0 ml-auto"
                   onClick={() => onSelectBot(bot)}
                   variant={
                     selectedBot?.name === bot.name ? "default" : "outline"
