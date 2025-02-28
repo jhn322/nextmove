@@ -22,10 +22,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [shouldPulse, setShouldPulse] = useState(false);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(() => {
     const savedBot = localStorage.getItem("selectedBot");
-    // If there's a saved bot, use it, otherwise use the first bot from the difficulty category
-    return savedBot ? JSON.parse(savedBot) : BOTS_BY_DIFFICULTY[difficulty][0];
+    if (savedBot) {
+      const parsedBot = JSON.parse(savedBot);
+      // Check if the saved bot is from the current difficulty by comparing with available bots
+      const isFromCurrentDifficulty = BOTS_BY_DIFFICULTY[difficulty].some(
+        (bot) => bot.name === parsedBot.name
+      );
+      // Only use the saved bot if it's from the current difficulty
+      return isFromCurrentDifficulty
+        ? parsedBot
+        : BOTS_BY_DIFFICULTY[difficulty][0];
+    }
+    // If there's no saved bot, use the first bot from the difficulty category
+    return BOTS_BY_DIFFICULTY[difficulty][0];
   });
-  const [showBotSelection, setShowBotSelection] = useState(true);
+  const [showBotSelection, setShowBotSelection] = useState(() => {
+    // Check if there's a saved game state and if the game was started
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    // If there's a saved state and the game was started, don't show bot selection
+    return savedState?.gameStarted ? false : true;
+  });
 
   const router = useRouter();
 
@@ -48,7 +64,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     playerColor,
     setPlayerColor,
     capturedPieces,
-    setCapturedPieces,
     resetCapturedPieces,
   } = useChessGame(difficulty);
 
@@ -179,6 +194,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     if (gameStarted) {
       handleDifficultyDialogOpen(newDifficulty);
     } else {
+      localStorage.removeItem("selectedBot");
       handleGameReset();
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
@@ -187,6 +203,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleConfirmDifficultyChange = () => {
     if (pendingDifficulty) {
       localStorage.removeItem("chess-game-state");
+
+      localStorage.removeItem("selectedBot");
       router.push(`/play/${pendingDifficulty.toLowerCase()}`);
     }
     setShowDifficultyDialog(false);

@@ -63,6 +63,18 @@ export const useMoveHandler = (
 
           if (!game.isGameOver()) {
             setGameStarted(true);
+            // Ensure the game state is saved with gameStarted=true
+            const STORAGE_KEY = "chess-game-state";
+            const currentState = JSON.parse(
+              localStorage.getItem(STORAGE_KEY) || "{}"
+            );
+            localStorage.setItem(
+              STORAGE_KEY,
+              JSON.stringify({
+                ...currentState,
+                gameStarted: true,
+              })
+            );
           }
         }
 
