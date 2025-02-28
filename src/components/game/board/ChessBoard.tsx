@@ -221,18 +221,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
   }, [showBotSelection]);
 
-  // Clear lastMove when opponent's turn starts
-  useEffect(() => {
-    if (game.turn() !== playerColor && lastMove?.from !== undefined) {
-      // Only clear if it's opponent's turn AND there's a lastMove to clear
-      const isOpponentMove = lastMove.from.includes(game.turn());
-      if (isOpponentMove) {
-        console.log("Clearing lastMove because opponent's turn");
-        setLastMove(null);
-      }
-    }
-  }, [game.turn(), playerColor, lastMove, game, setLastMove]);
-
   // Game status display
   const getGameStatus = () => {
     if (game.isCheckmate())
@@ -266,6 +254,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       ...DEFAULT_STATE,
       playerColor,
       difficulty,
+      lastMove: null,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
 
@@ -288,12 +277,14 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       resetTimers();
       setGameStarted(false);
       resetCapturedPieces();
+      setLastMove(null);
 
       // Save the new state with updated color
       const newState = {
         ...DEFAULT_STATE,
         playerColor: color,
         difficulty,
+        lastMove: null,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
 
@@ -313,12 +304,14 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       resetTimers();
       setGameStarted(false);
       resetCapturedPieces();
+      setLastMove(null);
 
       // Save the new state with updated color
       const newState = {
         ...DEFAULT_STATE,
         playerColor: pendingColor,
         difficulty,
+        lastMove: null,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
 
