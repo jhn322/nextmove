@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Chess } from "chess.js";
+import { Chess, Square } from "chess.js";
 import { STORAGE_KEY, DEFAULT_STATE } from "../config/game";
 import { useGameSounds } from "./useGameSounds";
 import type { HistoryEntry, SavedGameState } from "../types/types";
@@ -44,10 +44,9 @@ export const useChessGame = (difficulty: string) => {
   // Check if a move is a pawn promotion
   const isPawnPromotion = useCallback(
     (from: string, to: string): boolean => {
-      const piece = game.get(from as any);
+      const piece = game.get(from as Square);
       if (!piece || piece.type !== "p") return false;
 
-      const sourceRank = from.charAt(1);
       const targetRank = to.charAt(1);
 
       // Check if pawn is moving to the last rank
