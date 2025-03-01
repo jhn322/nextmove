@@ -416,57 +416,62 @@ const GameControls = ({
               </Button>
             </div>
 
-            {/* Hint Button */}
-            <Button
-              onClick={onHintRequested}
-              variant="outline"
-              size="default"
-              disabled={
-                game.isGameOver() ||
-                game.turn() !== playerColor ||
-                isCalculatingHint
-              }
-              className="w-full py-6 text-lg font-medium flex items-center justify-center gap-2"
-            >
-              <Lightbulb
-                className={`h-5 w-5 ${
-                  isCalculatingHint ? "animate-pulse" : ""
-                }`}
-              />
-              {isCalculatingHint ? "Thinking..." : "Hint"}
-            </Button>
+            {/* Primary Action Buttons */}
+            <div className="grid grid-cols-1 gap-3 pt-2">
+              {/* Gameplay Buttons Row */}
+              <div className="flex gap-3">
+                {/* Hint Button */}
+                <Button
+                  onClick={onHintRequested}
+                  variant="outline"
+                  disabled={
+                    game.isGameOver() ||
+                    game.turn() !== playerColor ||
+                    isCalculatingHint
+                  }
+                  className="flex-1 py-5 text-base font-medium flex items-center justify-center gap-2"
+                >
+                  <Lightbulb
+                    className={`h-5 w-5 ${
+                      isCalculatingHint ? "animate-pulse" : ""
+                    }`}
+                  />
+                  {isCalculatingHint ? "Thinking..." : "Hint"}
+                </Button>
 
-            {/* Rematch Button - Only show when game is over */}
-            {isGameOver && (
+                {/* Rematch Button - Only show when game is over */}
+                {isGameOver ? (
+                  <Button
+                    onClick={onRematch}
+                    variant="default"
+                    className="flex-1 py-5 text-base font-medium flex items-center justify-center gap-2"
+                  >
+                    <Swords className="h-5 w-5" />
+                    Rematch
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={onResign}
+                    variant="destructive"
+                    className="flex-1 py-5 text-base font-medium flex items-center justify-center gap-2"
+                    disabled={game.isGameOver()}
+                  >
+                    <Flag className="h-5 w-5" />
+                    Resign
+                  </Button>
+                )}
+              </div>
+
+              {/* New Bot Button - Always visible */}
               <Button
-                onClick={onRematch}
-                variant="default"
-                className="w-full py-6 text-lg font-medium"
+                onClick={handleNewBotDialog}
+                variant="secondary"
+                className="w-full py-5 text-base font-medium flex items-center justify-center gap-2"
               >
-                Rematch
+                <UserPlus className="h-5 w-5" />
+                New Bot
               </Button>
-            )}
-
-            {/* New Bot Button */}
-            <Button
-              onClick={handleNewBotDialog}
-              variant="secondary"
-              className="w-full py-6 text-lg font-medium flex items-center justify-center gap-2"
-            >
-              <UserPlus className="h-5 w-5" />
-              New Bot
-            </Button>
-
-            {/* Resign Button */}
-            <Button
-              onClick={onResign}
-              variant="destructive"
-              className="w-full py-6 text-lg font-medium flex items-center justify-center gap-2"
-              disabled={game.isGameOver()}
-            >
-              <Flag className="h-5 w-5" />
-              Resign
-            </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
