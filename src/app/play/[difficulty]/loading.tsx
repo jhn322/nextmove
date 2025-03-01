@@ -23,13 +23,8 @@ export default function Loading() {
                 </div>
 
                 {/* Chess Board */}
-                <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
-                  {Array.from({ length: 64 }).map((_, index) => (
-                    <SkeletonSquare
-                      key={index}
-                      isLight={(Math.floor(index / 8) + (index % 8)) % 2 === 0}
-                    />
-                  ))}
+                <div className="w-full h-full flex items-center justify-center">
+                  <Skeleton className="w-full h-full aspect-square rounded-lg" />
                 </div>
               </div>
             </div>
@@ -61,20 +56,6 @@ const SkeletonPlayerProfile = () => (
       </div>
     </CardHeader>
   </Card>
-);
-
-const SkeletonSquare = ({ isLight }: { isLight: boolean }) => (
-  <div
-    className={`relative aspect-square w-full ${
-      isLight ? "bg-gray-200 dark:bg-gray-700" : "bg-gray-300 dark:bg-gray-800"
-    }`}
-  >
-    {Math.random() > 0.7 && (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <Skeleton className="h-8 w-8 rounded-full" />
-      </div>
-    )}
-  </div>
 );
 
 const SkeletonBotSelectionPanel = () => (
