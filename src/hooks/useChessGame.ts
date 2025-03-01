@@ -35,54 +35,78 @@ export const useChessGame = (difficulty: string) => {
     defaultState.capturedPieces
   );
 
-  // Load saved state from localStorage after component mounts
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  // State for pawn promotion
+  const [pendingPromotion, setPendingPromotion] = useState<{
+    from: string;
+    to: string;
+  } | null>(null);
 
+  // Check if a move is a pawn promotion
+  const isPawnPromotion = useCallback(
+    (from: string, to: string): boolean => {
+      const piece = game.get(from as any);
+      if (!piece || piece.type !== "p") return false;
+
+      const sourceRank = from.charAt(1);
+      const targetRank = to.charAt(1);
+
+      // Check if pawn is moving to the last rank
+      return (
+        (piece.color === "w" && targetRank === "8") ||
+        (piece.color === "b" && targetRank === "1")
+      );
+    },
+    [game]
+  );
+
+  useEffect(() => {
     const loadSavedState = () => {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const state = JSON.parse(saved) as SavedGameState;
-          if (state.difficulty === difficulty) {
-            const initialHistory = [{ fen: DEFAULT_STATE.fen, lastMove: null }];
+        const savedState = JSON.parse(
+          localStorage.getItem(STORAGE_KEY) || "null"
+        ) as SavedGameState | null;
 
-            // Update state with saved values
-            if (state.fen) {
-              game.load(state.fen);
-              setBoard(game.board());
-            }
-
-            setHistory(
-              Array.isArray(state.history) ? state.history : initialHistory
-            );
-
-            setCurrentMove(state.currentMove || 1);
-            setLastMove(state.lastMove || null);
-            setGameStarted(state.gameStarted || false);
-            setPlayerColor(state.playerColor || "w");
-            setCapturedPieces(state.capturedPieces || []);
-          }
+        if (savedState && savedState.fen) {
+          game.load(savedState.fen);
+          setBoard(game.board());
+          setGameStarted(savedState.gameStarted || false);
+          setPlayerColor(savedState.playerColor || "w");
+          setHistory(
+            savedState.history || [
+              { fen: savedState.fen, lastMove: savedState.lastMove },
+            ]
+          );
+          setCurrentMove(savedState.currentMove || 1);
+          setLastMove(savedState.lastMove || null);
+          setCapturedPieces(savedState.capturedPieces || []);
         }
       } catch (error) {
-        console.error("Error loading saved game state:", error);
+        console.error("Error loading saved state:", error);
       }
     };
 
     loadSavedState();
-  }, [difficulty, game]);
+  }, [game, difficulty]);
 
   // Hook for playing sounds
   const { playSound } = useGameSounds();
 
   // Make a move and update the board
   const makeMove = useCallback(
-    (from: string, to: string) => {
+    (from: string, to: string, promotionPiece?: "q" | "r" | "n" | "b") => {
       try {
+        // Check if this is a pawn promotion move
+        if (!promotionPiece && isPawnPromotion(from, to)) {
+          setPendingPromotion({ from, to });
+          return false;
+        }
+
+        setPendingPromotion(null);
+
         const moveDetails = game.move({
           from,
           to,
-          promotion: "q",
+          promotion: promotionPiece || "q",
         });
 
         if (moveDetails) {
@@ -108,6 +132,9 @@ export const useChessGame = (difficulty: string) => {
             playSound("capture");
           } else if (moveDetails.san.includes("O-O")) {
             playSound("castle");
+          } else if (moveDetails.san.includes("=")) {
+            playSound("move-self");
+            setTimeout(() => playSound("choice"), 200);
           } else {
             // Different sounds for player and bot moves
             playSound(
@@ -128,13 +155,13 @@ export const useChessGame = (difficulty: string) => {
 
           return true;
         }
-      } catch {
+      } catch (error) {
+        console.error("Move error:", error);
         playSound("illegal");
-        console.log("Invalid move");
       }
       return false;
     },
-    [game, playSound, playerColor]
+    [game, playSound, playerColor, isPawnPromotion]
   );
 
   // Move back to the previous position in history
@@ -191,5 +218,7 @@ export const useChessGame = (difficulty: string) => {
     capturedPieces,
     setCapturedPieces,
     resetCapturedPieces,
+    pendingPromotion,
+    setPendingPromotion,
   };
 };

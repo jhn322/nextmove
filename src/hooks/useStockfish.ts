@@ -6,7 +6,11 @@ import { Bot } from "@/components/game/data/bots";
 export const useStockfish = (
   game: Chess,
   selectedBot: Bot | null,
-  makeMove: (from: string, to: string) => boolean
+  makeMove: (
+    from: string,
+    to: string,
+    promotion?: "q" | "r" | "n" | "b"
+  ) => boolean
 ) => {
   const [engine, setEngine] = useState<StockfishEngine | null>(null);
 
@@ -42,7 +46,13 @@ export const useStockfish = (
       if (message.startsWith("bestmove")) {
         const moveStr = message.split(" ")[1];
         if (!game.isGameOver()) {
-          makeMove(moveStr.slice(0, 2), moveStr.slice(2, 4));
+          const from = moveStr.slice(0, 2);
+          const to = moveStr.slice(2, 4);
+          const promotion =
+            moveStr.length > 4
+              ? (moveStr.slice(4, 5) as "q" | "r" | "n" | "b")
+              : undefined;
+          makeMove(from, to, promotion);
         }
       }
     };

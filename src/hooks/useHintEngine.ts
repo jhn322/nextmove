@@ -24,7 +24,10 @@ export const useHintEngine = () => {
   }, []);
 
   const getHint = useCallback(
-    (game: Chess, callback: (from: string, to: string) => void) => {
+    (
+      game: Chess,
+      callback: (from: string, to: string, promotion?: string) => void
+    ) => {
       if (!engine || game.isGameOver() || typeof window === "undefined") return;
 
       setIsCalculating(true);
@@ -35,7 +38,11 @@ export const useHintEngine = () => {
           setIsCalculating(false);
           const moveStr = message.split(" ")[1];
           if (moveStr && moveStr !== "(none)") {
-            callback(moveStr.slice(0, 2), moveStr.slice(2, 4));
+            const from = moveStr.slice(0, 2);
+            const to = moveStr.slice(2, 4);
+            const promotion =
+              moveStr.length > 4 ? moveStr.slice(4, 5) : undefined;
+            callback(from, to, promotion);
           }
           engine.removeEventListener("message", handleMessage);
         }

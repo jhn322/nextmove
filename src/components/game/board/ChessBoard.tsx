@@ -19,6 +19,7 @@ import Piece from "@/components/game/board/Piece";
 import VictoryModal from "../modal/VictoryModal";
 import PlayerProfile from "./PlayerProfile";
 import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
+import PawnPromotionModal from "./PawnPromotionModal";
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [shouldPulse, setShouldPulse] = useState(false);
@@ -53,6 +54,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setPlayerColor,
     capturedPieces,
     resetCapturedPieces,
+    pendingPromotion,
+    setPendingPromotion,
   } = useChessGame(difficulty);
 
   const { getBotMove } = useStockfish(game, selectedBot, makeMove);
@@ -392,8 +395,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleHintRequest = () => {
     if (game.turn() === playerColor && !game.isGameOver()) {
       playSound("choice");
-      getHint(game, (from, to) => {
+      getHint(game, (from, to, promotion) => {
         setHintMove({ from, to });
+        if (promotion) {
+        }
       });
     }
   };
@@ -401,6 +406,42 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleSquareClick = (row: number, col: number) => {
     handleLeftClick(); // Clear highlights on left click
     originalHandleSquareClick(row, col);
+  };
+
+  // Handle pawn promotion piece selection
+  const handlePromotionSelect = (pieceType: "q" | "r" | "n" | "b") => {
+    if (pendingPromotion) {
+      const { from, to } = pendingPromotion;
+      const moveSuccessful = makeMove(from, to, pieceType);
+
+      if (moveSuccessful) {
+        const gameState = {
+          fen: game.fen(),
+          playerColor,
+          gameTime,
+          whiteTime,
+          blackTime,
+          difficulty,
+          gameStarted: true,
+          history,
+          currentMove,
+          lastMove,
+          pieceSet,
+          capturedPieces,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+
+        // If it's the bot's turn and the game is not over, trigger the bot move
+        if (game.turn() !== playerColor && !game.isGameOver()) {
+          setTimeout(getBotMove, 1000);
+        }
+      }
+    }
+  };
+
+  // Cancel pawn promotion
+  const handlePromotionCancel = () => {
+    setPendingPromotion(null);
   };
 
   /* Bot Selection Panel */
@@ -413,7 +454,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   />;
 
   return (
-    <>
+    <div className="flex flex-col h-full w-full">
       <main className="flex flex-col w-full items-center justify-start">
         <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
           <div className="relative w-full max-w-[min(80vh,90vw)] lg:max-w-[107vh]">
@@ -611,7 +652,17 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         onConfirmNewBot={confirmNewBot}
         onCancelDialog={handleCancelDialog}
       />
-    </>
+
+      {/* Pawn Promotion Modal */}
+      {pendingPromotion && (
+        <PawnPromotionModal
+          color={playerColor}
+          pieceSet={pieceSet}
+          onSelect={handlePromotionSelect}
+          onCancel={handlePromotionCancel}
+        />
+      )}
+    </div>
   );
 };
 

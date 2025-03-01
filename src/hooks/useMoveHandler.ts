@@ -7,7 +7,11 @@ export const useMoveHandler = (
   board: BoardSquare[][],
   setBoard: Dispatch<SetStateAction<BoardSquare[][]>>,
   playerColor: "w" | "b",
-  makeMove: (from: string, to: string) => boolean,
+  makeMove: (
+    from: string,
+    to: string,
+    promotion?: "q" | "r" | "n" | "b"
+  ) => boolean,
   setHistory: Dispatch<SetStateAction<HistoryEntry[]>>,
   setCurrentMove: (fn: (prev: number) => number) => void,
   setLastMove: (move: { from: string; to: string } | null) => void,
