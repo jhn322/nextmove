@@ -13,6 +13,22 @@ import {
 import { Chess } from "chess.js";
 import Confetti from "react-confetti";
 
+const VICTORY_MESSAGES = [
+  "Brilliant moves! Sweet victory!",
+  "Checkmate! You're a tactical genius!",
+  "The perfect strategy! Well played!",
+  "Masterful play! The bot never stood a chance!",
+  "Amazing win! Your chess skills are impressive!",
+];
+
+const DEFEAT_MESSAGES = [
+  "You'll get them next time!",
+  "A tough match! Keep practicing!",
+  "So close! Learn from this and come back stronger!",
+  "The bot got lucky this time!",
+  "A challenging opponent! Ready for a rematch?",
+];
+
 interface VictoryModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -45,14 +61,20 @@ const VictoryModal = ({
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
   const [isRecycling, setIsRecycling] = useState(false);
+  const [victoryMessage, setVictoryMessage] = useState("");
+  const [defeatMessage, setDefeatMessage] = useState("");
 
   const isPlayerWinner = useCallback(() => {
-    if (game.isCheckmate() || game.isGameOver()) {
-      const winningColor = game.turn() === "w" ? "Black" : "White";
-      return winningColor.toLowerCase() === playerColor;
+    if (game.isCheckmate()) {
+      const losingColor = game.turn() === "w" ? "w" : "b";
+      const winningColor = losingColor === "w" ? "b" : "w";
+      return winningColor === playerColor;
+    }
+    if (isResignation) {
+      return false;
     }
     return false;
-  }, [game, playerColor]);
+  }, [game, playerColor, isResignation]);
 
   const renderWinnerText = useCallback(() => {
     if (isResignation) {
@@ -65,10 +87,11 @@ const VictoryModal = ({
         return "Draw by insufficient material!";
       return "Game is a draw!";
     }
-    if (game.isCheckmate() || game.isGameOver()) {
-      const winningColor = game.turn() === "w" ? "Black" : "White";
-      const isPlayerWon = winningColor.toLowerCase() === playerColor;
-      const winnerName = isPlayerWon ? playerName : selectedBot?.name || "Bot";
+    if (game.isCheckmate()) {
+      const losingColor = game.turn() === "w" ? "w" : "b";
+      const winningColor = losingColor === "w" ? "b" : "w";
+      const isPlayerWon = winningColor === playerColor;
+      const winnerName = isPlayerWon ? "You" : selectedBot?.name || "Bot";
       return (
         <>
           <span className={isPlayerWon ? "text-blue-400" : "text-red-400"}>
@@ -77,13 +100,9 @@ const VictoryModal = ({
           won!
           <br />
           {isPlayerWon ? (
-            <span className="text-green-500">
-              Congratulations on your victory!
-            </span>
+            <span className="text-green-500">{victoryMessage}</span>
           ) : (
-            <span className="text-yellow-500 ">
-              You&apos;ll get them next time!
-            </span>
+            <span className="text-yellow-500">{defeatMessage}</span>
           )}
         </>
       );
@@ -94,10 +113,26 @@ const VictoryModal = ({
         by resignation!
       </>
     );
-  }, [game, isResignation, playerColor, selectedBot, playerName]);
+  }, [
+    game,
+    isResignation,
+    playerColor,
+    selectedBot,
+    victoryMessage,
+    defeatMessage,
+  ]);
 
   useEffect(() => {
     if (isOpen) {
+      const randomVictoryIndex = Math.floor(
+        Math.random() * VICTORY_MESSAGES.length
+      );
+      const randomDefeatIndex = Math.floor(
+        Math.random() * DEFEAT_MESSAGES.length
+      );
+      setVictoryMessage(VICTORY_MESSAGES[randomVictoryIndex]);
+      setDefeatMessage(DEFEAT_MESSAGES[randomDefeatIndex]);
+
       setMessage(renderWinnerText());
       setShowConfetti(isPlayerWinner());
       setIsRecycling(true);
@@ -118,7 +153,7 @@ const VictoryModal = ({
       setShowConfetti(false);
       setIsRecycling(false);
     }
-  }, [isOpen, renderWinnerText, game, isPlayerWinner]);
+  }, [isOpen, renderWinnerText, isPlayerWinner]);
 
   return (
     <>
@@ -138,7 +173,24 @@ const VictoryModal = ({
             <button
               onClick={onClose}
               className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-            ></button>
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              <span className="sr-only">Close</span>
+            </button>
           </div>
           <DialogHeader className="mt-1">
             <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
