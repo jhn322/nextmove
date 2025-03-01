@@ -17,6 +17,7 @@ import {
   Shield,
   Swords,
   ChevronDown,
+  Save,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -318,10 +319,10 @@ export default function Home() {
                   />
                 )}
 
-                {/* Saved game badge */}
+                {/* Saved game badge - only visible on sm and larger screens */}
                 {savedDifficulty?.toLowerCase() ===
                   level.name.toLowerCase() && (
-                  <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse">
+                  <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse hidden sm:block">
                     Saved Game
                   </div>
                 )}
@@ -339,7 +340,30 @@ export default function Home() {
                       />
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-xl font-bold">{level.name}</h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold">{level.name}</h2>
+                        {/* Save icon for mobile */}
+                        {savedDifficulty?.toLowerCase() ===
+                          level.name.toLowerCase() && (
+                          <div
+                            className="relative sm:hidden"
+                            title="Saved Game"
+                          >
+                            <div
+                              className={`${
+                                level.color.split(" ")[0]
+                              } px-2 py-1 rounded-full animate-pulse flex items-center gap-1.5`}
+                            >
+                              <Save className={`h-4 w-4 ${level.textColor}`} />
+                              <span
+                                className={`text-xs font-medium ${level.textColor}`}
+                              >
+                                Saved
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5 mt-1">
                         <level.styleIcon
                           className={`h-3.5 w-3.5 ${level.textColor}`}
@@ -353,7 +377,7 @@ export default function Home() {
                     </div>
                     <button
                       onClick={(e) => toggleCardExpansion(e, level.name)}
-                      className={`md:hidden p-1.5 rounded-full ${
+                      className={`sm:hidden p-1.5 rounded-full ${
                         level.color.split(" ")[0]
                       } ${level.textColor} transition-transform duration-300 ${
                         expandedCards[level.name] ? "rotate-180" : "rotate-0"
@@ -370,7 +394,7 @@ export default function Home() {
 
                   {/* Mobile collapsible content */}
                   <div
-                    className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+                    className={`sm:hidden transition-all duration-300 ease-in-out overflow-hidden ${
                       expandedCards[level.name]
                         ? "max-h-96 opacity-100 mb-4"
                         : "max-h-0 opacity-0"
@@ -407,7 +431,7 @@ export default function Home() {
                   </div>
 
                   {/* Desktop always visible content */}
-                  <div className="hidden md:block">
+                  <div className="hidden sm:block">
                     <p className="text-muted-foreground text-sm min-h-[4.5rem]">
                       {level.description}
                     </p>
@@ -430,7 +454,7 @@ export default function Home() {
 
                   {/* Mobile ELO summary when collapsed */}
                   <div
-                    className={`md:hidden ${
+                    className={`sm:hidden ${
                       expandedCards[level.name] ? "hidden" : "block"
                     } mt-2 mb-1`}
                   >
@@ -442,7 +466,7 @@ export default function Home() {
                         </span>
                       </span>
                       <div
-                        className={`md:hidden ${level.textColor} flex items-center gap-1 text-xs font-medium`}
+                        className={`sm:hidden ${level.textColor} flex items-center gap-1 text-xs font-medium`}
                       >
                         Play{" "}
                         <ChevronRight className="h-3 w-3 animate-bounceX" />
@@ -451,7 +475,7 @@ export default function Home() {
                   </div>
 
                   <div
-                    className={`mt-auto pt-3 self-end ${level.textColor} md:opacity-0 md:group-hover:opacity-100 transition-opacity hidden md:flex items-center gap-1 text-sm font-medium transform md:group-hover:translate-x-0 md:-translate-x-2`}
+                    className={`mt-auto pt-3 self-end ${level.textColor} sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1 text-sm font-medium transform sm:group-hover:translate-x-0 sm:-translate-x-2`}
                   >
                     Play now{" "}
                     <ChevronRight className="h-4 w-4 animate-bounceX" />
