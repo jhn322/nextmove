@@ -89,14 +89,18 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
     }
 
-    // Check if there's a saved game state and if the game was started
+    // Check if there's a saved game state
     const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    // If there's a saved state and the game was started, don't show bot selection
-    if (savedState?.gameStarted) {
+
+    // If there's a valid FEN in the saved state, consider it a started game
+    // This ensures that even if gameStarted flag is false, we still treat it as a started game
+    // if there's a valid game position saved
+    if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
       setShowBotSelection(false);
       setGameStarted(true);
     } else {
       setShowBotSelection(true);
+      setGameStarted(false);
     }
 
     if (savedState?.pieceSet) {
@@ -251,6 +255,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     playSound("choice");
     setSelectedBot(bot);
     setShowBotSelection(false);
+    setGameStarted(true);
+
+    // Save the game state immediately with gameStarted set to true
+    if (typeof window !== "undefined") {
+      const gameState = {
+        fen: game.fen(),
+        playerColor,
+        gameTime,
+        whiteTime,
+        blackTime,
+        difficulty,
+        gameStarted: true,
+        history,
+        currentMove,
+        lastMove,
+        pieceSet,
+        capturedPieces,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+    }
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -493,6 +517,25 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     onDifficultyChange={handleDifficultyChange}
     selectedBot={selectedBot}
   />;
+
+  // Add a specific effect to handle navigation back to the game
+  useEffect(() => {
+    // This effect runs when the component mounts (including when navigating back to the game)
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+
+    // If there's a valid saved game state with a non-default FEN, ensure we show the game controls
+    if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
+      // This is a saved game, so make sure we show the game controls
+      setShowBotSelection(false);
+      setGameStarted(true);
+
+      // Also ensure the gameStarted flag is set in localStorage
+      if (!savedState.gameStarted) {
+        savedState.gameStarted = true;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+      }
+    }
+  }, []); // Empty dependency array means this runs once when component mounts
 
   return (
     <div className="flex flex-col h-full w-full">

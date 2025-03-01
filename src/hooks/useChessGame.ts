@@ -68,7 +68,12 @@ export const useChessGame = (difficulty: string) => {
         if (savedState && savedState.fen) {
           game.load(savedState.fen);
           setBoard(game.board());
-          setGameStarted(savedState.gameStarted || false);
+
+          // If there's a valid FEN that's different from the default, consider it a started game
+          // even if the gameStarted flag is false
+          const isStartedGame = savedState.fen !== DEFAULT_STATE.fen;
+          setGameStarted(savedState.gameStarted || isStartedGame);
+
           setPlayerColor(savedState.playerColor || "w");
           setHistory(
             savedState.history || [
