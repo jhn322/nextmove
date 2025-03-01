@@ -38,8 +38,8 @@ import {
   Award,
   ChevronDown,
   icons,
-  Crown,
   Home,
+  Play,
 } from "lucide-react";
 import {
   Collapsible,
@@ -213,7 +213,7 @@ const Navbar = () => {
                       : ""
                   )}
                 >
-                  <Crown className="mr-2 h-4 w-4" />
+                  <Play className="mr-2 h-4 w-4" />
                   Play
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -458,7 +458,7 @@ const Navbar = () => {
                     )}
                   >
                     <div className="flex items-center">
-                      <Crown className="mr-3 h-5 w-5" />
+                      <Play className="mr-3 h-5 w-5" />
                       Play
                     </div>
                     <ChevronDown
