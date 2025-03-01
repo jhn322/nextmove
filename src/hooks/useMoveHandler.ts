@@ -40,6 +40,14 @@ export const useMoveHandler = (
         }` as Square;
         const to = `${"abcdefgh"[col]}${8 - row}` as Square;
 
+        // Check if player is trying to move to the same position
+        if (from === to) {
+          // Just deselect the piece without attempting a move
+          setSelectedPiece(null);
+          setPossibleMoves([]);
+          return;
+        }
+
         // Use makeMove instead of directly calling game.move
         const moveSuccessful = makeMove(from, to);
 

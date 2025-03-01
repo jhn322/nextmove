@@ -380,7 +380,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
     // Reset game and show bot selection
     handleModalClose();
-    setSelectedBot(null);
+    // Select the first bot from the current difficulty
+    setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
     setShowBotSelection(true);
     handleGameReset();
 

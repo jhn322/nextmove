@@ -209,17 +209,17 @@ const GameControls = ({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-4">
+    <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:min-w-[280px] lg:max-w-md lg:p-4">
       {/* Game Info Group */}
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-4 pb-2">
+          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
             <CardTitle className="flex items-center gap-2">
               Game Status
               <GameStatusIndicator game={game} />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
             <div className="flex items-center gap-3">
               <PlayerIndicator color="w" isActive={currentTurn === "w"}>
                 White
@@ -233,10 +233,10 @@ const GameControls = ({
         </Card>
 
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-4 pb-2">
+          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
             <CardTitle>Game Time</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-2">
+          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Total:</span>
               <span className="font-mono text-xl">{formatTime(gameTime)}</span>
@@ -272,10 +272,10 @@ const GameControls = ({
 
       {/* Move History */}
       <Card className="border-0 shadow-none">
-        <CardHeader className="p-4 pb-2">
+        <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
           <CardTitle>Move History</CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
+        <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
           <ScrollArea className="h-[200px] w-full rounded-md border">
             <div className="p-4 space-y-1">
               {history.slice(1).map((historyItem, index) => {
@@ -360,10 +360,10 @@ const GameControls = ({
       {/* Player Controls Group */}
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-4 pb-2">
+          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
             <CardTitle className="flex items-center gap-2">Play As</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
             <div className="flex gap-3">
               <Button
                 onClick={() => onColorChange("w")}
@@ -388,10 +388,10 @@ const GameControls = ({
         </Card>
 
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-4 pb-2">
+          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
             <CardTitle>Game Controls</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-4">
+          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0 space-y-4">
             {/* Move Controls */}
             <div className="flex gap-3 justify-center">
               <Button
@@ -477,10 +477,10 @@ const GameControls = ({
       {/* Settings Group */}
       <div className="space-y-2" data-highlight-difficulty>
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-4 pb-2">
+          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
             <CardTitle>Settings</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
             <div className="flex flex-col gap-4">
               {/* Piece Set Dropdown */}
               <div className="space-y-2">
