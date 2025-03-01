@@ -71,6 +71,19 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     undefined
   );
 
+  // Add state for player name
+  const [playerName, setPlayerName] = useState("Player");
+
+  // Load player name from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedPlayerName = localStorage.getItem("chess-player-name");
+      if (savedPlayerName) {
+        setPlayerName(savedPlayerName);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     // Load selected bot
     const savedBot = localStorage.getItem("selectedBot");
@@ -725,7 +738,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         playerColor={playerColor}
         handleNewBotDialog={handleNewBotDialog}
         selectedBot={selectedBot}
-        playerName="Player"
+        playerName={playerName}
       />
 
       <GameDialogs

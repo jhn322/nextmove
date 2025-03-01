@@ -41,6 +41,9 @@ const PlayerProfile = ({
 }: PlayerProfileProps) => {
   const [message, setMessage] = useState<string>("");
   const [showMessage, setShowMessage] = useState(false);
+  const [playerName, setPlayerName] = useState("Player");
+  const [playerAvatar, setPlayerAvatar] = useState("/default-pfp.png");
+
   const capitalizedDifficulty =
     difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
@@ -54,6 +57,22 @@ const PlayerProfile = ({
 
   // Check if there are any captured pieces to display
   const hasCapturedPieces = filteredPieces.length > 0;
+
+  // Load player data from localStorage
+  useEffect(() => {
+    if (!isBot && typeof window !== "undefined") {
+      const savedPlayerName = localStorage.getItem("chess-player-name");
+      const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
+
+      if (savedPlayerName) {
+        setPlayerName(savedPlayerName);
+      }
+
+      if (savedAvatarUrl) {
+        setPlayerAvatar(savedAvatarUrl);
+      }
+    }
+  }, [isBot]);
 
   useEffect(() => {
     if (isBot && lastMove && game) {
@@ -123,18 +142,18 @@ const PlayerProfile = ({
         <CardHeader className="flex flex-row items-center gap-2 space-y-0 p-2">
           <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
             <AvatarImage
-              src={
-                isBot && selectedBot ? selectedBot.image : "/default-pfp.png"
-              }
+              src={isBot && selectedBot ? selectedBot.image : playerAvatar}
               alt={
                 isBot
                   ? selectedBot?.name || `${capitalizedDifficulty} Bot`
-                  : "Player"
+                  : playerName
               }
               className="object-contain bg-gray-800 dark:bg-gray-700"
             />
             <AvatarFallback>
-              {isBot ? difficulty.substring(0, 2).toUpperCase() : "P"}
+              {isBot
+                ? difficulty.substring(0, 2).toUpperCase()
+                : playerName.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-0.5">
@@ -142,7 +161,7 @@ const PlayerProfile = ({
               <span className="text-[12px] font-medium leading-none">
                 {isBot
                   ? selectedBot?.name || `${capitalizedDifficulty} Bot`
-                  : "Player"}
+                  : playerName}
               </span>
               {isBot && selectedBot && (
                 <Image

@@ -55,7 +55,7 @@ const VictoryModal = ({
   playerColor,
   onNewBot,
   selectedBot,
-  playerName,
+  playerName: defaultPlayerName,
 }: VictoryModalProps) => {
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
@@ -63,6 +63,24 @@ const VictoryModal = ({
   const [isRecycling, setIsRecycling] = useState(false);
   const [victoryMessage, setVictoryMessage] = useState("");
   const [defeatMessage, setDefeatMessage] = useState("");
+  const [playerName, setPlayerName] = useState(defaultPlayerName);
+  const [playerAvatar, setPlayerAvatar] = useState("/default-pfp.png");
+
+  // Load player data from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedPlayerName = localStorage.getItem("chess-player-name");
+      const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
+
+      if (savedPlayerName) {
+        setPlayerName(savedPlayerName);
+      }
+
+      if (savedAvatarUrl) {
+        setPlayerAvatar(savedAvatarUrl);
+      }
+    }
+  }, []);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -199,7 +217,8 @@ const VictoryModal = ({
               <span className="sr-only">Close</span>
             </button>
           </div>
-          <DialogHeader className="mt-1">
+
+          <DialogHeader>
             <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
               {message}
             </DialogTitle>
@@ -208,8 +227,8 @@ const VictoryModal = ({
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold text-foreground">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
-                      <AvatarImage src="/default-pfp.png" alt="Player" />
-                      <AvatarFallback>P</AvatarFallback>
+                      <AvatarImage src={playerAvatar} alt={playerName} />
+                      <AvatarFallback>{playerName.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <span>{playerName}</span>
                     <span className="text-muted-foreground text-sm sm:text-base">
@@ -237,7 +256,8 @@ const VictoryModal = ({
               </div>
             )}
           </DialogHeader>
-          <div className="flex gap-2 sm:gap-3 pt-4">
+
+          <div className="flex gap-3 mt-6">
             {isResignation ? (
               <>
                 <Button
