@@ -168,7 +168,14 @@ const VictoryModal = ({
         />
       )}
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg">
+        <DialogContent
+          className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg"
+          aria-describedby="victory-modal-description"
+        >
+          <DialogDescription
+            id="victory-modal-description"
+            className="sr-only"
+          ></DialogDescription>
           <div className="absolute right-2 top-2 sm:right-4 sm:top-4">
             <button
               onClick={onClose}
@@ -197,7 +204,7 @@ const VictoryModal = ({
               {message}
             </DialogTitle>
             {!isResignation && (
-              <DialogDescription className="text-center pt-2 sm:pt-4 space-y-2">
+              <div className="text-sm text-muted-foreground text-center pt-2 sm:pt-4 space-y-2">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold text-foreground">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
@@ -227,7 +234,7 @@ const VictoryModal = ({
                 <div className="text-sm sm:text-base font-medium text-muted-foreground capitalize">
                   {difficulty} Difficulty
                 </div>
-              </DialogDescription>
+              </div>
             )}
           </DialogHeader>
           <div className="flex gap-2 sm:gap-3 pt-4">

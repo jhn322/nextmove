@@ -92,8 +92,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Check if there's a saved game state
     const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
 
-    // If there's a valid FEN in the saved state, consider it a started game
-    // This ensures that even if gameStarted flag is false, we still treat it as a started game
     // if there's a valid game position saved
     if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
       setShowBotSelection(false);
