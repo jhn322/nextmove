@@ -107,6 +107,17 @@ export const useChessGame = (difficulty: string) => {
 
         setPendingPromotion(null);
 
+        // Check if the move is legal before attempting it
+        const moves = game.moves({ verbose: true });
+        const isLegalMove = moves.some(
+          (move) => move.from === from && move.to === to
+        );
+
+        if (!isLegalMove) {
+          playSound("illegal");
+          return false;
+        }
+
         const moveDetails = game.move({
           from,
           to,
@@ -159,11 +170,13 @@ export const useChessGame = (difficulty: string) => {
 
           return true;
         }
+        return false;
       } catch (error) {
-        console.error("Move error:", error);
+        // This catch block should now rarely be hit since we check for legal moves first
+        console.debug("Move handling error:", error);
         playSound("illegal");
+        return false;
       }
-      return false;
     },
     [game, playSound, playerColor, isPawnPromotion]
   );
