@@ -92,7 +92,12 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Check if there's a saved game state and if the game was started
     const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
     // If there's a saved state and the game was started, don't show bot selection
-    setShowBotSelection(savedState?.gameStarted ? false : true);
+    if (savedState?.gameStarted) {
+      setShowBotSelection(false);
+      setGameStarted(true);
+    } else {
+      setShowBotSelection(true);
+    }
 
     if (savedState?.pieceSet) {
       setPieceSet(savedState.pieceSet);
@@ -173,6 +178,42 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
     }
+  }, [
+    game,
+    playerColor,
+    gameTime,
+    whiteTime,
+    blackTime,
+    difficulty,
+    gameStarted,
+    history,
+    currentMove,
+    lastMove,
+    pieceSet,
+    capturedPieces,
+  ]);
+
+  // Save state when component unmounts
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined") {
+        const gameState = {
+          fen: game.fen(),
+          playerColor,
+          gameTime,
+          whiteTime,
+          blackTime,
+          difficulty,
+          gameStarted,
+          history,
+          currentMove,
+          lastMove,
+          pieceSet,
+          capturedPieces,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+      }
+    };
   }, [
     game,
     playerColor,
@@ -586,44 +627,47 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
           {/* Game Controls on the right */}
           <div className="w-full lg:w-80 lg:flex flex-col">
-            {showBotSelection ? (
-              <div className={shouldPulse ? "pulse-border" : ""}>
-                <BotSelectionPanel
-                  bots={BOTS_BY_DIFFICULTY[difficulty]}
-                  onSelectBot={handleSelectBot}
-                  difficulty={difficulty}
-                  onDifficultyChange={handleDifficultyChange}
-                  selectedBot={selectedBot}
-                />
-              </div>
-            ) : (
-              <div>
-                <GameControls
-                  difficulty={difficulty}
-                  gameStatus={getGameStatus()}
-                  onResign={handleResign}
-                  onColorChange={handleColorChange}
-                  onDifficultyChange={handleDifficultyChange}
-                  playerColor={playerColor}
-                  gameTime={gameTime}
-                  whiteTime={whiteTime}
-                  blackTime={blackTime}
-                  game={game}
-                  onMoveBack={moveBack}
-                  onMoveForward={moveForward}
-                  canMoveBack={currentMove > 1}
-                  canMoveForward={currentMove < history.length}
-                  onRematch={handleGameReset}
-                  history={history}
-                  pieceSet={pieceSet}
-                  onPieceSetChange={setPieceSet}
-                  onNewBot={handleNewBot}
-                  handleNewBotDialog={handleNewBotDialog}
-                  onHintRequested={handleHintRequest}
-                  isCalculatingHint={isCalculating}
-                />
-              </div>
-            )}
+            <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4">
+              {/* Bot selection panel */}
+              {showBotSelection && !gameStarted ? (
+                <div className={shouldPulse ? "pulse-border" : ""}>
+                  <BotSelectionPanel
+                    bots={BOTS_BY_DIFFICULTY[difficulty]}
+                    onSelectBot={handleSelectBot}
+                    difficulty={difficulty}
+                    onDifficultyChange={handleDifficultyChange}
+                    selectedBot={selectedBot}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <GameControls
+                    difficulty={difficulty}
+                    gameStatus={getGameStatus()}
+                    onResign={handleResign}
+                    onColorChange={handleColorChange}
+                    onDifficultyChange={handleDifficultyChange}
+                    playerColor={playerColor}
+                    gameTime={gameTime}
+                    whiteTime={whiteTime}
+                    blackTime={blackTime}
+                    game={game}
+                    onMoveBack={moveBack}
+                    onMoveForward={moveForward}
+                    canMoveBack={currentMove > 1}
+                    canMoveForward={currentMove < history.length}
+                    onRematch={handleGameReset}
+                    history={history}
+                    pieceSet={pieceSet}
+                    onPieceSetChange={setPieceSet}
+                    onNewBot={handleNewBot}
+                    handleNewBotDialog={handleNewBotDialog}
+                    onHintRequested={handleHintRequest}
+                    isCalculatingHint={isCalculating}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>

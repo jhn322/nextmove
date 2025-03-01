@@ -144,8 +144,7 @@ export default function Home() {
     if (saved) {
       try {
         const state = JSON.parse(saved);
-        // Only return difficulty if game was actually started
-        return state.gameStarted ? state.difficulty : null;
+        return state.fen ? state.difficulty : null;
       } catch {
         return null;
       }
