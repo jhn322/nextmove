@@ -43,9 +43,11 @@ interface SquareProps {
   isCheck: boolean;
   isLastMove: boolean;
   isHintMove?: boolean;
+  isRedHighlighted?: boolean;
   coordinate?: string;
   showRank?: boolean;
   showFile?: boolean;
+  onContextMenu?: (event: React.MouseEvent) => void;
 }
 
 const Square = ({
@@ -58,9 +60,11 @@ const Square = ({
   isCheck,
   isLastMove,
   isHintMove = false,
+  isRedHighlighted = false,
   coordinate,
   showRank,
   showFile,
+  onContextMenu,
 }: SquareProps) => {
   const colors = difficultyColors[difficulty as keyof typeof difficultyColors];
 
@@ -68,6 +72,9 @@ const Square = ({
   const getHighlightClass = () => {
     if (isCheck) {
       return "before:absolute before:inset-0 before:bg-red-500 before:bg-opacity-40 before:pointer-events-none before:z-20";
+    }
+    if (isRedHighlighted) {
+      return "before:absolute before:inset-0 before:bg-red-600 before:bg-opacity-50 before:pointer-events-none before:z-10";
     }
     if (isHintMove) {
       return "before:absolute before:inset-0 before:bg-purple-500 before:bg-opacity-50 before:pointer-events-none before:z-10 before:animate-pulse";
@@ -81,6 +88,7 @@ const Square = ({
   return (
     <div
       onClick={onClick}
+      onContextMenu={onContextMenu}
       className={`
       relative aspect-square w-full
       ${isLight ? colors.light : colors.dark}

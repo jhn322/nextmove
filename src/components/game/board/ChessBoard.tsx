@@ -11,6 +11,7 @@ import { useMoveHandler } from "../../../hooks/useMoveHandler";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { useHintEngine } from "@/hooks/useHintEngine";
+import useHighlightedSquares from "./HighlightedSquares";
 import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
 import SquareComponent from "@/components/game/board/Square";
@@ -26,6 +27,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
     null
   );
+
+  const { handleRightClick, handleLeftClick, clearHighlights, isHighlighted } =
+    useHighlightedSquares();
 
   const router = useRouter();
 
@@ -121,7 +125,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setSelectedPiece,
     possibleMoves,
     setPossibleMoves,
-    handleSquareClick,
+    handleSquareClick: originalHandleSquareClick,
   } = useMoveHandler(
     game,
     board,
@@ -191,6 +195,13 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   useEffect(() => {
     setHintMove(null);
   }, [lastMove]);
+
+  // Clear highlights when a move is made
+  useEffect(() => {
+    if (lastMove) {
+      clearHighlights();
+    }
+  }, [lastMove, clearHighlights]);
 
   const handleSelectBot = (bot: Bot) => {
     playSound("choice");
@@ -386,6 +397,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
   };
 
+  const handleSquareClick = (row: number, col: number) => {
+    handleLeftClick(); // Clear highlights on left click
+    originalHandleSquareClick(row, col);
+  };
+
   /* Bot Selection Panel */
   <BotSelectionPanel
     bots={BOTS_BY_DIFFICULTY[difficulty]}
@@ -488,10 +504,12 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                           onClick={() =>
                             handleSquareClick(actualRowIndex, actualColIndex)
                           }
+                          onContextMenu={(e) => handleRightClick(square, e)}
                           difficulty={difficulty}
                           isCheck={isKingInCheck}
                           isLastMove={isLastMove ?? false}
                           isHintMove={isHintMove ?? false}
+                          isRedHighlighted={isHighlighted(square)}
                           showRank={showRank}
                           showFile={showFile}
                           coordinate={coordinate}
