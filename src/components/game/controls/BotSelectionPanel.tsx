@@ -17,7 +17,7 @@ import {
   Info,
   Baby,
   Gamepad2,
-  Swords,
+  BookOpen,
   Sword,
   Crosshair,
   Target,
@@ -76,7 +76,7 @@ const BotSelectionPanel = ({
   const difficultyIcons = {
     beginner: { icon: Baby, color: "text-emerald-500" },
     easy: { icon: Gamepad2, color: "text-green-500" },
-    intermediate: { icon: Swords, color: "text-cyan-500" },
+    intermediate: { icon: BookOpen, color: "text-cyan-500" },
     advanced: { icon: Sword, color: "text-blue-500" },
     hard: { icon: Crosshair, color: "text-violet-500" },
     expert: { icon: Target, color: "text-purple-500" },

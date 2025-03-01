@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 
 type SoundType =
   | "move-self" // Player move
@@ -44,24 +44,62 @@ const soundFiles = {
 const audioCache: { [key: string]: HTMLAudioElement } = {};
 
 export const useGameSounds = () => {
-  const playSound = useCallback((type: SoundType) => {
-    const soundFile = soundFiles[type];
+  const [hasInteracted, setHasInteracted] = useState(false);
 
-    if (!soundFile) return;
+  // Check if user has interacted with the document
+  useEffect(() => {
+    const handleInteraction = () => {
+      setHasInteracted(true);
+    };
 
-    // Try to get cached audio element
-    let audio = audioCache[type];
+    document.addEventListener("click", handleInteraction);
+    document.addEventListener("keydown", handleInteraction);
+    document.addEventListener("touchstart", handleInteraction);
 
-    // Create and cache new audio element if needed
-    if (!audio) {
-      audio = new Audio(soundFile);
-      audioCache[type] = audio;
+    if (document.readyState === "complete" && document.hasFocus()) {
+      setHasInteracted(true);
     }
 
-    // Reset and play
-    audio.currentTime = 0;
-    audio.play().catch((err) => console.error("Error playing sound:", err));
+    return () => {
+      document.removeEventListener("click", handleInteraction);
+      document.removeEventListener("keydown", handleInteraction);
+      document.removeEventListener("touchstart", handleInteraction);
+    };
   }, []);
+
+  const playSound = useCallback(
+    (type: SoundType) => {
+      const soundFile = soundFiles[type];
+
+      if (!soundFile) return;
+
+      // Skip playing sound if user hasn't interacted with the board yet
+      if (!hasInteracted && typeof window !== "undefined") {
+        console.log("Sound not played: waiting for user interaction");
+        return;
+      }
+
+      // Try to get cached audio element
+      let audio = audioCache[type];
+
+      // Create and cache new audio element if needed
+      if (!audio) {
+        audio = new Audio(soundFile);
+        audioCache[type] = audio;
+      }
+
+      // Reset and play
+      audio.currentTime = 0;
+      audio.play().catch((err) => {
+        if (err.name === "NotAllowedError") {
+          console.log("Sound not allowed: user interaction required");
+        } else {
+          console.error("Error playing sound:", err);
+        }
+      });
+    },
+    [hasInteracted]
+  );
 
   return { playSound };
 };

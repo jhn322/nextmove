@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/theme-providers";
 
 const geistSans = Geist({
@@ -18,7 +19,10 @@ export const metadata: Metadata = {
   title: "NextMove",
   description: "A modern chess app built with Next.js and shadcn UI.",
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
   },
 };
 
@@ -30,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <ThemeProvider
           attribute="class"
@@ -39,7 +43,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
-          {children}
+          <main className="flex-grow">{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

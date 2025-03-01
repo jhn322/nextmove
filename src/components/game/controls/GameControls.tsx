@@ -19,9 +19,10 @@ import {
   Palette,
   UserPlus,
   AlertCircle,
-  Swords,
   HandshakeIcon,
   Lightbulb,
+  PlayCircle,
+  Swords,
 } from "lucide-react";
 import {
   Tooltip,
@@ -79,7 +80,7 @@ const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
 
   if (game.isCheck()) {
     return (
-      <div className="inline-flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-3 py-1.5 rounded-full animate-bounce">
+      <div className="inline-flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-3 py-1.5 rounded-full animate-pulse">
         <AlertCircle className="h-4 w-4" />
         <span className="font-semibold">Check!</span>
       </div>
@@ -95,7 +96,12 @@ const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
     );
   }
 
-  return null;
+  return (
+    <div className="inline-flex items-center gap-2 bg-green-500/10 text-green-500 px-3 py-1.5 rounded-full">
+      <PlayCircle className="h-4 w-4" />
+      <span className="font-semibold">In Progress</span>
+    </div>
+  );
 };
 
 // Player(s) UI
@@ -126,7 +132,9 @@ const PlayerIndicator = ({
       className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${bg} ${text} ${border} transition-all duration-200`}
     >
       <Crown
-        className={`h-5 w-5 ${isActive ? "animate-pulse" : "opacity-50"}`}
+        className={`h-5 w-5 ${isActive ? "animate-pulse" : "opacity-50"} ${
+          color === "w" ? "fill-current" : ""
+        }`}
       />
       <span className="font-medium">{children}</span>
     </div>
@@ -214,8 +222,8 @@ const GameControls = ({
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="flex items-center gap-2">
-              Game Status
+            <CardTitle className="flex items-center">
+              <span className="mr-2 text-muted-foreground">Game Status:</span>
               <GameStatusIndicator game={game} />
             </CardTitle>
           </CardHeader>
@@ -371,7 +379,7 @@ const GameControls = ({
                 className="flex-1 flex items-center justify-center gap-2"
                 disabled={playerColor === "w"}
               >
-                <Crown className="h-4 w-4" />
+                <Crown className="h-4 w-4 fill-current" />
                 White
               </Button>
               <Button
@@ -446,7 +454,7 @@ const GameControls = ({
                     variant="default"
                     className="flex-1 py-5 text-base font-medium flex items-center justify-center gap-2"
                   >
-                    <Swords className="h-5 w-5" />
+                    <HandshakeIcon className="h-5 w-5" />
                     Rematch
                   </Button>
                 ) : (
