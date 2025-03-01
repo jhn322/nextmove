@@ -85,7 +85,7 @@ const BotSelectionPanel = ({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:min-w-[280px] lg:max-w-md lg:p-4">
+    <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:p-4">
       <Card className="border-0 shadow-none">
         <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
           <CardTitle className="text-lg lg:text-xl">
@@ -94,7 +94,7 @@ const BotSelectionPanel = ({
         </CardHeader>
         <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
           {/* Mobile Layout (< 1024px) */}
-          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {bots.map((bot) => (
               <div
                 key={bot.name}

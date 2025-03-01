@@ -551,8 +551,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   return (
     <div className="flex flex-col h-full w-full">
       <main className="flex flex-col w-full items-center justify-start">
-        <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
-          <div className="relative w-full max-w-[min(80vh,90vw)] lg:max-w-[107vh]">
+        <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
+          <div className="relative w-full max-w-[min(85vh,95vw)] sm:max-w-[min(85vh,85vw)] md:max-w-[min(90vh,80vw)] lg:max-w-[107vh]">
             {/* Chess board and profiles */}
             <div className="flex mb-4 lg:hidden">
               <PlayerProfile
@@ -680,11 +680,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           </div>
 
           {/* Game Controls on the right */}
-          <div className="w-full lg:w-80 lg:flex flex-col">
+          <div className="w-full sm:max-w-[min(85vh,85vw)] md:max-w-[min(90vh,80vw)] lg:w-80 lg:flex flex-col">
             <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4">
               {/* Bot selection panel */}
               {showBotSelection && !gameStarted ? (
-                <div className={shouldPulse ? "pulse-border" : ""}>
+                <div className={`w-full ${shouldPulse ? "pulse-border" : ""}`}>
                   <BotSelectionPanel
                     bots={BOTS_BY_DIFFICULTY[difficulty]}
                     onSelectBot={handleSelectBot}
@@ -694,7 +694,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                   />
                 </div>
               ) : (
-                <div>
+                <div className="w-full">
                   <GameControls
                     difficulty={difficulty}
                     gameStatus={getGameStatus()}

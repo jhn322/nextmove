@@ -217,7 +217,7 @@ const GameControls = ({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:min-w-[280px] lg:max-w-md lg:p-4">
+    <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:p-4">
       {/* Game Info Group */}
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
