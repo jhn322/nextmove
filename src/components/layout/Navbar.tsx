@@ -37,7 +37,6 @@ import {
   Trophy,
   Award,
   ChevronDown,
-  icons,
   Home,
   Play,
   Github,
@@ -57,6 +56,17 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,7 +74,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { setTheme, theme } = useTheme();
   const pathname = usePathname();
-  const { status, session, signIn, signOut } = useAuth();
+  const { status, signIn, signOut } = useAuth();
   const isAuthenticated = status === "authenticated";
 
   useEffect(() => {
@@ -332,20 +342,41 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button
-            onClick={isAuthenticated ? signOut : () => signIn("google")}
-            className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all"
-          >
-            {isAuthenticated ? (
-              <>
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </>
-            ) : (
-              <>
-                <LogIn className="mr-2 h-4 w-4" /> Login
-              </>
-            )}
-          </Button>
+          {isAuthenticated ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all">
+                  <LogOut className="mr-2 h-4 w-4" /> Logout
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Are you sure you want to logout?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You will be signed out of your account and redirected to the
+                    home page.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-lg">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={signOut} className="rounded-lg">
+                    Logout
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button
+              onClick={() => signIn("google")}
+              className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all"
+            >
+              <LogIn className="mr-2 h-4 w-4" /> Login
+            </Button>
+          )}
         </div>
 
         {/* Mobile Menu Trigger */}
@@ -549,22 +580,44 @@ const Navbar = () => {
                         <span className="sr-only">GitHub Repository</span>
                       </Link>
 
-                      <Button
-                        onClick={
-                          isAuthenticated ? signOut : () => signIn("google")
-                        }
-                        className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
-                      >
-                        {isAuthenticated ? (
-                          <>
-                            <LogOut className="mr-2 h-4 w-4" /> Logout
-                          </>
-                        ) : (
-                          <>
-                            <LogIn className="mr-2 h-4 w-4" /> Login
-                          </>
-                        )}
-                      </Button>
+                      {isAuthenticated ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg">
+                              <LogOut className="mr-2 h-4 w-4" /> Logout
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-xl">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you sure you want to logout?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                You will be signed out of your account and
+                                redirected to the home page.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="rounded-lg">
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={signOut}
+                                className="rounded-lg"
+                              >
+                                Logout
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : (
+                        <Button
+                          onClick={() => signIn("google")}
+                          className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
+                        >
+                          <LogIn className="mr-2 h-4 w-4" /> Login
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>

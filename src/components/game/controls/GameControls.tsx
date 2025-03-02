@@ -222,7 +222,7 @@ const GameControls = ({
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center text-md">
               <span className="mr-2 text-muted-foreground">Game Status:</span>
               <GameStatusIndicator game={game} />
             </CardTitle>
@@ -242,7 +242,7 @@ const GameControls = ({
 
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle>Game Time</CardTitle>
+            <CardTitle className="text-md">Game Time</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0 space-y-2">
             <div className="flex justify-between items-center">
@@ -281,7 +281,7 @@ const GameControls = ({
       {/* Move History */}
       <Card className="border-0 shadow-none">
         <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-          <CardTitle>Move History</CardTitle>
+          <CardTitle className="text-md">Move History</CardTitle>
         </CardHeader>
         <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
           <ScrollArea className="h-[200px] w-full rounded-md border">
@@ -369,7 +369,9 @@ const GameControls = ({
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="flex items-center gap-2">Play As</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-md">
+              Play As
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
             <div className="flex gap-3">
@@ -397,7 +399,7 @@ const GameControls = ({
 
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle>Game Controls</CardTitle>
+            <CardTitle className="text-md">Game Controls</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0 space-y-4">
             {/* Move Controls */}
@@ -491,7 +493,7 @@ const GameControls = ({
       <div className="space-y-2" data-highlight-difficulty>
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle>Settings</CardTitle>
+            <CardTitle className="text-md">Settings</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
             <div className="flex flex-col gap-4">

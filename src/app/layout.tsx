@@ -4,6 +4,10 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/theme-providers";
+import { AuthProvider } from "@/context/auth-context";
+import { NextAuthProvider } from "@/providers/next-auth-provider";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,26 +30,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <NextAuthProvider session={session}>
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Navbar />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </ThemeProvider>
+          </AuthProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );
