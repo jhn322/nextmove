@@ -40,6 +40,7 @@ import {
   icons,
   Home,
   Play,
+  Github,
 } from "lucide-react";
 import {
   Collapsible,
@@ -55,14 +56,16 @@ import {
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlayOpen, setIsPlayOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { setTheme, theme } = useTheme();
   const pathname = usePathname();
+  const { status, session, signIn, signOut } = useAuth();
+  const isAuthenticated = status === "authenticated";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -244,35 +247,39 @@ const Navbar = () => {
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <Link
-                  href="/history"
-                  className={cn(
-                    "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
-                    isActive("/history")
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <History className="mr-2 h-4 w-4" />
-                  History
-                </Link>
-              </NavigationMenuItem>
+              {isAuthenticated && (
+                <>
+                  <NavigationMenuItem>
+                    <Link
+                      href="/history"
+                      className={cn(
+                        "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
+                        isActive("/history")
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
+                      <History className="mr-2 h-4 w-4" />
+                      History
+                    </Link>
+                  </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <Link
-                  href="/settings"
-                  className={cn(
-                    "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
-                    isActive("/settings")
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link
+                      href="/settings"
+                      className={cn(
+                        "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
+                        isActive("/settings")
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </NavigationMenuItem>
+                </>
+              )}
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -326,10 +333,10 @@ const Navbar = () => {
           </DropdownMenu>
 
           <Button
-            onClick={() => setIsLoggedIn(!isLoggedIn)}
+            onClick={isAuthenticated ? signOut : () => signIn("google")}
             className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all"
           >
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
               </>
@@ -341,212 +348,221 @@ const Navbar = () => {
           </Button>
         </div>
 
-        {/* Mobile Menu Button */}
-        <div className="lg:hidden flex items-center space-x-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-10 w-10 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm hover:bg-accent/50 transition-colors"
-              >
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36 rounded-xl">
-              <DropdownMenuItem
-                onClick={() => setTheme("light")}
-                className={cn(
-                  "py-2 cursor-pointer",
-                  theme === "light" ? "bg-accent" : ""
-                )}
-              >
-                <Sun className="mr-2 h-4 w-4" />
-                <span>Light</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setTheme("dark")}
-                className={cn(
-                  "py-2 cursor-pointer",
-                  theme === "dark" ? "bg-accent" : ""
-                )}
-              >
-                <Moon className="mr-2 h-4 w-4" />
-                <span>Dark</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setTheme("system")}
-                className={cn(
-                  "py-2 cursor-pointer",
-                  theme === "system" ? "bg-accent" : ""
-                )}
-              >
-                <Laptop className="mr-2 h-4 w-4" />
-                <span>System</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
+        {/* Mobile Menu Trigger */}
+        <div className="lg:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="h-10 w-10 rounded-xl hover:bg-accent/50"
+                className="h-10 w-10 rounded-xl"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="w-full sm:w-80 border-r border-border/30 bg-background/95 backdrop-blur-md"
+            <SheetContent 
+              side="right" 
+              className="w-full sm:w-[350px] p-0 bg-background/80 backdrop-blur-lg"
             >
-              <SheetHeader className="border-b pb-4 mb-6">
-                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <SheetDescription className="sr-only">
-                  Navigation options for NextMove
-                </SheetDescription>
-                <Link
-                  href="/"
-                  className="flex items-center space-x-3 hover:opacity-90 transition-all group"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <div className="relative w-9 h-9 flex-shrink-0 bg-primary/10 rounded-xl p-1.5 group-hover:scale-105 transition-transform">
-                    <Image
-                      src="/favicon.svg"
-                      alt="Pawn Icon"
-                      style={{ objectFit: "contain" }}
-                      width={40}
-                      height={40}
-                      className="drop-shadow-md"
-                    />
-                  </div>
-                  <span className="font-bold text-xl tracking-tight whitespace-nowrap group-hover:text-primary transition-colors">
-                    NextMove
-                  </span>
-                </Link>
-              </SheetHeader>
-
-              <div className="flex flex-col space-y-1">
-                <Link
-                  href="/"
-                  className={cn(
-                    "py-3 px-4 text-base font-medium rounded-xl transition-all flex items-center",
-                    isActive("/")
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-accent hover:text-accent-foreground"
-                  )}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Home className="mr-3 h-5 w-5" />
-                  Home
-                </Link>
-
-                <Collapsible
-                  open={isPlayOpen}
-                  onOpenChange={setIsPlayOpen}
-                  className="space-y-1 w-full"
-                >
-                  <CollapsibleTrigger
-                    className={cn(
-                      "flex items-center justify-between w-full py-3 px-4 text-base font-medium rounded-xl transition-all",
-                      pathname.startsWith("/play")
-                        ? "bg-primary/10 text-primary"
-                        : "hover:bg-accent hover:text-accent-foreground"
-                    )}
-                  >
-                    <div className="flex items-center">
-                      <Play className="mr-3 h-5 w-5" />
-                      Play
+              <div className="flex flex-col h-full">
+                <SheetHeader className="p-6 border-b">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative w-9 h-9 flex-shrink-0 bg-primary/10 rounded-xl p-1.5">
+                      <Image
+                        src="/favicon.svg"
+                        alt="Pawn Icon"
+                        style={{ objectFit: "contain" }}
+                        width={40}
+                        height={40}
+                        className="drop-shadow-md"
+                      />
                     </div>
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform duration-200 ${
-                        isPlayOpen ? "transform rotate-180" : ""
-                      }`}
-                    />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-1 mt-1">
-                    {playItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
+                    <span className="font-bold text-xl tracking-tight whitespace-nowrap">
+                      NextMove
+                    </span>
+                  </div>
+                </SheetHeader>
+
+                <div className="flex-1 overflow-auto py-4">
+                  <div className="flex flex-col space-y-1 px-4">
+                    <Link
+                      href="/"
+                      className={cn(
+                        "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center",
+                        isActive("/")
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-accent hover:text-accent-foreground"
+                      )}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Home className="mr-3 h-5 w-5" />
+                      <span>Home</span>
+                    </Link>
+
+                    <Collapsible
+                      open={isPlayOpen}
+                      onOpenChange={setIsPlayOpen}
+                      className="w-full"
+                    >
+                      <CollapsibleTrigger
                         className={cn(
-                          "flex items-center gap-3 py-2.5 px-4 ml-4 text-base font-medium rounded-xl transition-all",
-                          isActive(item.href)
-                            ? `${item.bgColor} ${item.color}`
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                          "w-full px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-between",
+                          pathname.startsWith("/play")
+                            ? "bg-primary/10 text-primary"
+                            : "hover:bg-accent hover:text-accent-foreground"
                         )}
-                        onClick={() => setIsOpen(false)}
                       >
-                        <div className={cn("p-1.5 rounded-lg", item.bgColor)}>
-                          <item.icon className={`h-4 w-4 ${item.color}`} />
+                        <div className="flex items-center">
+                          <Play className="mr-3 h-5 w-5" />
+                          <span>Play</span>
                         </div>
-                        {item.title}
-                      </Link>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform duration-200",
+                            isPlayOpen ? "rotate-180" : ""
+                          )}
+                        />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-1 space-y-1">
+                        {playItems.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                              "block px-4 py-3 text-base font-medium rounded-xl transition-colors ml-4",
+                              isActive(item.href)
+                                ? `${item.bgColor} ${item.borderColor} border`
+                                : "hover:bg-accent hover:text-accent-foreground"
+                            )}
+                            onClick={() => setIsOpen(false)}
+                          >
+                            <span className="flex items-center gap-3">
+                              <div
+                                className={cn("p-1.5 rounded-lg", item.bgColor)}
+                              >
+                                <item.icon
+                                  className={`h-5 w-5 ${item.color}`}
+                                />
+                              </div>
+                              {item.title}
+                            </span>
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                <Link
-                  href="/history"
-                  className={cn(
-                    "py-3 px-4 text-base font-medium rounded-xl transition-all flex items-center",
-                    isActive("/history")
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-accent hover:text-accent-foreground"
-                  )}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <History className="mr-3 h-5 w-5" />
-                  History
-                </Link>
-
-                <Link
-                  href="/settings"
-                  className={cn(
-                    "py-3 px-4 text-base font-medium rounded-xl transition-all flex items-center",
-                    isActive("/settings")
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-accent hover:text-accent-foreground"
-                  )}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Settings className="mr-3 h-5 w-5" />
-                  Settings
-                </Link>
-
-                {/* GitHub Link */}
-                <Link
-                  href="https://github.com/jhn322/chess-next"
-                  className="py-3 px-4 text-base font-medium rounded-xl hover:bg-accent hover:text-accent-foreground transition-all flex items-center mt-2"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <icons.Github className="h-5 w-5 mr-3" />
-                  <span>GitHub</span>
-                </Link>
-
-                <div className="pt-6 mt-4 border-t">
-                  <Button
-                    onClick={() => {
-                      setIsLoggedIn(!isLoggedIn);
-                      setIsOpen(false);
-                    }}
-                    className="w-full text-base py-6 flex items-center justify-center rounded-xl shadow-md"
-                  >
-                    {isLoggedIn ? (
+                    {isAuthenticated && (
                       <>
-                        <LogOut className="mr-2 h-5 w-5" /> Logout
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="mr-2 h-5 w-5" /> Login
+                        <Link
+                          href="/history"
+                          className={cn(
+                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center",
+                            isActive("/history")
+                              ? "bg-primary/10 text-primary"
+                              : "hover:bg-accent hover:text-accent-foreground"
+                          )}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <History className="mr-3 h-5 w-5" />
+                          <span>History</span>
+                        </Link>
+
+                        <Link
+                          href="/settings"
+                          className={cn(
+                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center",
+                            isActive("/settings")
+                              ? "bg-primary/10 text-primary"
+                              : "hover:bg-accent hover:text-accent-foreground"
+                          )}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <Settings className="mr-3 h-5 w-5" />
+                          <span>Settings</span>
+                        </Link>
                       </>
                     )}
-                  </Button>
+                  </div>
+                </div>
+
+                <div className="p-6 border-t w-full">
+                  <div className="flex flex-col space-y-4">
+                    <div className="flex items-center justify-between w-3/4 mx-auto">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 rounded-lg"
+                          >
+                            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                            <span className="sr-only">Toggle theme</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-36">
+                          <DropdownMenuItem
+                            onClick={() => setTheme("light")}
+                            className={cn(
+                              "cursor-pointer",
+                              theme === "light" ? "bg-accent" : ""
+                            )}
+                          >
+                            <Sun className="mr-2 h-4 w-4" />
+                            <span>Light</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setTheme("dark")}
+                            className={cn(
+                              "cursor-pointer",
+                              theme === "dark" ? "bg-accent" : ""
+                            )}
+                          >
+                            <Moon className="mr-2 h-4 w-4" />
+                            <span>Dark</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setTheme("system")}
+                            className={cn(
+                              "cursor-pointer",
+                              theme === "system" ? "bg-accent" : ""
+                            )}
+                          >
+                            <Laptop className="mr-2 h-4 w-4" />
+                            <span>System</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      <Link
+                        href="https://github.com/jhn322/chess-next"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                      >
+                        <Github className="h-[1.2rem] w-[1.2rem]" />
+                        <span className="sr-only">GitHub Repository</span>
+                      </Link>
+
+                      <Button
+                        onClick={
+                          isAuthenticated ? signOut : () => signIn("google")
+                        }
+                        className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
+                      >
+                        {isAuthenticated ? (
+                          <>
+                            <LogOut className="mr-2 h-4 w-4" /> Logout
+                          </>
+                        ) : (
+                          <>
+                            <LogIn className="mr-2 h-4 w-4" /> Login
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </SheetContent>
