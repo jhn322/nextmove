@@ -361,8 +361,8 @@ const Navbar = () => {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent 
-              side="right" 
+            <SheetContent
+              side="right"
               className="w-full sm:w-[350px] p-0 bg-background/80 backdrop-blur-lg"
             >
               <div className="flex flex-col h-full">
@@ -382,6 +382,10 @@ const Navbar = () => {
                       NextMove
                     </span>
                   </div>
+                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Navigate through NextMove application
+                  </SheetDescription>
                 </SheetHeader>
 
                 <div className="flex-1 overflow-auto py-4">
