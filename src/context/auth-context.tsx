@@ -62,12 +62,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleSignIn = async (provider: string) => {
     try {
-      // Determine the callback URL based on environment
+      // Use a consistent callback URL for production
       const callbackUrl =
-        typeof window !== "undefined"
-          ? window.location.origin
-          : process.env.NODE_ENV === "production"
+        process.env.NODE_ENV === "production"
           ? "https://next-move-js.vercel.app"
+          : typeof window !== "undefined"
+          ? window.location.origin
           : "http://localhost:3000";
 
       await nextAuthSignIn(provider, {
@@ -81,12 +81,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleSignOut = async () => {
     try {
-      // Determine the callback URL based on environment
+      // Use a consistent callback URL for production
       const callbackUrl =
-        typeof window !== "undefined"
-          ? window.location.origin
-          : process.env.NODE_ENV === "production"
+        process.env.NODE_ENV === "production"
           ? "https://next-move-js.vercel.app"
+          : typeof window !== "undefined"
+          ? window.location.origin
           : "http://localhost:3000";
 
       await nextAuthSignOut({

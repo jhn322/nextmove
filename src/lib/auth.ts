@@ -13,21 +13,23 @@ declare module "next-auth" {
 
 // Determine the base URL based on environment
 const getBaseUrl = () => {
-  // Check for VERCEL_URL for Vercel
+  // For production, always use the main domain
+  if (process.env.NODE_ENV === "production") {
+    return "https://next-move-js.vercel.app";
+  }
+
+  // For Vercel preview deployments
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
 
+  // If NEXTAUTH_URL is explicitly set
   if (process.env.NEXTAUTH_URL) {
     return process.env.NEXTAUTH_URL;
   }
 
   // Default to localhost in development
-  if (process.env.NODE_ENV === "development") {
-    return "http://localhost:3000";
-  }
-
-  return "https://next-move-js.vercel.app";
+  return "http://localhost:3000";
 };
 
 export const authOptions: NextAuthOptions = {
