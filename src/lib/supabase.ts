@@ -25,4 +25,8 @@ export interface UserSettings {
   theme_preference: string;
   sound_enabled: boolean;
   notifications_enabled: boolean;
+  piece_set?: string;
+  default_color?: string;
+  show_coordinates?: boolean;
+  enable_animations?: boolean;
 }

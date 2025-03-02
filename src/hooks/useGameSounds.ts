@@ -1,4 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
+import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/lib/supabase";
 
 type SoundType =
   | "move-self" // Player move
@@ -45,6 +47,33 @@ const audioCache: { [key: string]: HTMLAudioElement } = {};
 
 export const useGameSounds = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { session, status } = useAuth();
+
+  // Load sound settings from user settings
+  useEffect(() => {
+    async function loadSoundSettings() {
+      if (status === "authenticated" && session?.user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from("user_settings")
+            .select("sound_enabled")
+            .filter("user_id", "eq", session.user.id)
+            .maybeSingle();
+
+          if (error && error.code !== "PGRST116") {
+            console.error("Error fetching sound settings:", error);
+          } else if (data) {
+            setSoundEnabled(data.sound_enabled);
+          }
+        } catch (error) {
+          console.error("Unexpected error loading sound settings:", error);
+        }
+      }
+    }
+
+    loadSoundSettings();
+  }, [session, status]);
 
   // Check if user has interacted with the document
   useEffect(() => {
@@ -69,6 +98,9 @@ export const useGameSounds = () => {
 
   const playSound = useCallback(
     (type: SoundType) => {
+      // Skip if sound is disabled in user settings
+      if (!soundEnabled) return;
+
       const soundFile = soundFiles[type];
 
       if (!soundFile) return;
@@ -98,8 +130,8 @@ export const useGameSounds = () => {
         }
       });
     },
-    [hasInteracted]
+    [hasInteracted, soundEnabled]
   );
 
-  return { playSound };
+  return { playSound, soundEnabled };
 };

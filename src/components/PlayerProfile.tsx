@@ -14,54 +14,87 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Pencil } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/lib/supabase";
 
 interface PlayerProfileProps {
   className?: string;
 }
 
 export default function PlayerProfile({ className }: PlayerProfileProps) {
+  const { session, status, refreshSession } = useAuth();
   const [playerName, setPlayerName] = useState("Player");
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("/default-pfp.png");
+  const [avatarUrl, setAvatarUrl] = useState("/avatars/jake.png");
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
-  // Load player data from localStorage
+  // Force refresh when session changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedPlayerName = localStorage.getItem("chess-player-name");
-      const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
+    if (session) {
+      setLastRefresh(Date.now());
+    }
+  }, [session]);
 
-      if (savedPlayerName) {
-        setPlayerName(savedPlayerName);
-        setInputValue(savedPlayerName);
-      }
+  // Load player data from backend
+  useEffect(() => {
+    async function loadUserSettings() {
+      if (status === "authenticated" && session?.user?.id) {
+        setIsLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from("user_settings")
+            .select("*")
+            .filter("user_id", "eq", session.user.id)
+            .maybeSingle();
 
-      if (savedAvatarUrl) {
-        setAvatarUrl(savedAvatarUrl);
+          if (error && error.code !== "PGRST116") {
+            console.error("Error fetching settings:", error);
+          } else if (data) {
+            setPlayerName(data.display_name);
+            setInputValue(data.display_name);
+            setAvatarUrl(data.avatar_url);
+          } else {
+            // Use defaults or user info from session
+            const defaultName = session.user.name || "Player";
+            const defaultAvatar = session.user.image || "/avatars/jake.png";
+            setPlayerName(defaultName);
+            setInputValue(defaultName);
+            setAvatarUrl(defaultAvatar);
+          }
+        } catch (error) {
+          console.error("Unexpected error:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else if (status === "unauthenticated") {
+        setIsLoading(false);
       }
     }
-  }, []);
+
+    loadUserSettings();
+  }, [session, status, lastRefresh]);
 
   // Load available avatars
   useEffect(() => {
     const avatars = [
-      "/avatar/aang.png",
-      "/avatar/bojack.png",
-      "/avatar/bubblegum.png",
-      "/avatar/finn.png",
-      "/avatar/homer.png",
-      "/avatar/jake.png",
-      "/avatar/marceline.png",
-      "/avatar/mordecai.png",
-      "/avatar/patrick.png",
-      "/avatar/peter.png",
-      "/avatar/rigby.png",
-      "/avatar/sandy.png",
-      "/avatar/spongebob.png",
-      "/avatar/squidward.png",
-      "/default-pfp.png",
+      "/avatars/aang.png",
+      "/avatars/bojack.png",
+      "/avatars/bubblegum.png",
+      "/avatars/finn.png",
+      "/avatars/homer.png",
+      "/avatars/jake.png",
+      "/avatars/marceline.png",
+      "/avatars/mordecai.png",
+      "/avatars/patrick.png",
+      "/avatars/peter.png",
+      "/avatars/rigby.png",
+      "/avatars/sandy.png",
+      "/avatars/spongebob.png",
+      "/avatars/squidward.png",
     ];
 
     setAvailableAvatars(avatars);
@@ -72,12 +105,82 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
     setInputValue(playerName);
   };
 
-  const handleSaveName = () => {
-    if (inputValue.trim()) {
-      setPlayerName(inputValue.trim());
-      localStorage.setItem("chess-player-name", inputValue.trim());
+  const handleSaveName = async () => {
+    if (!session?.user?.id || !inputValue.trim()) return;
+
+    setIsLoading(true);
+    const newName = inputValue.trim();
+    setPlayerName(newName);
+
+    try {
+      // First check if the user has permission to access the table
+      const { error: permissionError } = await supabase
+        .from("user_settings")
+        .select("count")
+        .limit(1);
+
+      if (permissionError) {
+        console.error("Permission error:", permissionError);
+        setIsLoading(false);
+        setIsEditing(false);
+        return;
+      }
+
+      const { data: existingSettings, error: checkError } = await supabase
+        .from("user_settings")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Error checking settings:", checkError);
+        setIsLoading(false);
+        setIsEditing(false);
+        return;
+      }
+
+      if (existingSettings) {
+        // Update existing settings
+        const { error } = await supabase
+          .from("user_settings")
+          .update({
+            display_name: newName,
+          })
+          .eq("user_id", session.user.id);
+
+        if (error) {
+          console.error("Error updating name:", error);
+        } else {
+          // Refresh session to update profile everywhere
+          await refreshSession();
+        }
+      } else {
+        // Create new settings
+        const { error: insertError } = await supabase
+          .from("user_settings")
+          .insert({
+            user_id: session.user.id,
+            display_name: newName,
+            avatar_url: avatarUrl,
+            preferred_difficulty: "intermediate",
+            theme_preference: "dark",
+            sound_enabled: true,
+            notifications_enabled: true,
+          });
+
+        if (insertError) {
+          console.error("Error creating settings:", insertError);
+        } else {
+          // Refresh session to update profile everywhere
+          await refreshSession();
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
     }
-    setIsEditing(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -88,11 +191,107 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
     }
   };
 
-  const handleAvatarSelect = (avatarPath: string) => {
+  const handleAvatarSelect = async (avatarPath: string) => {
+    if (!session?.user?.id) return;
+
     setAvatarUrl(avatarPath);
-    localStorage.setItem("chess-player-avatar", avatarPath);
     setIsAvatarDialogOpen(false);
+    setIsLoading(true);
+
+    try {
+      // First check if the user has permission to access the table
+      const { error: permissionError } = await supabase
+        .from("user_settings")
+        .select("count")
+        .limit(1);
+
+      if (permissionError) {
+        console.error("Permission error:", permissionError);
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: existingSettings, error: checkError } = await supabase
+        .from("user_settings")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Error checking settings:", checkError);
+        setIsLoading(false);
+        return;
+      }
+
+      if (existingSettings) {
+        // Update existing settings
+        const { error } = await supabase
+          .from("user_settings")
+          .update({
+            avatar_url: avatarPath,
+          })
+          .eq("user_id", session.user.id);
+
+        if (error) {
+          console.error("Error updating avatar:", error);
+        } else {
+          // Refresh session to update profile everywhere
+          await refreshSession();
+        }
+      } else {
+        // Create new settings
+        const { error: insertError } = await supabase
+          .from("user_settings")
+          .insert({
+            user_id: session.user.id,
+            display_name: playerName,
+            avatar_url: avatarPath,
+            preferred_difficulty: "intermediate",
+            theme_preference: "dark",
+            sound_enabled: true,
+            notifications_enabled: true,
+          });
+
+        if (insertError) {
+          console.error("Error creating settings:", insertError);
+        } else {
+          // Refresh session to update profile everywhere
+          await refreshSession();
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // If not authenticated, don't render the component
+  if (status === "unauthenticated") {
+    return null;
+  }
+
+  // Show loading state
+  if (status === "loading" || isLoading) {
+    return (
+      <Card
+        className={`w-full bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg ${className}`}
+      >
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xl font-bold">Player Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-full bg-muted animate-pulse"></div>
+            <div className="flex-1">
+              <div className="h-6 w-24 bg-muted animate-pulse rounded"></div>
+              <div className="h-4 w-48 bg-muted animate-pulse rounded mt-2"></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -121,10 +320,19 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
                 </div>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent
+              className="sm:max-w-md"
+              aria-describedby="profile-avatar-dialog-description"
+            >
               <DialogHeader>
                 <DialogTitle>Choose Avatar</DialogTitle>
               </DialogHeader>
+              <div
+                id="profile-avatar-dialog-description"
+                className="text-sm text-muted-foreground mb-4"
+              >
+                Select an avatar to represent you in games
+              </div>
               <ScrollArea className="h-[300px] mt-2">
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
                   {availableAvatars.map((avatar, index) => (
