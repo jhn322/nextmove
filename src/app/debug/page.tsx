@@ -1,44 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getAuthenticatedSupabaseClient } from "@/lib/supabase";
 
 const DebugPage = () => {
-  const { session, status, signIn, signOut } = useAuth();
-  const [supabaseStatus, setSupabaseStatus] = useState<string>("Checking...");
-  const [envVars, setEnvVars] = useState<{ [key: string]: string | undefined }>(
-    {}
-  );
+  const { status, session, signIn, signOut } = useAuth();
 
-  useEffect(() => {
-    // Check Supabase connection
-    const checkSupabase = async () => {
-      try {
-        // Use the authenticated client if session exists
-        const client = getAuthenticatedSupabaseClient(session);
-
-        const { error } = await client.from("users").select("count").limit(1);
-        if (error) {
-          setSupabaseStatus(`Error: ${error.message}`);
-        } else {
-          setSupabaseStatus("Connected successfully");
-        }
-      } catch (error) {
-        setSupabaseStatus(`Exception: ${(error as Error).message}`);
-      }
-    };
-
-    // Get public environment variables
-    setEnvVars({
-      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
-    });
-
-    checkSupabase();
-  }, [session]);
+  // Get public environment variables
+  const envVars = {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NODE_ENV: process.env.NODE_ENV,
+  };
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
@@ -61,11 +35,6 @@ const DebugPage = () => {
                 </pre>
               </div>
             )}
-
-            <div>
-              <h3 className="text-lg font-medium">Supabase Status</h3>
-              <p className="text-muted-foreground">{supabaseStatus}</p>
-            </div>
 
             <div>
               <h3 className="text-lg font-medium">

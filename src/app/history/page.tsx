@@ -60,7 +60,7 @@ import {
   getUserGameHistory,
   clearUserGameHistory,
   GameHistory,
-} from "@/lib/supabase-direct";
+} from "@/lib/mongodb-service";
 
 interface GameStats {
   totalGames: number;
@@ -105,7 +105,7 @@ const HistoryPage = () => {
           }
 
           // Fetch game history using direct fetch
-          const history = await getUserGameHistory(session.user.id, session);
+          const history = await getUserGameHistory(session.user.id);
           setGameHistory(history || []);
 
           // Calculate game stats
@@ -251,18 +251,17 @@ const HistoryPage = () => {
     setError(null);
 
     try {
-      // Clear history using direct fetch
-      await clearUserGameHistory(session.user.id, session);
+      const success = await clearUserGameHistory(session.user.id);
+      if (success) {
+        setGameHistory([]);
+        setGameStats(null);
+        setMessage("Game history cleared successfully");
 
-      // Update local state
-      setGameHistory([]);
-      setGameStats(null);
-      setMessage("Game history cleared successfully");
-
-      // Trigger a refresh
-      setRefreshTrigger((prev) => prev + 1);
+        // Trigger a refresh
+        setRefreshTrigger((prev) => prev + 1);
+      }
     } catch (error) {
-      console.error("Unexpected error clearing history:", error);
+      console.error("Error clearing history:", error);
 
       // Check if this is an authentication error
       if (

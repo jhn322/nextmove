@@ -15,7 +15,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Pencil } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { getAuthenticatedSupabaseClient } from "@/lib/supabase";
+import { getUserSettings, saveUserSettings } from "@/lib/mongodb-service";
 
 interface PlayerProfileProps {
   className?: string;
@@ -23,7 +23,7 @@ interface PlayerProfileProps {
 
 export default function PlayerProfile({ className }: PlayerProfileProps) {
   const { session, status, refreshSession } = useAuth();
-  const [playerName, setPlayerName] = useState("Player");
+  const [playerName, setPlayerName] = useState<string>("Player");
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/avatars/jake.png");
@@ -45,21 +45,12 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
       if (status === "authenticated" && session?.user?.id) {
         setIsLoading(true);
         try {
-          // Use the authenticated client
-          const client = getAuthenticatedSupabaseClient(session);
+          const settings = await getUserSettings(session.user.id);
 
-          const { data, error } = await client
-            .from("user_settings")
-            .select("*")
-            .filter("user_id", "eq", session.user.id)
-            .maybeSingle();
-
-          if (error && error.code !== "PGRST116") {
-            console.error("Error fetching settings:", error);
-          } else if (data) {
-            setPlayerName(data.display_name);
-            setInputValue(data.display_name);
-            setAvatarUrl(data.avatar_url);
+          if (settings) {
+            setPlayerName(settings.display_name || "Player");
+            setInputValue(settings.display_name || "Player");
+            setAvatarUrl(settings.avatar_url || "/avatars/jake.png");
           } else {
             // Use defaults or user info from session
             const defaultName = session.user.name || "Player";
@@ -70,11 +61,19 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
           }
         } catch (error) {
           console.error("Unexpected error:", error);
+          // Set default values on error
+          setPlayerName("Player");
+          setInputValue("Player");
+          setAvatarUrl("/avatars/jake.png");
         } finally {
           setIsLoading(false);
         }
       } else if (status === "unauthenticated") {
         setIsLoading(false);
+        // Set default values for unauthenticated users
+        setPlayerName("Player");
+        setInputValue("Player");
+        setAvatarUrl("/avatars/jake.png");
       }
     }
 
@@ -116,70 +115,12 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
     setPlayerName(newName);
 
     try {
-      // Use the authenticated client
-      const client = getAuthenticatedSupabaseClient(session);
+      const success = await saveUserSettings(session.user.id, {
+        display_name: newName,
+      });
 
-      // First check if the user has permission to access the table
-      const { error: permissionError } = await client
-        .from("user_settings")
-        .select("count")
-        .limit(1);
-
-      if (permissionError) {
-        console.error("Permission error:", permissionError);
-        setIsLoading(false);
-        setIsEditing(false);
-        return;
-      }
-
-      const { data: existingSettings, error: checkError } = await client
-        .from("user_settings")
-        .select("id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error("Error checking settings:", checkError);
-        setIsLoading(false);
-        setIsEditing(false);
-        return;
-      }
-
-      if (existingSettings) {
-        // Update existing settings
-        const { error } = await client
-          .from("user_settings")
-          .update({
-            display_name: newName,
-          })
-          .eq("user_id", session.user.id);
-
-        if (error) {
-          console.error("Error updating name:", error);
-        } else {
-          // Refresh session to update profile everywhere
-          await refreshSession();
-        }
-      } else {
-        // Create new settings
-        const { error: insertError } = await client
-          .from("user_settings")
-          .insert({
-            user_id: session.user.id,
-            display_name: newName,
-            avatar_url: avatarUrl,
-            preferred_difficulty: "intermediate",
-            theme_preference: "dark",
-            sound_enabled: true,
-            notifications_enabled: true,
-          });
-
-        if (insertError) {
-          console.error("Error creating settings:", insertError);
-        } else {
-          // Refresh session to update profile everywhere
-          await refreshSession();
-        }
+      if (success) {
+        await refreshSession();
       }
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -205,68 +146,12 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
     setIsLoading(true);
 
     try {
-      // Use the authenticated client
-      const client = getAuthenticatedSupabaseClient(session);
+      const success = await saveUserSettings(session.user.id, {
+        avatar_url: avatarPath,
+      });
 
-      // First check if the user has permission to access the table
-      const { error: permissionError } = await client
-        .from("user_settings")
-        .select("count")
-        .limit(1);
-
-      if (permissionError) {
-        console.error("Permission error:", permissionError);
-        setIsLoading(false);
-        return;
-      }
-
-      const { data: existingSettings, error: checkError } = await client
-        .from("user_settings")
-        .select("id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error("Error checking settings:", checkError);
-        setIsLoading(false);
-        return;
-      }
-
-      if (existingSettings) {
-        // Update existing settings
-        const { error } = await client
-          .from("user_settings")
-          .update({
-            avatar_url: avatarPath,
-          })
-          .eq("user_id", session.user.id);
-
-        if (error) {
-          console.error("Error updating avatar:", error);
-        } else {
-          // Refresh session to update profile everywhere
-          await refreshSession();
-        }
-      } else {
-        // Create new settings
-        const { error: insertError } = await client
-          .from("user_settings")
-          .insert({
-            user_id: session.user.id,
-            display_name: playerName,
-            avatar_url: avatarPath,
-            preferred_difficulty: "intermediate",
-            theme_preference: "dark",
-            sound_enabled: true,
-            notifications_enabled: true,
-          });
-
-        if (insertError) {
-          console.error("Error creating settings:", insertError);
-        } else {
-          // Refresh session to update profile everywhere
-          await refreshSession();
-        }
+      if (success) {
+        await refreshSession();
       }
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -321,8 +206,10 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
                 className="p-0 h-auto rounded-full relative group"
               >
                 <Avatar className="h-16 w-16 cursor-pointer border-2 border-primary/50 group-hover:border-primary transition-all">
-                  <AvatarImage src={avatarUrl} alt={playerName} />
-                  <AvatarFallback>{playerName.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={avatarUrl} alt={playerName || "Player"} />
+                  <AvatarFallback>
+                    {(playerName || "P").charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                   <Pencil className="h-5 w-5 text-white" />
@@ -390,7 +277,9 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
                 </div>
               ) : (
                 <>
-                  <span className="text-xl font-bold">{playerName}</span>
+                  <span className="text-xl font-bold">
+                    {playerName || "Player"}
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"

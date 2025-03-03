@@ -1,8 +1,13 @@
-import { GameHistory, getAuthenticatedSupabaseClient } from "@/lib/supabase";
 import { Chess } from "chess.js";
 import { Bot } from "@/components/game/data/bots";
 import { Session } from "next-auth";
 import { DIFFICULTY_LEVELS } from "@/config/game";
+import {
+  GameHistory,
+  saveGameResult as saveGameToDb,
+  getUserGameHistory as getGameHistoryFromDb,
+  clearUserGameHistory as clearHistoryFromDb,
+} from "./mongodb-service";
 
 interface SaveGameResultParams {
   userId: string;
@@ -75,7 +80,6 @@ export const saveGameResult = async ({
   gameTime,
   movesCount,
   isResignation = false,
-  session,
 }: SaveGameResultParams): Promise<GameHistory | null> => {
   try {
     if (!userId || !selectedBot) {
@@ -83,28 +87,7 @@ export const saveGameResult = async ({
       return null;
     }
 
-    // Use the authenticated client
-    const client = getAuthenticatedSupabaseClient(session);
-
-    // First, check if this exact game result has already been saved
-    // We use the game FEN as a unique identifier for the game state
-    const { data: existingGames, error: checkError } = await client
-      .from("game_history")
-      .select("id")
-      .filter("user_id", "eq", userId)
-      .filter("fen", "eq", game.fen())
-      .limit(1);
-
-    if (checkError) {
-      console.error("Error checking for existing game:", checkError);
-    } else if (existingGames && existingGames.length > 0) {
-      console.log("Game already exists in database, skipping save");
-      return existingGames[0] as GameHistory;
-    }
-
     const result = determineGameResult(game, playerColor, isResignation);
-
-    // Normalize the difficulty to ensure it's a valid value
     const normalizedDifficulty = normalizeDifficulty(difficulty);
 
     const gameData: Omit<GameHistory, "id"> = {
@@ -115,21 +98,10 @@ export const saveGameResult = async ({
       moves_count: movesCount,
       time_taken: gameTime,
       difficulty: normalizedDifficulty,
-      fen: game.fen(), // Store the FEN to help prevent duplicate saves
+      fen: game.fen(),
     };
 
-    const { data, error } = await client
-      .from("game_history")
-      .insert(gameData)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error saving game result:", error);
-      return null;
-    }
-
-    return data as GameHistory;
+    return await saveGameToDb(gameData);
   } catch (error) {
     console.error("Unexpected error saving game result:", error);
     return null;
@@ -149,37 +121,13 @@ export const getUserGameHistory = async (
       throw new Error("Authentication required");
     }
 
-    // Use the authenticated client
-    const client = getAuthenticatedSupabaseClient(session);
-
-    const { data, error } = await client
-      .from("game_history")
-      .select("*")
-      .filter("user_id", "eq", userId)
-      .order("date", { ascending: false });
-
-    if (error) {
-      // Check if this is an authentication error
-      if (
-        error.code === "401" ||
-        error.message.includes("auth") ||
-        error.message.includes("permission")
-      ) {
-        console.error("Authentication error fetching game history:", error);
-        throw new Error("Authentication error: " + error.message);
-      }
-
-      console.error("Error fetching game history:", error);
-      return [];
-    }
+    const gameHistory = await getGameHistoryFromDb(userId);
 
     // Normalize difficulty values in the retrieved data
-    const normalizedData = data.map((game: GameHistory) => ({
+    return gameHistory.map((game) => ({
       ...game,
       difficulty: normalizeDifficulty(game.difficulty),
     }));
-
-    return normalizedData as GameHistory[];
   } catch (error) {
     console.error("Unexpected error fetching game history:", error);
     throw error;
@@ -271,35 +219,18 @@ export const clearUserGameHistory = async (
       return false;
     }
 
-    // Use the authenticated client
-    const client = getAuthenticatedSupabaseClient(session);
+    const success = await clearHistoryFromDb(userId);
 
-    // Delete all game history records for this user
-    const { error } = await client
-      .from("game_history")
-      .delete()
-      .filter("user_id", "eq", userId);
-
-    if (error) {
-      console.error("Error clearing game history:", error);
-      return false;
-    }
-
-    // Clear all game-related data from localStorage
-    if (typeof window !== "undefined") {
-      // Clear game result tracking
+    if (success && typeof window !== "undefined") {
+      // Clear all game-related data from localStorage
       localStorage.removeItem("last-saved-game-id");
       localStorage.removeItem("last-saved-game-fen");
-
-      // Clear any cached game history data
       localStorage.removeItem("chess-game-history");
       localStorage.removeItem("chess-game-stats");
-
-      // Clear any other game-related data that might be cached
       localStorage.removeItem("chess-last-game-result");
     }
 
-    return true;
+    return success;
   } catch (error) {
     console.error("Unexpected error clearing game history:", error);
     return false;

@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
-import { getAuthenticatedSupabaseClient } from "@/lib/supabase";
+import { getUserSettings } from "@/lib/mongodb-service";
 
 type SoundType =
   | "move-self" // Player move
@@ -86,19 +86,9 @@ export const useGameSounds = () => {
     async function loadSoundSettings() {
       if (status === "authenticated" && session?.user?.id) {
         try {
-          // Use the authenticated client
-          const client = getAuthenticatedSupabaseClient(session);
-
-          const { data, error } = await client
-            .from("user_settings")
-            .select("sound_enabled")
-            .filter("user_id", "eq", session.user.id)
-            .maybeSingle();
-
-          if (error && error.code !== "PGRST116") {
-            console.error("Error fetching sound settings:", error);
-          } else if (data) {
-            setSoundEnabled(data.sound_enabled);
+          const settings = await getUserSettings(session.user.id);
+          if (settings) {
+            setSoundEnabled(settings.sound_enabled);
           }
         } catch (error) {
           console.error("Unexpected error loading sound settings:", error);
