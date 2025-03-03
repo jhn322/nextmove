@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -23,7 +23,7 @@ import {
   Menu,
   History,
   Settings,
-  // LogIn,
+  LogIn,
   LogOut,
   Sun,
   Moon,
@@ -74,7 +74,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { setTheme, theme } = useTheme();
   const pathname = usePathname();
-  const { status, signOut } = useAuth(); // re-add signIn when ready
+  const router = useRouter();
+  const { status, signIn, signOut } = useAuth();
   const isAuthenticated = status === "authenticated";
 
   useEffect(() => {
@@ -165,6 +166,15 @@ const Navbar = () => {
   ];
 
   const isActive = (path: string) => pathname === path;
+
+  const handleProtectedNavigation = async (path: string) => {
+    if (isAuthenticated) {
+      await router.push(path);
+    } else {
+      await signIn("google", `${window.location.origin}${path}`);
+    }
+    setIsOpen(false); // Close mobile menu if open
+  };
 
   return (
     <nav
@@ -260,33 +270,33 @@ const Navbar = () => {
               {isAuthenticated && (
                 <>
                   <NavigationMenuItem>
-                    <Link
-                      href="/history"
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleProtectedNavigation("/history")}
                       className={cn(
-                        "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
-                        isActive("/history")
-                          ? "bg-primary/10 text-primary"
-                          : "hover:bg-accent hover:text-accent-foreground"
+                        "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
+                        isActive("/history") ? "bg-primary/10 text-primary" : ""
                       )}
                     >
                       <History className="mr-2 h-4 w-4" />
                       History
-                    </Link>
+                    </Button>
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
-                    <Link
-                      href="/settings"
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleProtectedNavigation("/settings")}
                       className={cn(
-                        "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
+                        "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
                         isActive("/settings")
                           ? "bg-primary/10 text-primary"
-                          : "hover:bg-accent hover:text-accent-foreground"
+                          : ""
                       )}
                     >
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
-                    </Link>
+                    </Button>
                   </NavigationMenuItem>
                 </>
               )}
@@ -371,14 +381,12 @@ const Navbar = () => {
             </AlertDialog>
           ) : (
             <>
-              {/* 
               <Button
                 onClick={() => signIn("google")}
                 className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all"
               >
                 <LogIn className="mr-2 h-4 w-4" /> Login
               </Button>
-              */}
             </>
           )}
         </div>
@@ -493,33 +501,31 @@ const Navbar = () => {
 
                     {isAuthenticated && (
                       <>
-                        <Link
-                          href="/history"
+                        <Button
+                          onClick={() => handleProtectedNavigation("/history")}
                           className={cn(
-                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center",
+                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start w-full",
                             isActive("/history")
                               ? "bg-primary/10 text-primary"
                               : "hover:bg-accent hover:text-accent-foreground"
                           )}
-                          onClick={() => setIsOpen(false)}
                         >
                           <History className="mr-3 h-5 w-5" />
                           <span>History</span>
-                        </Link>
+                        </Button>
 
-                        <Link
-                          href="/settings"
+                        <Button
+                          onClick={() => handleProtectedNavigation("/settings")}
                           className={cn(
-                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center",
+                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start w-full",
                             isActive("/settings")
                               ? "bg-primary/10 text-primary"
                               : "hover:bg-accent hover:text-accent-foreground"
                           )}
-                          onClick={() => setIsOpen(false)}
                         >
                           <Settings className="mr-3 h-5 w-5" />
                           <span>Settings</span>
-                        </Link>
+                        </Button>
                       </>
                     )}
                   </div>
@@ -616,14 +622,12 @@ const Navbar = () => {
                         </AlertDialog>
                       ) : (
                         <>
-                          {/* 
                           <Button
                             onClick={() => signIn("google")}
                             className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
                           >
                             <LogIn className="mr-2 h-4 w-4" /> Login
                           </Button>
-                          */}
                         </>
                       )}
                     </div>

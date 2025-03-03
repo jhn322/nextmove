@@ -1,65 +1,42 @@
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+
+// Define protected routes that require authentication
+const protectedPaths = ["/settings", "/history"];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const path = request.nextUrl.pathname;
 
-  // Skip middleware for API, static files, and auth callback routes
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.includes(".") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/public") ||
-    pathname.includes("callback") ||
-    pathname.startsWith("/pieces")
-  ) {
+  // Skip middleware for non-protected paths
+  if (!protectedPaths.some((prefix) => path.startsWith(prefix))) {
     return NextResponse.next();
   }
 
-  // Get session token
   try {
+    // Get the token using the NEXTAUTH_SECRET
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
-      secureCookie: process.env.NODE_ENV === "production",
+      secret: process.env.NEXTAUTH_SECRET,
     });
 
-    // Protected routes
-    const protectedRoutes = ["/history", "/settings"];
-    const isProtectedRoute = protectedRoutes.some((route) =>
-      pathname.startsWith(route)
-    );
-
-    // Redirect unauthenticated users back to home
-    if (isProtectedRoute && !token) {
-      const url = new URL("/", request.url);
-      return NextResponse.redirect(url);
+    // If there's no token and we're on a protected route, redirect to sign in
+    if (!token) {
+      const signInUrl = new URL("/auth/signin", request.url);
+      signInUrl.searchParams.set("callbackUrl", request.url);
+      return NextResponse.redirect(signInUrl);
     }
 
-    // Redirect authenticated users back to home
-    if (pathname.startsWith("/auth/signin") && token) {
-      const url = new URL("/", request.url);
-      return NextResponse.redirect(url);
-    }
+    // User is authenticated, allow the request
+    return NextResponse.next();
   } catch (error) {
-    console.error(`[Middleware] Error:`, error);
+    console.error("Auth middleware error:", error);
+    // On error, redirect to home page
+    return NextResponse.redirect(new URL("/", request.url));
   }
-
-  return NextResponse.next();
 }
 
+// Configure which routes use this middleware
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - api routes (API endpoints)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|public|api).*)",
-  ],
+  matcher: ["/settings", "/history"],
 };

@@ -52,22 +52,15 @@ import {
 } from "@/lib/settings";
 import { useRouter } from "next/navigation";
 import { isSessionValid } from "../../lib/auth-service";
-import { getUserSettings, saveUserSettings } from "@/lib/supabase-direct";
-
-interface UserSettings {
-  display_name: string;
-  avatar_url: string;
-  preferred_difficulty: string;
-  sound_enabled: boolean;
-  piece_set: string;
-  default_color: string;
-  show_coordinates: boolean;
-  enable_animations: boolean;
-}
+import {
+  getUserSettings,
+  saveUserSettings,
+  UserSettings,
+} from "@/lib/mongodb-service";
 
 export default function SettingsPage() {
   const { status, session } = useAuth();
-  const [settings, setSettings] = useState<UserSettings>({
+  const [settings, setSettings] = useState<Omit<UserSettings, "user_id">>({
     display_name: "",
     avatar_url: "",
     preferred_difficulty: "intermediate",
@@ -125,21 +118,19 @@ export default function SettingsPage() {
       setError(null);
 
       try {
-        // Use direct fetch to get settings
-        const settingsData = await getUserSettings(session.user.id, session);
+        const settingsData = await getUserSettings(session.user.id);
 
-        if (settingsData && settingsData.length > 0) {
-          const userSettings = settingsData[0];
+        if (settingsData) {
           setSettings({
-            display_name: userSettings.display_name || "",
-            avatar_url: userSettings.avatar_url || "",
+            display_name: settingsData.display_name || "",
+            avatar_url: settingsData.avatar_url || "",
             preferred_difficulty:
-              userSettings.preferred_difficulty || "intermediate",
-            sound_enabled: userSettings.sound_enabled !== false,
-            piece_set: userSettings.piece_set || getPieceSet(),
-            default_color: userSettings.default_color || getDefaultColor(),
-            show_coordinates: userSettings.show_coordinates !== false,
-            enable_animations: userSettings.enable_animations !== false,
+              settingsData.preferred_difficulty || "intermediate",
+            sound_enabled: settingsData.sound_enabled !== false,
+            piece_set: settingsData.piece_set || getPieceSet(),
+            default_color: settingsData.default_color || getDefaultColor(),
+            show_coordinates: settingsData.show_coordinates !== false,
+            enable_animations: settingsData.enable_animations !== false,
           });
         } else {
           // No settings found, use defaults
@@ -161,7 +152,7 @@ export default function SettingsPage() {
         setLoading(false);
       }
     }
-  }, [status, session, setLoading, setError, setSettings]);
+  }, [status, session]);
 
   // Add a function to handle authentication errors
   const handleAuthError = useCallback(
@@ -229,39 +220,25 @@ export default function SettingsPage() {
     setLoading(true);
 
     try {
-      // Save to database using direct fetch
-      await saveUserSettings(
-        session.user.id,
-        {
-          display_name: settings.display_name,
-          avatar_url: settings.avatar_url,
-          preferred_difficulty: settings.preferred_difficulty,
-          sound_enabled: settings.sound_enabled,
-          piece_set: settings.piece_set,
-          default_color: settings.default_color,
-          show_coordinates: settings.show_coordinates,
-          enable_animations: settings.enable_animations,
-        },
-        session
-      );
+      const success = await saveUserSettings(session.user.id, settings);
 
-      // Save to localStorage
-      saveAllSettings({
-        pieceSet: settings.piece_set,
-        defaultColor: settings.default_color as "w" | "b",
-        showCoordinates: settings.show_coordinates,
-        enableAnimations: settings.enable_animations,
-        soundEnabled: settings.sound_enabled,
-      });
+      if (success) {
+        // Save to localStorage
+        saveAllSettings({
+          pieceSet: settings.piece_set,
+          defaultColor: settings.default_color as "w" | "b",
+          showCoordinates: settings.show_coordinates,
+          enableAnimations: settings.enable_animations,
+          soundEnabled: settings.sound_enabled,
+        });
 
-      setSaveMessage("Settings saved successfully");
-      setTimeout(() => setSaveMessage(""), 3000);
+        setSaveMessage("Settings saved successfully");
+        setTimeout(() => setSaveMessage(""), 3000);
+      }
     } catch (error) {
       console.error("Error saving settings:", error);
-      setSaveMessage("Failed to save settings");
       setError("Failed to save settings. Please try again.");
 
-      // Check if this is an authentication error
       if (
         error instanceof Error &&
         (error.message.includes("401") ||

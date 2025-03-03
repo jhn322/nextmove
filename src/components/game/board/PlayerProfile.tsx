@@ -15,6 +15,7 @@ import Image from "next/image";
 import CapturedPieces from "./CapturedPieces";
 import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
 import { useAuth } from "@/context/auth-context";
+import { getUserSettings } from "@/lib/mongodb-service";
 
 interface PlayerProfileProps {
   difficulty: string;
@@ -40,7 +41,7 @@ const PlayerProfile = ({
   playerColor = "w",
   pieceSet: initialPieceSet = "staunty",
 }: PlayerProfileProps) => {
-  const { session, status, supabaseClient } = useAuth();
+  const { session, status } = useAuth();
   const [message, setMessage] = useState<string>("");
   const [showMessage, setShowMessage] = useState(false);
   const [playerName, setPlayerName] = useState<string>("");
@@ -61,46 +62,39 @@ const PlayerProfile = ({
   // Check if there are any captured pieces to display
   const hasCapturedPieces = filteredPieces.length > 0;
 
-  // Load player data from Supabase and fallback to localStorage
+  // Load player data from MongoDB and fallback to localStorage
   useEffect(() => {
     if (!isBot) {
       async function loadUserSettings() {
-        // First try to load from Supabase if authenticated
+        // First try to load from MongoDB if authenticated
         if (status === "authenticated" && session?.user?.id) {
           try {
-            // Use the client from auth context
-            const { data, error } = await supabaseClient
-              .from("user_settings")
-              .select("display_name, avatar_url, piece_set")
-              .filter("user_id", "eq", session.user.id)
-              .maybeSingle();
+            const settings = await getUserSettings(session.user.id);
 
-            if (error && error.code !== "PGRST116") {
-              console.error("Error fetching settings:", error);
-            } else if (data) {
-              setPlayerName(data.display_name);
-              setPlayerAvatar(data.avatar_url);
+            if (settings) {
+              setPlayerName(settings.display_name);
+              setPlayerAvatar(settings.avatar_url);
 
               // Update piece set if provided in user settings
-              if (data.piece_set) {
-                setCurrentPieceSet(data.piece_set);
+              if (settings.piece_set) {
+                setCurrentPieceSet(settings.piece_set);
               }
 
               // Also update localStorage for offline use
-              localStorage.setItem("chess-player-name", data.display_name);
-              localStorage.setItem("chess-player-avatar", data.avatar_url);
-              if (data.piece_set) {
-                localStorage.setItem("chess-piece-set", data.piece_set);
+              localStorage.setItem("chess-player-name", settings.display_name);
+              localStorage.setItem("chess-player-avatar", settings.avatar_url);
+              if (settings.piece_set) {
+                localStorage.setItem("chess-piece-set", settings.piece_set);
               }
 
-              return; // Exit early if we loaded from Supabase
+              return; // Exit early if we loaded from MongoDB
             }
           } catch (error) {
             console.error("Unexpected error loading user settings:", error);
           }
         }
 
-        // Fallback to localStorage if Supabase failed or user is not authenticated
+        // Fallback to localStorage if MongoDB failed or user is not authenticated
         if (typeof window !== "undefined") {
           const savedPlayerName = localStorage.getItem("chess-player-name");
           const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
@@ -122,7 +116,7 @@ const PlayerProfile = ({
 
       loadUserSettings();
     }
-  }, [isBot, session, status, supabaseClient]);
+  }, [isBot, session, status]);
 
   useEffect(() => {
     if (isBot && lastMove && game) {
