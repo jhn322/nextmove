@@ -59,7 +59,7 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url }) {
       const dynamicBaseUrl = getBaseUrl();
 
       // If the URL is absolute and matches our base URL, allow it

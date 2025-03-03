@@ -1,10 +1,10 @@
 "use server";
 
-import { MongoClient, WithId, Document } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 // Types
 interface MongoDoc {
-  _id?: any;
+  _id?: ObjectId;
 }
 
 export interface UserSettings {
@@ -52,7 +52,7 @@ async function getClient() {
 }
 
 // Helper function to serialize MongoDB documents
-function serializeDocument<T extends { _id?: any }>(
+function serializeDocument<T extends { _id?: ObjectId }>(
   doc: T | null
 ): (Omit<T, "_id"> & { id?: string }) | null {
   if (!doc) return null;
