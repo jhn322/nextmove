@@ -23,7 +23,7 @@ import {
   Menu,
   History,
   Settings,
-  LogIn,
+  // LogIn,
   LogOut,
   Sun,
   Moon,
@@ -74,7 +74,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { setTheme, theme } = useTheme();
   const pathname = usePathname();
-  const { status, signIn, signOut } = useAuth();
+  const { status, signOut } = useAuth(); // re-add signIn when ready
   const isAuthenticated = status === "authenticated";
 
   useEffect(() => {
@@ -370,12 +370,16 @@ const Navbar = () => {
               </AlertDialogContent>
             </AlertDialog>
           ) : (
-            <Button
-              onClick={() => signIn("google")}
-              className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all"
-            >
-              <LogIn className="mr-2 h-4 w-4" /> Login
-            </Button>
+            <>
+              {/* 
+              <Button
+                onClick={() => signIn("google")}
+                className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all"
+              >
+                <LogIn className="mr-2 h-4 w-4" /> Login
+              </Button>
+              */}
+            </>
           )}
         </div>
 
@@ -611,12 +615,16 @@ const Navbar = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       ) : (
-                        <Button
-                          onClick={() => signIn("google")}
-                          className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
-                        >
-                          <LogIn className="mr-2 h-4 w-4" /> Login
-                        </Button>
+                        <>
+                          {/* 
+                          <Button
+                            onClick={() => signIn("google")}
+                            className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
+                          >
+                            <LogIn className="mr-2 h-4 w-4" /> Login
+                          </Button>
+                          */}
+                        </>
                       )}
                     </div>
                   </div>

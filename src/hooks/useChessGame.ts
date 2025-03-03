@@ -149,7 +149,6 @@ export const useChessGame = (difficulty: string) => {
             playSound("castle");
           } else if (moveDetails.san.includes("=")) {
             playSound("move-self");
-            setTimeout(() => playSound("choice"), 200);
           } else {
             // Different sounds for player and bot moves
             playSound(
@@ -162,7 +161,15 @@ export const useChessGame = (difficulty: string) => {
             setTimeout(() => playSound("check"), 100);
           }
           if (game.isCheckmate()) {
-            setTimeout(() => playSound("game-end"), 200);
+            // Use a safer approach for checkmate sound
+            setTimeout(() => {
+              try {
+                playSound("game-end");
+                console.log("Checkmate detected, playing game-end sound");
+              } catch (err) {
+                console.error("Failed to play checkmate sound:", err);
+              }
+            }, 300); // Slightly longer delay for checkmate sound
           }
           if (game.isDraw()) {
             setTimeout(() => playSound("game-draw"), 200);

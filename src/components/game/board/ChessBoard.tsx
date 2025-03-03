@@ -263,7 +263,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   }, [lastMove, clearHighlights]);
 
   const handleSelectBot = (bot: Bot) => {
-    playSound("choice");
     setSelectedBot(bot);
     setShowBotSelection(false);
     setGameStarted(true);
@@ -470,7 +469,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   const handleHintRequest = () => {
     if (game.turn() === playerColor && !game.isGameOver()) {
-      playSound("choice");
       getHint(game, (from, to, promotion) => {
         setHintMove({ from, to });
         if (promotion) {
@@ -739,6 +737,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         handleNewBotDialog={handleNewBotDialog}
         selectedBot={selectedBot}
         playerName={playerName}
+        gameTime={gameTime}
+        movesCount={history.length - 1}
       />
 
       <GameDialogs

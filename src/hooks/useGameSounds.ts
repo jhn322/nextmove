@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
-import { supabase } from "@/lib/supabase";
+import { getAuthenticatedSupabaseClient } from "@/lib/supabase";
 
 type SoundType =
   | "move-self" // Player move
@@ -13,7 +13,6 @@ type SoundType =
   | "game-draw" // Game drawn
   | "decline" // Resignation/Decline
   | "illegal" // Illegal move
-  | "choice" // Menu selection
   | "correct" // Success action
   | "incorrect" // Error action
   | "click" // UI click
@@ -33,7 +32,6 @@ const soundFiles = {
   "game-draw": "/sounds/game-draw.mp3",
   decline: "/sounds/decline.mp3",
   illegal: "/sounds/illegal.mp3",
-  choice: "/sounds/choice.mp3",
   correct: "/sounds/correct.mp3",
   incorrect: "/sounds/incorrect.mp3",
   click: "/sounds/click.mp3",
@@ -50,12 +48,48 @@ export const useGameSounds = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const { session, status } = useAuth();
 
+  // Preload critical sound files
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // List of critical sounds to preload
+    const criticalSounds: SoundType[] = [
+      "game-end",
+      "game-start",
+      "check",
+      "capture",
+    ];
+
+    // Only preload if the user has interacted with the page
+    if (hasInteracted) {
+      criticalSounds.forEach((type) => {
+        const soundFile = soundFiles[type];
+        if (soundFile) {
+          try {
+            const audio = new Audio(soundFile);
+            audio.preload = "auto";
+            // Just load it, don't play
+            audio.load();
+            // Store in cache
+            audioCache[type] = audio;
+            console.log(`Preloaded sound: ${type}`);
+          } catch (err) {
+            console.error(`Failed to preload sound ${type}:`, err);
+          }
+        }
+      });
+    }
+  }, [hasInteracted]);
+
   // Load sound settings from user settings
   useEffect(() => {
     async function loadSoundSettings() {
       if (status === "authenticated" && session?.user?.id) {
         try {
-          const { data, error } = await supabase
+          // Use the authenticated client
+          const client = getAuthenticatedSupabaseClient(session);
+
+          const { data, error } = await client
             .from("user_settings")
             .select("sound_enabled")
             .filter("user_id", "eq", session.user.id)
@@ -103,7 +137,10 @@ export const useGameSounds = () => {
 
       const soundFile = soundFiles[type];
 
-      if (!soundFile) return;
+      if (!soundFile) {
+        console.warn(`Sound file not found for type: ${type}`);
+        return;
+      }
 
       // Skip playing sound if user hasn't interacted with the board yet
       if (!hasInteracted && typeof window !== "undefined") {
@@ -111,24 +148,41 @@ export const useGameSounds = () => {
         return;
       }
 
-      // Try to get cached audio element
-      let audio = audioCache[type];
+      try {
+        // Try to get cached audio element
+        let audio = audioCache[type];
 
-      // Create and cache new audio element if needed
-      if (!audio) {
-        audio = new Audio(soundFile);
-        audioCache[type] = audio;
-      }
-
-      // Reset and play
-      audio.currentTime = 0;
-      audio.play().catch((err) => {
-        if (err.name === "NotAllowedError") {
-          console.log("Sound not allowed: user interaction required");
-        } else {
-          console.error("Error playing sound:", err);
+        // Create and cache new audio element if needed
+        if (!audio) {
+          audio = new Audio(soundFile);
+          audioCache[type] = audio;
         }
-      });
+
+        // Reset and play
+        audio.currentTime = 0;
+
+        // Add event listener for errors
+        const handleError = (e: ErrorEvent) => {
+          console.error(`Error loading sound ${type}: ${e.message}`);
+          // Remove the problematic audio from cache
+          delete audioCache[type];
+          audio.removeEventListener("error", handleError as EventListener);
+        };
+
+        audio.addEventListener("error", handleError as EventListener);
+
+        audio.play().catch((err) => {
+          if (err.name === "NotAllowedError") {
+            console.log("Sound not allowed: user interaction required");
+          } else {
+            console.error(`Error playing sound ${type}:`, err);
+            // Remove the problematic audio from cache
+            delete audioCache[type];
+          }
+        });
+      } catch (err) {
+        console.error(`Unexpected error playing sound ${type}:`, err);
+      }
     },
     [hasInteracted, soundEnabled]
   );

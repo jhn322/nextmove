@@ -11,7 +11,7 @@ const Footer = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   return (
-    <footer className="w-full border-t border-border/30 py-6 bg-background/80 backdrop-blur-sm">
+    <footer className="w-full border-t border-border/30 py-6 bg-background/80 backdrop-blur-sm z-10 relative mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col items-center md:items-start">

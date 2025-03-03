@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Bot } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Chess } from "chess.js";
 import Confetti from "react-confetti";
+import { saveGameResult } from "@/lib/game-service";
+import { useAuth } from "@/context/auth-context";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -42,6 +44,8 @@ interface VictoryModalProps {
   handleNewBotDialog: () => void;
   selectedBot: Bot | null;
   playerName: string;
+  gameTime: number;
+  movesCount: number;
 }
 
 const VictoryModal = ({
@@ -56,6 +60,8 @@ const VictoryModal = ({
   onNewBot,
   selectedBot,
   playerName: defaultPlayerName,
+  gameTime,
+  movesCount,
 }: VictoryModalProps) => {
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
@@ -65,8 +71,20 @@ const VictoryModal = ({
   const [defeatMessage, setDefeatMessage] = useState("");
   const [playerName, setPlayerName] = useState(defaultPlayerName);
   const [playerAvatar, setPlayerAvatar] = useState("/default-pfp.png");
+  const [resultSaved, setResultSaved] = useState(false);
+  const { session } = useAuth();
 
-  // Load player data from localStorage
+  // Generate a unique game ID based on current state to prevent duplicate saves
+  const gameStateId = useMemo(() => {
+    if (!game || !selectedBot) return "";
+
+    // Create a stable ID that doesn't change on refresh
+    // Use the game FEN, bot name, player color, and difficulty
+    // This is stable across refreshes for the same game state
+    return `${game.fen()}_${selectedBot.name}_${playerColor}_${difficulty}`;
+  }, [game, selectedBot, playerColor, difficulty]);
+
+  // Load player data from localStorage and check if this game has already been saved
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedPlayerName = localStorage.getItem("chess-player-name");
@@ -79,8 +97,17 @@ const VictoryModal = ({
       if (savedAvatarUrl) {
         setPlayerAvatar(savedAvatarUrl);
       }
+
+      // Check if this exact game result has already been saved
+      // We use the game FEN as the primary key for detecting duplicates
+      const savedGameFen = localStorage.getItem("last-saved-game-fen");
+
+      if (savedGameFen === game.fen()) {
+        console.log("Game result already saved, preventing duplicate save");
+        setResultSaved(true);
+      }
     }
-  }, []);
+  }, [game]);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -140,6 +167,72 @@ const VictoryModal = ({
     defeatMessage,
   ]);
 
+  // Save game result to database
+  useEffect(() => {
+    const saveResult = async () => {
+      // Only save if:
+      // 1. The modal is open
+      // 2. It's not a resignation confirmation dialog
+      // 3. The user is authenticated
+      // 4. The result hasn't been saved yet
+      // 5. The game is over or it's a resignation
+      // 6. We have a valid gameStateId
+      if (
+        isOpen &&
+        !isResignation &&
+        session?.user?.id &&
+        !resultSaved &&
+        (game.isGameOver() || isResignation) &&
+        gameStateId
+      ) {
+        try {
+          // Check one more time if this game has already been saved
+          // This helps prevent race conditions
+          const savedGameFen = localStorage.getItem("last-saved-game-fen");
+          if (savedGameFen === game.fen()) {
+            console.log("Game already saved (double-check), skipping save");
+            setResultSaved(true);
+            return;
+          }
+
+          console.log("Saving game result:", gameStateId);
+          await saveGameResult({
+            userId: session.user.id,
+            game,
+            difficulty,
+            playerColor,
+            selectedBot,
+            gameTime,
+            movesCount,
+            isResignation,
+            session,
+          });
+          setResultSaved(true);
+
+          // Save the game FEN to localStorage to prevent duplicate saves
+          localStorage.setItem("last-saved-game-id", gameStateId);
+          localStorage.setItem("last-saved-game-fen", game.fen());
+        } catch (error) {
+          console.error("Error saving game result:", error);
+        }
+      }
+    };
+
+    saveResult();
+  }, [
+    isOpen,
+    isResignation,
+    session,
+    resultSaved,
+    game,
+    difficulty,
+    playerColor,
+    selectedBot,
+    gameTime,
+    movesCount,
+    gameStateId,
+  ]);
+
   useEffect(() => {
     if (isOpen) {
       const randomVictoryIndex = Math.floor(
@@ -170,6 +263,7 @@ const VictoryModal = ({
     } else {
       setShowConfetti(false);
       setIsRecycling(false);
+      setResultSaved(false); // Reset the saved state when modal closes
     }
   }, [isOpen, renderWinnerText, isPlayerWinner]);
 
@@ -186,14 +280,18 @@ const VictoryModal = ({
         />
       )}
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent
-          className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg"
-          aria-describedby="victory-modal-description"
-        >
-          <DialogDescription
-            id="victory-modal-description"
-            className="sr-only"
-          ></DialogDescription>
+        <DialogContent className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg">
+          <DialogDescription id="victory-modal-description" className="sr-only">
+            {isResignation
+              ? "Confirm if you want to resign from the current game."
+              : game.isDraw()
+              ? "The game ended in a draw."
+              : game.isCheckmate()
+              ? `Game over by checkmate. ${
+                  isPlayerWinner() ? "You won!" : "Bot won!"
+                }`
+              : "Game results and options for your next move."}
+          </DialogDescription>
           <div className="absolute right-2 top-2 sm:right-4 sm:top-4">
             <button
               onClick={onClose}

@@ -51,7 +51,7 @@ export default async function RootLayout({
               disableTransitionOnChange
             >
               <Navbar />
-              <main className="flex-grow">{children}</main>
+              <main className="flex-grow pb-20">{children}</main>
               <Footer />
             </ThemeProvider>
           </AuthProvider>

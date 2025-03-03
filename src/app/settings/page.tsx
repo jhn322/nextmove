@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/lib/supabase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertCircle,
@@ -50,8 +49,10 @@ import {
   getDefaultColor,
   getShowCoordinates,
   getEnableAnimations,
-  getSoundEnabled,
 } from "@/lib/settings";
+import { useRouter } from "next/navigation";
+import { isSessionValid } from "../../lib/auth-service";
+import { getUserSettings, saveUserSettings } from "@/lib/supabase-direct";
 
 interface UserSettings {
   display_name: string;
@@ -65,7 +66,7 @@ interface UserSettings {
 }
 
 export default function SettingsPage() {
-  const { session, status, refreshSession } = useAuth();
+  const { status, session } = useAuth();
   const [settings, setSettings] = useState<UserSettings>({
     display_name: "",
     avatar_url: "",
@@ -80,7 +81,8 @@ export default function SettingsPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
-  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const router = useRouter();
 
   // Define the difficulty levels
   const difficultyLevels = [
@@ -116,6 +118,85 @@ export default function SettingsPage() {
     "tatiana",
   ];
 
+  // Function to load user settings
+  const loadUserSettings = useCallback(async () => {
+    if (status === "authenticated" && session?.user?.id) {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Use direct fetch to get settings
+        const settingsData = await getUserSettings(session.user.id, session);
+
+        if (settingsData && settingsData.length > 0) {
+          const userSettings = settingsData[0];
+          setSettings({
+            display_name: userSettings.display_name || "",
+            avatar_url: userSettings.avatar_url || "",
+            preferred_difficulty:
+              userSettings.preferred_difficulty || "intermediate",
+            sound_enabled: userSettings.sound_enabled !== false,
+            piece_set: userSettings.piece_set || getPieceSet(),
+            default_color: userSettings.default_color || getDefaultColor(),
+            show_coordinates: userSettings.show_coordinates !== false,
+            enable_animations: userSettings.enable_animations !== false,
+          });
+        } else {
+          // No settings found, use defaults
+          setSettings({
+            display_name: session.user.name || "",
+            avatar_url: session.user.image || "",
+            preferred_difficulty: "intermediate",
+            sound_enabled: true,
+            piece_set: getPieceSet(),
+            default_color: getDefaultColor(),
+            show_coordinates: getShowCoordinates(),
+            enable_animations: getEnableAnimations(),
+          });
+        }
+      } catch (error) {
+        console.error("Error loading settings:", error);
+        setError("Failed to load settings. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
+  }, [status, session, setLoading, setError, setSettings]);
+
+  // Add a function to handle authentication errors
+  const handleAuthError = useCallback(
+    (error: Error) => {
+      console.error("Authentication error:", error);
+      setError("Authentication error. Please sign in again.");
+
+      // Redirect to sign in page after a short delay
+      setTimeout(() => {
+        router.push("/auth/signin");
+      }, 2000);
+    },
+    [router, setError]
+  );
+
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (status === "unauthenticated" || !session) {
+      router.push("/auth/signin");
+      return;
+    }
+
+    // Check if the session is valid
+    if (session) {
+      const valid = isSessionValid(session);
+      if (!valid) {
+        handleAuthError(new Error("Session is invalid"));
+        return;
+      }
+
+      loadUserSettings();
+    }
+  }, [status, session, router, handleAuthError, loadUserSettings]);
+
   // Load available avatars
   useEffect(() => {
     const avatars = [
@@ -138,103 +219,33 @@ export default function SettingsPage() {
     setAvailableAvatars(avatars);
   }, []);
 
-  // Load user settings from database and localStorage
-  useEffect(() => {
-    async function loadUserSettings() {
-      if (status === "authenticated" && session?.user?.id) {
-        setLoading(true);
-        setError(null);
-
-        try {
-          const { error: permissionCheckError } = await supabase
-            .from("user_settings")
-            .select("count")
-            .limit(1);
-
-          if (permissionCheckError) {
-            setError(
-              "You don't have permission to access settings. Please contact support."
-            );
-            setLoading(false);
-            return;
-          }
-
-          // Check if settings exist
-          const { data, error } = await supabase
-            .from("user_settings")
-            .select("*")
-            .eq("user_id", session.user.id)
-            .maybeSingle();
-
-          if (error && error.code !== "PGRST116") {
-            // PGRST116 is the error code for "no rows returned"
-            console.error("Error fetching settings:", error);
-            setSaveMessage("Failed to load settings");
-            setError(error.message);
-          } else if (data) {
-            // Get additional settings from localStorage
-            const pieceSet = getPieceSet();
-            const defaultColor = getDefaultColor();
-            const showCoordinates = getShowCoordinates();
-            const enableAnimations = getEnableAnimations();
-
-            // Settings exist, update state
-            setSettings({
-              display_name: data.display_name,
-              avatar_url: data.avatar_url,
-              preferred_difficulty: data.preferred_difficulty,
-              sound_enabled: data.sound_enabled,
-              piece_set: pieceSet,
-              default_color: defaultColor,
-              show_coordinates: showCoordinates,
-              enable_animations: enableAnimations,
-            });
-          } else {
-            // Settings don't exist, but don't try to create them automatically
-            // Get additional settings from localStorage
-            const pieceSet = getPieceSet();
-            const defaultColor = getDefaultColor();
-            const showCoordinates = getShowCoordinates();
-            const enableAnimations = getEnableAnimations();
-
-            // Set default values
-            setSettings({
-              display_name: session.user.name || "Chess Player",
-              avatar_url: session.user.image || "/avatars/jake.png",
-              preferred_difficulty: "intermediate",
-              sound_enabled: getSoundEnabled(),
-              piece_set: pieceSet,
-              default_color: defaultColor,
-              show_coordinates: showCoordinates,
-              enable_animations: enableAnimations,
-            });
-          }
-        } catch (error: unknown) {
-          console.error("Unexpected error:", error);
-          setError(
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred"
-          );
-        } finally {
-          setLoading(false);
-        }
-      } else if (status === "unauthenticated") {
-        setLoading(false);
-      }
+  const handleSaveSettings = async () => {
+    if (!session?.user?.id) {
+      setError("You need to be signed in to save settings");
+      return;
     }
 
-    loadUserSettings();
-  }, [session, status]);
-
-  const handleSaveSettings = async () => {
-    if (!session?.user?.id) return;
-
+    setSaveMessage("");
     setLoading(true);
-    setError(null);
 
     try {
-      // Save additional settings to localStorage first
+      // Save to database using direct fetch
+      await saveUserSettings(
+        session.user.id,
+        {
+          display_name: settings.display_name,
+          avatar_url: settings.avatar_url,
+          preferred_difficulty: settings.preferred_difficulty,
+          sound_enabled: settings.sound_enabled,
+          piece_set: settings.piece_set,
+          default_color: settings.default_color,
+          show_coordinates: settings.show_coordinates,
+          enable_animations: settings.enable_animations,
+        },
+        session
+      );
+
+      // Save to localStorage
       saveAllSettings({
         pieceSet: settings.piece_set,
         defaultColor: settings.default_color as "w" | "b",
@@ -243,81 +254,22 @@ export default function SettingsPage() {
         soundEnabled: settings.sound_enabled,
       });
 
-      // Only include fields that are guaranteed to exist in the database
-      const baseSettings = {
-        display_name: settings.display_name,
-        avatar_url: settings.avatar_url,
-        preferred_difficulty: settings.preferred_difficulty,
-        sound_enabled: settings.sound_enabled,
-      };
+      setSaveMessage("Settings saved successfully");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      setSaveMessage("Failed to save settings");
+      setError("Failed to save settings. Please try again.");
 
-      const { data: existingSettings, error: checkError } = await supabase
-        .from("user_settings")
-        .select("id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (checkError) {
-        setError(checkError.message);
-        setLoading(false);
-        return;
+      // Check if this is an authentication error
+      if (
+        error instanceof Error &&
+        (error.message.includes("401") ||
+          error.message.includes("auth") ||
+          error.message.includes("permission"))
+      ) {
+        handleAuthError(error);
       }
-
-      if (existingSettings) {
-        // Update existing settings
-        const { error } = await supabase
-          .from("user_settings")
-          .update(baseSettings)
-          .eq("user_id", session.user.id);
-
-        if (error) {
-          console.error("Error updating settings:", error);
-          setSaveMessage("Failed to save settings");
-          setError(error.message);
-        } else {
-          setSaveMessage("Settings saved successfully");
-          setError(null);
-
-          // Refresh the session to update the player profile
-          await refreshSession();
-
-          setTimeout(() => setSaveMessage(""), 3000);
-        }
-      } else {
-        // Create new settings
-        const { error: insertError } = await supabase
-          .from("user_settings")
-          .insert({
-            user_id: session.user.id,
-            display_name:
-              settings.display_name || session.user.name || "Chess Player",
-            avatar_url:
-              settings.avatar_url || session.user.image || "/avatars/jake.png",
-            preferred_difficulty: settings.preferred_difficulty,
-            theme_preference: "dark",
-            sound_enabled: settings.sound_enabled,
-            notifications_enabled: true, // Keep this for database compatibility
-          });
-
-        if (insertError) {
-          console.error("Error creating settings:", insertError);
-          setSaveMessage("Failed to create settings");
-          setError(insertError.message);
-        } else {
-          setSaveMessage("Settings saved successfully");
-          setError(null);
-
-          // Refresh the session to update the player profile
-          await refreshSession();
-
-          setTimeout(() => setSaveMessage(""), 3000);
-        }
-      }
-    } catch (error: unknown) {
-      console.error("Unexpected error:", error);
-      setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
-      );
     } finally {
       setLoading(false);
     }
@@ -325,7 +277,7 @@ export default function SettingsPage() {
 
   const handleAvatarSelect = (avatarPath: string) => {
     setSettings({ ...settings, avatar_url: avatarPath });
-    setIsAvatarDialogOpen(false);
+    setAvatarDialogOpen(false);
   };
 
   if (status === "loading" || loading) {
@@ -406,8 +358,8 @@ export default function SettingsPage() {
                 <Label>Avatar</Label>
                 <div className="flex items-center gap-4">
                   <Dialog
-                    open={isAvatarDialogOpen}
-                    onOpenChange={setIsAvatarDialogOpen}
+                    open={avatarDialogOpen}
+                    onOpenChange={setAvatarDialogOpen}
                   >
                     <DialogTrigger asChild>
                       <Button

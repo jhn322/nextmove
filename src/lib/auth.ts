@@ -8,6 +8,7 @@ declare module "next-auth" {
     user: {
       id: string;
     } & DefaultSession["user"];
+    supabaseToken?: string;
   }
 }
 
@@ -51,6 +52,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.supabaseToken = `${user.id}-${Date.now()}`;
         console.log(
           "[next-auth] JWT callback - adding user ID to token:",
           user.id
@@ -73,6 +75,7 @@ export const authOptions: NextAuthOptions = {
       // For JWT strategy, token is passed
       else if (token) {
         session.user.id = token.id as string;
+        session.supabaseToken = token.supabaseToken as string;
         console.log(
           "[next-auth] Session callback - setting ID from token:",
           token.id

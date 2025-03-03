@@ -15,7 +15,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Pencil } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { supabase } from "@/lib/supabase";
+import { getAuthenticatedSupabaseClient } from "@/lib/supabase";
 
 interface PlayerProfileProps {
   className?: string;
@@ -45,7 +45,10 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
       if (status === "authenticated" && session?.user?.id) {
         setIsLoading(true);
         try {
-          const { data, error } = await supabase
+          // Use the authenticated client
+          const client = getAuthenticatedSupabaseClient(session);
+
+          const { data, error } = await client
             .from("user_settings")
             .select("*")
             .filter("user_id", "eq", session.user.id)
@@ -113,8 +116,11 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
     setPlayerName(newName);
 
     try {
+      // Use the authenticated client
+      const client = getAuthenticatedSupabaseClient(session);
+
       // First check if the user has permission to access the table
-      const { error: permissionError } = await supabase
+      const { error: permissionError } = await client
         .from("user_settings")
         .select("count")
         .limit(1);
@@ -126,7 +132,7 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
         return;
       }
 
-      const { data: existingSettings, error: checkError } = await supabase
+      const { data: existingSettings, error: checkError } = await client
         .from("user_settings")
         .select("id")
         .eq("user_id", session.user.id)
@@ -141,7 +147,7 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
 
       if (existingSettings) {
         // Update existing settings
-        const { error } = await supabase
+        const { error } = await client
           .from("user_settings")
           .update({
             display_name: newName,
@@ -156,7 +162,7 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
         }
       } else {
         // Create new settings
-        const { error: insertError } = await supabase
+        const { error: insertError } = await client
           .from("user_settings")
           .insert({
             user_id: session.user.id,
@@ -199,8 +205,11 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
     setIsLoading(true);
 
     try {
+      // Use the authenticated client
+      const client = getAuthenticatedSupabaseClient(session);
+
       // First check if the user has permission to access the table
-      const { error: permissionError } = await supabase
+      const { error: permissionError } = await client
         .from("user_settings")
         .select("count")
         .limit(1);
@@ -211,7 +220,7 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
         return;
       }
 
-      const { data: existingSettings, error: checkError } = await supabase
+      const { data: existingSettings, error: checkError } = await client
         .from("user_settings")
         .select("id")
         .eq("user_id", session.user.id)
@@ -225,7 +234,7 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
 
       if (existingSettings) {
         // Update existing settings
-        const { error } = await supabase
+        const { error } = await client
           .from("user_settings")
           .update({
             avatar_url: avatarPath,
@@ -240,7 +249,7 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
         }
       } else {
         // Create new settings
-        const { error: insertError } = await supabase
+        const { error: insertError } = await client
           .from("user_settings")
           .insert({
             user_id: session.user.id,

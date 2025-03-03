@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
+import { getAuthenticatedSupabaseClient } from "@/lib/supabase";
 
 const DebugPage = () => {
   const { session, status, signIn, signOut } = useAuth();
@@ -17,7 +17,10 @@ const DebugPage = () => {
     // Check Supabase connection
     const checkSupabase = async () => {
       try {
-        const { error } = await supabase.from("users").select("count").limit(1);
+        // Use the authenticated client if session exists
+        const client = getAuthenticatedSupabaseClient(session);
+
+        const { error } = await client.from("users").select("count").limit(1);
         if (error) {
           setSupabaseStatus(`Error: ${error.message}`);
         } else {
@@ -35,7 +38,7 @@ const DebugPage = () => {
     });
 
     checkSupabase();
-  }, []);
+  }, [session]);
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">

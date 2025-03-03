@@ -45,3 +45,8 @@ next-env.d.ts
 
 # md 
 DEPLOY.md
+
+# Supabase scripts with sensitive data
+/src/scripts/test-rls-policies.ts
+/src/scripts/insert-test-data.ts
+/src/scripts/test-*.ts

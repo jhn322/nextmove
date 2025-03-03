@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "setup-db": "ts-node -r dotenv/config src/scripts/setup-supabase.ts",
-    "create-tables": "ts-node -r dotenv/config src/scripts/create-tables.ts"
+    "create-tables": "ts-node -r dotenv/config src/scripts/create-tables.ts",
+    "update-rls-policies": "ts-node -r dotenv/config src/scripts/update-rls-policies.ts",
+    "test-rls-policies": "ts-node -r dotenv/config src/scripts/test-rls-policies.ts",
+    "insert-test-data": "ts-node -r dotenv/config src/scripts/insert-test-data.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.2",
@@ -53,6 +56,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
     "dotenv": "^16.4.7",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",

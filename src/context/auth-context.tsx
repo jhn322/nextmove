@@ -14,6 +14,12 @@ import {
   signOut as nextAuthSignOut,
 } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
+import { SupabaseClient } from "@supabase/supabase-js";
+import {
+  getAuthenticatedSupabaseClient,
+  clearSupabaseClientCache,
+} from "@/lib/supabase";
+import { isSessionValid } from "@/lib/auth-service";
 
 interface AuthContextType {
   session: Session | null;
@@ -21,6 +27,7 @@ interface AuthContextType {
   signIn: (provider: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<Session | null>;
+  supabaseClient: SupabaseClient;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +37,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Get the authenticated Supabase client based on the current session
+  const supabaseClient = useMemo(() => {
+    return getAuthenticatedSupabaseClient(session);
+  }, [session]);
 
   // Protected routes
   const protectedRoutes = useMemo(() => ["/history", "/settings"], []);
@@ -50,6 +62,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Check session validity and redirect if needed
+  useEffect(() => {
+    const checkSessionAndRedirect = async () => {
+      // Only check on protected routes when authenticated
+      if (
+        status === "authenticated" &&
+        session &&
+        protectedRoutes.some((route) => pathname.startsWith(route))
+      ) {
+        // Check if session is valid
+        if (!isSessionValid(session)) {
+          console.log("[AuthContext] Session invalid, redirecting to sign in");
+          await nextAuthSignOut({
+            callbackUrl: window.location.origin,
+            redirect: true,
+          });
+        }
+      }
+    };
+
+    if (isInitialized) {
+      checkSessionAndRedirect();
+    }
+  }, [status, session, pathname, isInitialized, protectedRoutes]);
+
+  // Redirect from protected routes if unauthenticated
   useEffect(() => {
     if (
       status === "unauthenticated" &&
@@ -81,6 +119,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleSignOut = async () => {
     try {
+      // Clear any cached Supabase clients to ensure fresh authentication on next sign-in
+      clearSupabaseClientCache();
+
       // Use a consistent callback URL for production
       const callbackUrl =
         process.env.NODE_ENV === "production"
@@ -104,6 +145,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn: handleSignIn,
     signOut: handleSignOut,
     refreshSession,
+    supabaseClient,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

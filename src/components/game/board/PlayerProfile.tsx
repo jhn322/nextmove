@@ -14,6 +14,7 @@ import type { MessageCondition } from "@/components/game/data/botMessages";
 import Image from "next/image";
 import CapturedPieces from "./CapturedPieces";
 import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
+import { useAuth } from "@/context/auth-context";
 
 interface PlayerProfileProps {
   difficulty: string;
@@ -37,12 +38,14 @@ const PlayerProfile = ({
   lastMove,
   game,
   playerColor = "w",
-  pieceSet = "staunty",
+  pieceSet: initialPieceSet = "staunty",
 }: PlayerProfileProps) => {
+  const { session, status, supabaseClient } = useAuth();
   const [message, setMessage] = useState<string>("");
   const [showMessage, setShowMessage] = useState(false);
-  const [playerName, setPlayerName] = useState("Player");
-  const [playerAvatar, setPlayerAvatar] = useState("/default-pfp.png");
+  const [playerName, setPlayerName] = useState<string>("");
+  const [playerAvatar, setPlayerAvatar] = useState<string>("");
+  const [currentPieceSet, setCurrentPieceSet] = useState(initialPieceSet);
 
   const capitalizedDifficulty =
     difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
@@ -58,21 +61,68 @@ const PlayerProfile = ({
   // Check if there are any captured pieces to display
   const hasCapturedPieces = filteredPieces.length > 0;
 
-  // Load player data from localStorage
+  // Load player data from Supabase and fallback to localStorage
   useEffect(() => {
-    if (!isBot && typeof window !== "undefined") {
-      const savedPlayerName = localStorage.getItem("chess-player-name");
-      const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
+    if (!isBot) {
+      async function loadUserSettings() {
+        // First try to load from Supabase if authenticated
+        if (status === "authenticated" && session?.user?.id) {
+          try {
+            // Use the client from auth context
+            const { data, error } = await supabaseClient
+              .from("user_settings")
+              .select("display_name, avatar_url, piece_set")
+              .filter("user_id", "eq", session.user.id)
+              .maybeSingle();
 
-      if (savedPlayerName) {
-        setPlayerName(savedPlayerName);
+            if (error && error.code !== "PGRST116") {
+              console.error("Error fetching settings:", error);
+            } else if (data) {
+              setPlayerName(data.display_name);
+              setPlayerAvatar(data.avatar_url);
+
+              // Update piece set if provided in user settings
+              if (data.piece_set) {
+                setCurrentPieceSet(data.piece_set);
+              }
+
+              // Also update localStorage for offline use
+              localStorage.setItem("chess-player-name", data.display_name);
+              localStorage.setItem("chess-player-avatar", data.avatar_url);
+              if (data.piece_set) {
+                localStorage.setItem("chess-piece-set", data.piece_set);
+              }
+
+              return; // Exit early if we loaded from Supabase
+            }
+          } catch (error) {
+            console.error("Unexpected error loading user settings:", error);
+          }
+        }
+
+        // Fallback to localStorage if Supabase failed or user is not authenticated
+        if (typeof window !== "undefined") {
+          const savedPlayerName = localStorage.getItem("chess-player-name");
+          const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
+          const savedPieceSet = localStorage.getItem("chess-piece-set");
+
+          if (savedPlayerName) {
+            setPlayerName(savedPlayerName);
+          }
+
+          if (savedAvatarUrl) {
+            setPlayerAvatar(savedAvatarUrl);
+          }
+
+          if (savedPieceSet) {
+            setCurrentPieceSet(savedPieceSet);
+          }
+        }
       }
 
-      if (savedAvatarUrl) {
-        setPlayerAvatar(savedAvatarUrl);
-      }
+      loadUserSettings();
     }
-  }, [isBot]);
+  }, [isBot, session, status, supabaseClient]);
 
   useEffect(() => {
     if (isBot && lastMove && game) {
@@ -183,7 +233,7 @@ const PlayerProfile = ({
             <CapturedPieces
               capturedPieces={capturedPieces}
               playerColor={profileColor}
-              pieceSet={pieceSet}
+              pieceSet={currentPieceSet}
               className="mt-1"
             />
           </CardContent>
