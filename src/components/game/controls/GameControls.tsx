@@ -242,7 +242,7 @@ const GameControls = ({
 
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="text-md">Game Time</CardTitle>
+            <CardTitle className="text-md">Game Timer</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0 space-y-2">
             <div className="flex justify-between items-center">
@@ -481,61 +481,6 @@ const GameControls = ({
                 <UserPlus className="h-5 w-5" />
                 New Bot
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Divider */}
-      <div className="h-px bg-border" />
-
-      {/* Settings Group */}
-      <div className="space-y-2" data-highlight-difficulty>
-        <Card className="border-0 shadow-none">
-          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="text-md">Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
-            <div className="flex flex-col gap-4">
-              {/* Piece Set Dropdown */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  Piece Set
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Change the appearance of the chess pieces.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <Select value={pieceSet} onValueChange={onPieceSetChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue>
-                      <div className="flex items-center gap-2">
-                        <Palette className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                        <span className="capitalize truncate">
-                          {pieceSet.replace("_", " ")}
-                        </span>
-                      </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pieceSets.map((set) => (
-                      <SelectItem key={set} value={set}>
-                        <div className="flex items-center gap-2">
-                          <span className="capitalize">
-                            {set.replace("_", " ")}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </CardContent>
         </Card>

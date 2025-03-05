@@ -223,7 +223,7 @@ export default function SettingsPage() {
       const success = await saveUserSettings(session.user.id, settings);
 
       if (success) {
-        // Save to localStorage
+        // Save to localStorage for offline use
         saveAllSettings({
           pieceSet: settings.piece_set,
           defaultColor: settings.default_color as "w" | "b",
@@ -231,6 +231,22 @@ export default function SettingsPage() {
           enableAnimations: settings.enable_animations,
           soundEnabled: settings.sound_enabled,
         });
+
+        // Also save individual settings for backward compatibility
+        localStorage.setItem("chess_piece_set", settings.piece_set);
+        localStorage.setItem("chess_default_color", settings.default_color);
+        localStorage.setItem(
+          "chess_show_coordinates",
+          settings.show_coordinates.toString()
+        );
+        localStorage.setItem(
+          "chess_enable_animations",
+          settings.enable_animations.toString()
+        );
+        localStorage.setItem(
+          "chess_sound_enabled",
+          settings.sound_enabled.toString()
+        );
 
         setSaveMessage("Settings saved successfully");
         setTimeout(() => setSaveMessage(""), 3000);

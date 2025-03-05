@@ -20,6 +20,8 @@ import VictoryModal from "../modal/VictoryModal";
 import PlayerProfile from "./PlayerProfile";
 import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
 import PawnPromotionModal from "./PawnPromotionModal";
+import { useAuth } from "@/context/auth-context";
+import { getUserSettings } from "@/lib/mongodb-service";
 
 const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [shouldPulse, setShouldPulse] = useState(false);
@@ -61,8 +63,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const { getBotMove } = useStockfish(game, selectedBot, makeMove);
   const { getHint, isCalculating } = useHintEngine();
 
-  // Load saved state for piece set
-  const [pieceSet, setPieceSet] = useState<string>("staunty");
+  // Load user settings from MongoDB or localStorage
+  const { status, session } = useAuth();
+  const [pieceSet, setPieceSet] = useState("staunty");
+  const [showCoordinates, setShowCoordinates] = useState(true);
 
   // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
@@ -83,6 +87,47 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       }
     }
   }, []);
+
+  // Load user settings from MongoDB or localStorage
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        try {
+          const settings = await getUserSettings(session.user.id);
+          if (settings) {
+            setPieceSet(settings.piece_set || "staunty");
+            setShowCoordinates(settings.show_coordinates !== false);
+            setPlayerColor((settings.default_color as "w" | "b") || "w");
+          }
+        } catch (error) {
+          console.error("Error loading user settings:", error);
+          // Fallback to localStorage
+          loadFromLocalStorage();
+        }
+      } else {
+        // Not authenticated, use localStorage
+        loadFromLocalStorage();
+      }
+    };
+
+    const loadFromLocalStorage = () => {
+      if (typeof window !== "undefined") {
+        const savedPieceSet = localStorage.getItem("chess_piece_set");
+        const savedShowCoordinates = localStorage.getItem(
+          "chess_show_coordinates"
+        );
+        const savedDefaultColor = localStorage.getItem("chess_default_color");
+
+        if (savedPieceSet) setPieceSet(savedPieceSet);
+        if (savedShowCoordinates !== null) {
+          setShowCoordinates(savedShowCoordinates !== "false");
+        }
+        if (savedDefaultColor) setPlayerColor(savedDefaultColor as "w" | "b");
+      }
+    };
+
+    loadSettings();
+  }, [status, session]);
 
   useEffect(() => {
     // Load selected bot
