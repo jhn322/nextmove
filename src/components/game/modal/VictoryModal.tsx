@@ -39,7 +39,7 @@ interface VictoryModalProps {
   game: Chess;
   difficulty: string;
   isResignation?: boolean;
-  onConfirmResign?: () => void;
+  onConfirmResign?: (game: Chess) => void;
   playerColor: "w" | "b";
   handleNewBotDialog: () => void;
   selectedBot: Bot | null;
@@ -115,7 +115,7 @@ const VictoryModal = ({
       const winningColor = losingColor === "w" ? "b" : "w";
       return winningColor === playerColor;
     }
-    if (isResignation) {
+    if (isResignation || (game as any).isResigned) {
       return false;
     }
     return false;
@@ -170,24 +170,16 @@ const VictoryModal = ({
   // Save game result to database
   useEffect(() => {
     const saveResult = async () => {
-      // Only save if:
-      // 1. The modal is open
-      // 2. It's not a resignation confirmation dialog
-      // 3. The user is authenticated
-      // 4. The result hasn't been saved yet
-      // 5. The game is over or it's a resignation
-      // 6. We have a valid gameStateId
       if (
         isOpen &&
         !isResignation &&
         session?.user?.id &&
         !resultSaved &&
-        (game.isGameOver() || isResignation) &&
+        (game.isGameOver() || isResignation || (game as any).isResigned) &&
         gameStateId
       ) {
         try {
           // Check one more time if this game has already been saved
-          // This helps prevent race conditions
           const savedGameFen = localStorage.getItem("last-saved-game-fen");
           if (savedGameFen === game.fen()) {
             console.log("Game already saved (double-check), skipping save");
@@ -209,7 +201,6 @@ const VictoryModal = ({
           });
           setResultSaved(true);
 
-          // Save the game FEN to localStorage to prevent duplicate saves
           localStorage.setItem("last-saved-game-id", gameStateId);
           localStorage.setItem("last-saved-game-fen", game.fen());
         } catch (error) {
@@ -261,6 +252,18 @@ const VictoryModal = ({
     victoryMessage,
     defeatMessage,
   ]);
+
+  const handleRematch = () => {
+    game.reset();
+    (game as any).isResigned = false;
+    onRematch();
+  };
+
+  const handleNewBot = () => {
+    game.reset();
+    (game as any).isResigned = false;
+    onNewBot();
+  };
 
   return (
     <>
@@ -354,7 +357,7 @@ const VictoryModal = ({
             {isResignation ? (
               <>
                 <Button
-                  onClick={onConfirmResign}
+                  onClick={() => onConfirmResign?.(game)}
                   variant="destructive"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
@@ -371,14 +374,14 @@ const VictoryModal = ({
             ) : (
               <>
                 <Button
-                  onClick={onRematch}
+                  onClick={handleRematch}
                   variant="default"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
                   Rematch
                 </Button>
                 <Button
-                  onClick={onNewBot}
+                  onClick={handleNewBot}
                   variant="outline"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >

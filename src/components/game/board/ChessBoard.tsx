@@ -708,7 +708,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     onMoveForward={moveForward}
                     canMoveBack={currentMove > 1}
                     canMoveForward={currentMove < history.length}
-                    onRematch={handleGameReset}
+                    onRematch={handleRematch}
                     history={history}
                     pieceSet={pieceSet}
                     onPieceSetChange={setPieceSet}

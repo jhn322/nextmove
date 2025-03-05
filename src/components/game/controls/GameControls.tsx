@@ -183,7 +183,7 @@ const GameControls = ({
     "tatiana",
   ];
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
-  const isGameOver = game.isGameOver();
+  const isGameOver = game.isGameOver() || (game as any).isResigned;
 
   useEffect(() => {
     const scrollArea = document.querySelector(

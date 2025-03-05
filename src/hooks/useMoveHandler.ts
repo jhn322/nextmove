@@ -29,6 +29,7 @@ export const useMoveHandler = (
   const handleSquareClick = useCallback(
     (row: number, col: number) => {
       if (game.turn() !== playerColor) return;
+      if (game.isGameOver() || (game as any).isResigned) return;
 
       if (!selectedPiece) {
         const piece = board[row][col];
@@ -46,7 +47,6 @@ export const useMoveHandler = (
 
         // Check if player is trying to move to the same position
         if (from === to) {
-          // Just deselect the piece without attempting a move
           setSelectedPiece(null);
           setPossibleMoves([]);
           return;

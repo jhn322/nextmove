@@ -1,5 +1,12 @@
 import { useState } from "react";
 import { useGameSounds } from "@/hooks/useGameSounds";
+import { Chess } from "chess.js";
+
+declare module "chess.js" {
+  interface Chess {
+    isResigned?: boolean;
+  }
+}
 
 export const useGameDialogs = () => {
   const [showResignDialog, setShowResignDialog] = useState(false);
@@ -30,8 +37,10 @@ export const useGameDialogs = () => {
     setIsResignationModal(true);
   };
 
-  const handleConfirmResign = () => {
+  const handleConfirmResign = (game: Chess) => {
+    game.isResigned = true;
     setIsResignationModal(false);
+    setShowVictoryModal(true);
     playSound("game-end");
   };
 
