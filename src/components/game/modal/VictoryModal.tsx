@@ -251,6 +251,8 @@ const VictoryModal = ({
     selectedBot,
     victoryMessage,
     defeatMessage,
+    isPlayerWinner,
+    renderWinnerText,
   ]);
 
   const handleRematch = () => {

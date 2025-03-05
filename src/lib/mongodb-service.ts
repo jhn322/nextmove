@@ -2,10 +2,21 @@
 
 import { MongoClient, ObjectId } from "mongodb";
 
-// Types
 interface MongoDoc {
   _id?: ObjectId;
 }
+
+type SerializedDoc<T> = {
+  [K in keyof Omit<T, "_id">]: T[K] extends Date
+    ? string
+    : T[K] extends ObjectId
+    ? string
+    : T[K] extends object
+    ? SerializedDoc<T[K]>
+    : T[K];
+} & {
+  id?: string;
+};
 
 export interface UserSettings {
   user_id: string;
@@ -54,14 +65,39 @@ async function getClient() {
 // Helper function to serialize MongoDB documents
 function serializeDocument<T extends { _id?: ObjectId }>(
   doc: T | null
-): (Omit<T, "_id"> & { id?: string }) | null {
+): SerializedDoc<T> | null {
   if (!doc) return null;
 
-  const { _id, ...rest } = doc;
-  return {
-    ...rest,
-    id: _id?.toString(),
-  };
+  // First, convert the entire document to a plain object
+  const plainDoc = JSON.parse(JSON.stringify(doc));
+
+  // Then create a new object with only the properties we want
+  const serialized: SerializedDoc<T> = {} as SerializedDoc<T>;
+
+  // Handle _id separately
+  if (plainDoc._id) {
+    serialized.id = plainDoc._id.toString();
+  }
+
+  // Copy all other properties, ensuring they are plain values
+  Object.entries(plainDoc).forEach(([key, value]) => {
+    if (key !== "_id") {
+      const typedKey = key as keyof SerializedDoc<T>;
+      if (value instanceof Date) {
+        serialized[typedKey] =
+          value.toISOString() as SerializedDoc<T>[typeof typedKey];
+      } else if (typeof value === "object" && value !== null) {
+        // For nested objects, ensure they're also plain objects
+        serialized[typedKey] = JSON.parse(
+          JSON.stringify(value)
+        ) as SerializedDoc<T>[typeof typedKey];
+      } else {
+        serialized[typedKey] = value as SerializedDoc<T>[typeof typedKey];
+      }
+    }
+  });
+
+  return serialized;
 }
 
 // User Settings Operations
@@ -97,12 +133,25 @@ export async function saveGameResult(
   const client = await getClient();
   const collection = client.db("chess").collection("game_history");
 
-  const result = await collection.insertOne(gameData);
-  if (result.acknowledged) {
-    return {
+  // Ensure the data is properly serialized before saving
+  const serializedData = JSON.parse(
+    JSON.stringify({
       ...gameData,
-      id: result.insertedId.toString(),
-    } as GameHistory;
+      date: new Date(gameData.date).toISOString(),
+      moves_count: Number(gameData.moves_count),
+      time_taken: Number(gameData.time_taken),
+    })
+  );
+
+  const result = await collection.insertOne(serializedData);
+  if (result.acknowledged) {
+    // Return a plain object with the inserted ID
+    return JSON.parse(
+      JSON.stringify({
+        ...serializedData,
+        id: result.insertedId.toString(),
+      })
+    ) as GameHistory;
   }
   return null;
 }
@@ -118,7 +167,23 @@ export async function getUserGameHistory(
     .sort({ date: -1 })
     .toArray();
 
-  return games.map((game) => serializeDocument(game)) as GameHistory[];
+  // Ensure proper serialization of each game document
+  return games
+    .map((game) => {
+      const serialized = serializeDocument(game);
+      if (!serialized) return null;
+
+      // Ensure all fields are plain values by double-serializing
+      return JSON.parse(
+        JSON.stringify({
+          ...serialized,
+          date: serialized.date.toString(),
+          moves_count: Number(serialized.moves_count),
+          time_taken: Number(serialized.time_taken),
+        })
+      ) as GameHistory;
+    })
+    .filter((game): game is GameHistory => game !== null);
 }
 
 export async function clearUserGameHistory(userId: string): Promise<boolean> {
