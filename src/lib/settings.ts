@@ -3,7 +3,7 @@
 // Define the settings keys
 const SETTINGS_KEYS = {
   PIECE_SET: "chess_piece_set",
-  DEFAULT_COLOR: "chess_default_color",
+  WHITE_PIECES_BOTTOM: "chess_white_pieces_bottom",
   SHOW_COORDINATES: "chess_show_coordinates",
   ENABLE_ANIMATIONS: "chess_enable_animations",
   SOUND_ENABLED: "chess_sound_enabled",
@@ -12,7 +12,7 @@ const SETTINGS_KEYS = {
 // Default settings values
 const DEFAULT_SETTINGS = {
   pieceSet: "staunty",
-  defaultColor: "w",
+  whitePiecesBottom: true,
   showCoordinates: true,
   enableAnimations: true,
   soundEnabled: true,
@@ -32,18 +32,16 @@ export const setPieceSet = (pieceSet: string): void => {
   localStorage.setItem(SETTINGS_KEYS.PIECE_SET, pieceSet);
 };
 
-// Get default color from localStorage
-export const getDefaultColor = (): "w" | "b" => {
-  if (typeof window === "undefined")
-    return DEFAULT_SETTINGS.defaultColor as "w" | "b";
-  const color = localStorage.getItem(SETTINGS_KEYS.DEFAULT_COLOR);
-  return color === "b" ? "b" : "w";
+// Get white pieces bottom setting from localStorage
+export const getWhitePiecesBottom = (): boolean => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.whitePiecesBottom;
+  return localStorage.getItem(SETTINGS_KEYS.WHITE_PIECES_BOTTOM) !== "false";
 };
 
-// Set default color in localStorage
-export const setDefaultColor = (color: "w" | "b"): void => {
+// Set white pieces bottom setting in localStorage
+export const setWhitePiecesBottom = (bottom: boolean): void => {
   if (typeof window === "undefined") return;
-  localStorage.setItem(SETTINGS_KEYS.DEFAULT_COLOR, color);
+  localStorage.setItem(SETTINGS_KEYS.WHITE_PIECES_BOTTOM, bottom.toString());
 };
 
 // Get show coordinates setting from localStorage
@@ -85,7 +83,7 @@ export const setSoundEnabled = (enable: boolean): void => {
 // Save all settings at once
 export const saveAllSettings = (settings: {
   pieceSet?: string;
-  defaultColor?: "w" | "b";
+  whitePiecesBottom?: boolean;
   showCoordinates?: boolean;
   enableAnimations?: boolean;
   soundEnabled?: boolean;
@@ -96,8 +94,8 @@ export const saveAllSettings = (settings: {
     setPieceSet(settings.pieceSet);
   }
 
-  if (settings.defaultColor) {
-    setDefaultColor(settings.defaultColor);
+  if (settings.whitePiecesBottom !== undefined) {
+    setWhitePiecesBottom(settings.whitePiecesBottom);
   }
 
   if (settings.showCoordinates !== undefined) {

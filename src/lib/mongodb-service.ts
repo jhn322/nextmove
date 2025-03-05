@@ -25,7 +25,7 @@ export interface UserSettings {
   preferred_difficulty: string;
   sound_enabled: boolean;
   piece_set: string;
-  default_color: string;
+  white_pieces_bottom: boolean;
   show_coordinates: boolean;
   enable_animations: boolean;
 }

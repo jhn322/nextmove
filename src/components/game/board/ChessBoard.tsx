@@ -67,6 +67,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const { status, session } = useAuth();
   const [pieceSet, setPieceSet] = useState("staunty");
   const [showCoordinates, setShowCoordinates] = useState(true);
+  const [whitePiecesBottom, setWhitePiecesBottom] = useState(true);
 
   // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
@@ -97,7 +98,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           if (settings) {
             setPieceSet(settings.piece_set || "staunty");
             setShowCoordinates(settings.show_coordinates !== false);
-            setPlayerColor((settings.default_color as "w" | "b") || "w");
+            setWhitePiecesBottom(settings.white_pieces_bottom !== false);
           }
         } catch (error) {
           console.error("Error loading user settings:", error);
@@ -116,13 +117,17 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         const savedShowCoordinates = localStorage.getItem(
           "chess_show_coordinates"
         );
-        const savedDefaultColor = localStorage.getItem("chess_default_color");
+        const savedWhitePiecesBottom = localStorage.getItem(
+          "chess_white_pieces_bottom"
+        );
 
         if (savedPieceSet) setPieceSet(savedPieceSet);
         if (savedShowCoordinates !== null) {
           setShowCoordinates(savedShowCoordinates !== "false");
         }
-        if (savedDefaultColor) setPlayerColor(savedDefaultColor as "w" | "b");
+        if (savedWhitePiecesBottom !== null) {
+          setWhitePiecesBottom(savedWhitePiecesBottom !== "false");
+        }
       }
     };
 
@@ -644,10 +649,12 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
                   {board.map((row, rowIndex) =>
                     row.map((_, colIndex) => {
-                      const actualRowIndex =
-                        playerColor === "w" ? rowIndex : 7 - rowIndex;
-                      const actualColIndex =
-                        playerColor === "w" ? colIndex : 7 - colIndex;
+                      const actualRowIndex = whitePiecesBottom
+                        ? rowIndex
+                        : 7 - rowIndex;
+                      const actualColIndex = whitePiecesBottom
+                        ? colIndex
+                        : 7 - colIndex;
                       const piece = board[actualRowIndex][actualColIndex];
                       const square = `${"abcdefgh"[actualColIndex]}${
                         8 - actualRowIndex
@@ -664,10 +671,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                         (square === hintMove.from || square === hintMove.to);
                       const showRank =
                         showCoordinates &&
-                        (playerColor === "w" ? colIndex === 0 : colIndex === 7);
+                        (whitePiecesBottom ? colIndex === 0 : colIndex === 7);
                       const showFile =
                         showCoordinates &&
-                        (playerColor === "w" ? rowIndex === 7 : rowIndex === 0);
+                        (whitePiecesBottom ? rowIndex === 7 : rowIndex === 0);
                       const coordinate = showCoordinates
                         ? showRank
                           ? `${8 - actualRowIndex}`

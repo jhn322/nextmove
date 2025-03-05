@@ -46,7 +46,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   saveAllSettings,
   getPieceSet,
-  getDefaultColor,
   getShowCoordinates,
   getEnableAnimations,
 } from "@/lib/settings";
@@ -66,7 +65,7 @@ export default function SettingsPage() {
     preferred_difficulty: "intermediate",
     sound_enabled: true,
     piece_set: "staunty",
-    default_color: "w",
+    white_pieces_bottom: true,
     show_coordinates: true,
     enable_animations: true,
   });
@@ -128,7 +127,7 @@ export default function SettingsPage() {
               settingsData.preferred_difficulty || "intermediate",
             sound_enabled: settingsData.sound_enabled !== false,
             piece_set: settingsData.piece_set || getPieceSet(),
-            default_color: settingsData.default_color || getDefaultColor(),
+            white_pieces_bottom: settingsData.white_pieces_bottom !== false,
             show_coordinates: settingsData.show_coordinates !== false,
             enable_animations: settingsData.enable_animations !== false,
           });
@@ -140,7 +139,7 @@ export default function SettingsPage() {
             preferred_difficulty: "intermediate",
             sound_enabled: true,
             piece_set: getPieceSet(),
-            default_color: getDefaultColor(),
+            white_pieces_bottom: true,
             show_coordinates: getShowCoordinates(),
             enable_animations: getEnableAnimations(),
           });
@@ -226,7 +225,7 @@ export default function SettingsPage() {
         // Save to localStorage for offline use
         saveAllSettings({
           pieceSet: settings.piece_set,
-          defaultColor: settings.default_color as "w" | "b",
+          whitePiecesBottom: settings.white_pieces_bottom,
           showCoordinates: settings.show_coordinates,
           enableAnimations: settings.enable_animations,
           soundEnabled: settings.sound_enabled,
@@ -234,7 +233,10 @@ export default function SettingsPage() {
 
         // Also save individual settings for backward compatibility
         localStorage.setItem("chess_piece_set", settings.piece_set);
-        localStorage.setItem("chess_default_color", settings.default_color);
+        localStorage.setItem(
+          "chess_white_pieces_bottom",
+          settings.white_pieces_bottom.toString()
+        );
         localStorage.setItem(
           "chess_show_coordinates",
           settings.show_coordinates.toString()
@@ -495,31 +497,33 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="default_color">Default Player Color</Label>
+                <Label htmlFor="white_pieces_bottom">
+                  White Pieces Position
+                </Label>
                 <div className="flex gap-3 mt-2">
                   <Button
                     onClick={() =>
-                      setSettings({ ...settings, default_color: "w" })
+                      setSettings({ ...settings, white_pieces_bottom: true })
                     }
                     variant={
-                      settings.default_color === "w" ? "default" : "outline"
+                      settings.white_pieces_bottom ? "default" : "outline"
                     }
                     className="flex-1 flex items-center justify-center gap-2"
                   >
                     <Crown className="h-4 w-4 fill-current" />
-                    White
+                    Bottom
                   </Button>
                   <Button
                     onClick={() =>
-                      setSettings({ ...settings, default_color: "b" })
+                      setSettings({ ...settings, white_pieces_bottom: false })
                     }
                     variant={
-                      settings.default_color === "b" ? "default" : "outline"
+                      !settings.white_pieces_bottom ? "default" : "outline"
                     }
                     className="flex-1 flex items-center justify-center gap-2"
                   >
                     <Crown className="h-4 w-4" />
-                    Black
+                    Top
                   </Button>
                 </div>
               </div>
