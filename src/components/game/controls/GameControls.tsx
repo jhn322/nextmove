@@ -1,13 +1,6 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Piece from "@/components/game/board/Piece";
 import { Chess, Square } from "chess.js";
 import {
@@ -15,8 +8,6 @@ import {
   ChevronRight,
   Crown,
   Flag,
-  Info,
-  Palette,
   UserPlus,
   AlertCircle,
   HandshakeIcon,
@@ -24,12 +15,6 @@ import {
   PlayCircle,
   Swords,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface GameControlsProps {
@@ -50,7 +35,6 @@ interface GameControlsProps {
   onRematch: () => void;
   history: { fen: string; lastMove: { from: string; to: string } | null }[];
   pieceSet: string;
-  onPieceSetChange: (set: string) => void;
   onNewBot: () => void;
   handleNewBotDialog: () => void;
   onHintRequested: () => void;
@@ -157,31 +141,10 @@ const GameControls = ({
   onRematch,
   history,
   pieceSet,
-  onPieceSetChange,
   handleNewBotDialog,
   onHintRequested,
   isCalculatingHint,
 }: GameControlsProps) => {
-  const pieceSets = [
-    "california",
-    "cardinal",
-    "cburnett",
-    "chessicons",
-    "chessmonk",
-    "chessnut",
-    "freestaunton",
-    "fresca",
-    "gioco",
-    "governor",
-    "icpieces",
-    "kosal",
-    "maestro",
-    "merida_new",
-    "pixel",
-    "riohacha",
-    "staunty",
-    "tatiana",
-  ];
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
   const isGameOver = game.isGameOver() || game.isResigned;
 

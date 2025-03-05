@@ -756,7 +756,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     onRematch={handleRematch}
                     history={history}
                     pieceSet={pieceSet}
-                    onPieceSetChange={setPieceSet}
                     onNewBot={handleNewBot}
                     handleNewBotDialog={handleNewBotDialog}
                     onHintRequested={handleHintRequest}
