@@ -663,13 +663,17 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                         hintMove &&
                         (square === hintMove.from || square === hintMove.to);
                       const showRank =
-                        playerColor === "w" ? colIndex === 0 : colIndex === 7;
+                        showCoordinates &&
+                        (playerColor === "w" ? colIndex === 0 : colIndex === 7);
                       const showFile =
-                        playerColor === "w" ? rowIndex === 7 : rowIndex === 0;
-                      const coordinate = showRank
-                        ? `${8 - actualRowIndex}`
-                        : showFile
-                        ? `${"abcdefgh"[actualColIndex]}`
+                        showCoordinates &&
+                        (playerColor === "w" ? rowIndex === 7 : rowIndex === 0);
+                      const coordinate = showCoordinates
+                        ? showRank
+                          ? `${8 - actualRowIndex}`
+                          : showFile
+                          ? `${"abcdefgh"[actualColIndex]}`
+                          : ""
                         : "";
 
                       return (
