@@ -29,7 +29,7 @@ export const useMoveHandler = (
   const handleSquareClick = useCallback(
     (row: number, col: number) => {
       if (game.turn() !== playerColor) return;
-      if (game.isGameOver() || (game as any).isResigned) return;
+      if (game.isGameOver() || game.isResigned) return;
 
       if (!selectedPiece) {
         const piece = board[row][col];

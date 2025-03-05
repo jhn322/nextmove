@@ -115,7 +115,7 @@ const VictoryModal = ({
       const winningColor = losingColor === "w" ? "b" : "w";
       return winningColor === playerColor;
     }
-    if (isResignation || (game as any).isResigned) {
+    if (isResignation || game.isResigned) {
       return false;
     }
     return false;
@@ -175,7 +175,7 @@ const VictoryModal = ({
         !isResignation &&
         session?.user?.id &&
         !resultSaved &&
-        (game.isGameOver() || isResignation || (game as any).isResigned) &&
+        (game.isGameOver() || isResignation || game.isResigned) &&
         gameStateId
       ) {
         try {
@@ -255,13 +255,13 @@ const VictoryModal = ({
 
   const handleRematch = () => {
     game.reset();
-    (game as any).isResigned = false;
+    game.isResigned = false;
     onRematch();
   };
 
   const handleNewBot = () => {
     game.reset();
-    (game as any).isResigned = false;
+    game.isResigned = false;
     onNewBot();
   };
 

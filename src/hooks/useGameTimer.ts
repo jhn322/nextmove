@@ -18,7 +18,7 @@ export const useGameTimer = (
 
   useEffect(() => {
     const timer = setInterval(() => {
-      if (gameStarted && !game.isGameOver() && !(game as any).isResigned) {
+      if (gameStarted && !game.isGameOver() && !game.isResigned) {
         setGameTime((prev) => prev + 1);
         if (game.turn() === "w") {
           setWhiteTime((prev) => prev + 1);
