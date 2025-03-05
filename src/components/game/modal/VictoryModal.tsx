@@ -243,29 +243,24 @@ const VictoryModal = ({
       );
       setVictoryMessage(VICTORY_MESSAGES[randomVictoryIndex]);
       setDefeatMessage(DEFEAT_MESSAGES[randomDefeatIndex]);
+    }
+  }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen) {
       setMessage(renderWinnerText());
       setShowConfetti(isPlayerWinner());
       setIsRecycling(true);
-
-      const recycleTimer = setTimeout(() => {
-        setIsRecycling(false);
-      }, 2000);
-
-      const confettiTimer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 4000);
-
-      return () => {
-        clearTimeout(recycleTimer);
-        clearTimeout(confettiTimer);
-      };
-    } else {
-      setShowConfetti(false);
-      setIsRecycling(false);
-      setResultSaved(false); // Reset the saved state when modal closes
     }
-  }, [isOpen, renderWinnerText, isPlayerWinner]);
+  }, [
+    isOpen,
+    game,
+    isResignation,
+    playerColor,
+    selectedBot,
+    victoryMessage,
+    defeatMessage,
+  ]);
 
   return (
     <>
