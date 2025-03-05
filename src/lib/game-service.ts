@@ -28,9 +28,9 @@ export const determineGameResult = (
   game: Chess,
   playerColor: "w" | "b",
   isResignation?: boolean
-): "win" | "loss" | "draw" => {
+): "win" | "loss" | "draw" | "resign" => {
   if (isResignation) {
-    return "loss";
+    return "resign";
   }
 
   if (game.isDraw()) {
@@ -155,6 +155,7 @@ export const getUserGameStats = async (
         wins: 0,
         losses: 0,
         draws: 0,
+        resigns: 0,
         winRate: 0,
         averageMovesPerGame: 0,
         averageGameTime: 0,
@@ -166,6 +167,9 @@ export const getUserGameStats = async (
     const wins = gameHistory.filter((game) => game.result === "win").length;
     const losses = gameHistory.filter((game) => game.result === "loss").length;
     const draws = gameHistory.filter((game) => game.result === "draw").length;
+    const resigns = gameHistory.filter(
+      (game) => game.result === "resign"
+    ).length;
     const totalGames = gameHistory.length;
     const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
 
@@ -198,6 +202,7 @@ export const getUserGameStats = async (
       wins,
       losses,
       draws,
+      resigns,
       winRate,
       averageMovesPerGame,
       averageGameTime,

@@ -36,7 +36,7 @@ export interface GameHistory {
   id: string;
   user_id: string;
   opponent: string;
-  result: "win" | "loss" | "draw";
+  result: "win" | "loss" | "draw" | "resign";
   date: string;
   moves_count: number;
   time_taken: number;

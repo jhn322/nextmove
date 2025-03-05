@@ -34,6 +34,7 @@ import {
   Medal,
   Brain,
   Trash2,
+  Flag,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -67,6 +68,7 @@ interface GameStats {
   wins: number;
   losses: number;
   draws: number;
+  resigns: number;
   winRate: number;
   averageMovesPerGame: number;
   averageGameTime: number;
@@ -119,6 +121,9 @@ const HistoryPage = () => {
             const draws = history.filter(
               (game: GameHistory) => game.result === "draw"
             ).length;
+            const resigns = history.filter(
+              (game: GameHistory) => game.result === "resign"
+            ).length;
             const totalGames = history.length;
             const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
 
@@ -159,6 +164,7 @@ const HistoryPage = () => {
               wins,
               losses,
               draws,
+              resigns,
               winRate,
               averageMovesPerGame,
               averageGameTime,
@@ -206,6 +212,8 @@ const HistoryPage = () => {
         return <X className="h-4 w-4 text-red-500" />;
       case "draw":
         return <Minus className="h-4 w-4 text-blue-500" />;
+      case "resign":
+        return <Flag className="h-4 w-4 text-orange-500" />;
       default:
         return null;
     }
@@ -466,7 +474,8 @@ const HistoryPage = () => {
                                   "capitalize",
                                   game.result === "win" && "text-yellow-500",
                                   game.result === "loss" && "text-red-500",
-                                  game.result === "draw" && "text-blue-500"
+                                  game.result === "draw" && "text-blue-500",
+                                  game.result === "resign" && "text-orange-500"
                                 )}
                               >
                                 {game.result}

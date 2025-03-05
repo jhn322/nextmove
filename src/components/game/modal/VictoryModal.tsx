@@ -172,7 +172,6 @@ const VictoryModal = ({
     const saveResult = async () => {
       if (
         isOpen &&
-        !isResignation &&
         session?.user?.id &&
         !resultSaved &&
         (game.isGameOver() || isResignation || game.isResigned) &&
@@ -196,7 +195,7 @@ const VictoryModal = ({
             selectedBot,
             gameTime,
             movesCount,
-            isResignation,
+            isResignation: isResignation || game.isResigned,
             session,
           });
           setResultSaved(true);
