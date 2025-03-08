@@ -170,7 +170,7 @@ const difficultyLevels = [
 
 export default function Home() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { session, signIn } = useAuth();
   const [showDialog, setShowDialog] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<
     (typeof difficultyLevels)[0] | null
@@ -682,10 +682,7 @@ export default function Home() {
                       Sign in to track your progress and see your next
                       challenge!
                     </p>
-                    <Button
-                      className="mt-4"
-                      onClick={() => router.push("/login")}
-                    >
+                    <Button className="mt-4" onClick={() => signIn("google")}>
                       Sign In
                     </Button>
                   </div>
