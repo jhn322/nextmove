@@ -426,29 +426,6 @@ export default function SettingsPage() {
 
             <TabsContent value="game" className="space-y-6 mt-6">
               <div className="space-y-2">
-                <Label htmlFor="preferred_difficulty">
-                  Preferred Difficulty
-                </Label>
-                <Select
-                  value={settings.preferred_difficulty}
-                  onValueChange={(value) =>
-                    setSettings({ ...settings, preferred_difficulty: value })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select difficulty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {difficultyLevels.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level.charAt(0).toUpperCase() + level.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="piece_set">Chess Piece Set</Label>
                 <Select
                   value={settings.piece_set}
