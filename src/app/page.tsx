@@ -566,6 +566,7 @@ export default function Home() {
               <Link
                 href="/history?tab=bots"
                 className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors mb-6 group"
+                scroll={false}
               >
                 <div className="bg-primary/10 p-2 rounded-full">
                   <History className="h-5 w-5 text-primary" />

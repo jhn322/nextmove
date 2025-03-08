@@ -87,6 +87,20 @@ const HistoryPage = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const router = useRouter();
 
+  // Get the default tab from URL parameters
+  const [defaultTab, setDefaultTab] = useState("history");
+
+  useEffect(() => {
+    // Check if we're in the browser
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam && ["history", "stats", "bots"].includes(tabParam)) {
+        setDefaultTab(tabParam);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const fetchGameData = async () => {
       if (status === "loading") {
@@ -364,7 +378,7 @@ const HistoryPage = () => {
 
   return (
     <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8">
-      <Tabs defaultValue="history" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="history" className="flex items-center gap-2">
             <History className="h-4 w-4" /> Game History
