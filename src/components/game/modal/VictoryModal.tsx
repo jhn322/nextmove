@@ -242,6 +242,20 @@ const VictoryModal = ({
       setMessage(renderWinnerText());
       setShowConfetti(isPlayerWinner());
       setIsRecycling(true);
+
+      const timer = setTimeout(() => {
+        setIsRecycling(false);
+        // Give time for remaining confetti to fall before hiding
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 2000);
+      }, 5000);
+
+      return () => {
+        clearTimeout(timer);
+        setShowConfetti(false);
+        setIsRecycling(false);
+      };
     }
   }, [
     isOpen,
