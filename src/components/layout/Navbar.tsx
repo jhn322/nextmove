@@ -40,6 +40,7 @@ import {
   Home,
   Play,
   Github,
+  Save,
 } from "lucide-react";
 import {
   Collapsible,
@@ -67,11 +68,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { STORAGE_KEY, DEFAULT_STATE } from "@/config/game";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlayOpen, setIsPlayOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showSavedGameDialog, setShowSavedGameDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
+    null
+  );
+  const [savedGameDifficulty, setSavedGameDifficulty] = useState<string | null>(
+    null
+  );
   const { setTheme, theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
@@ -97,6 +107,27 @@ const Navbar = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
+
+  // Check for saved game on mount and pathname change
+  useEffect(() => {
+    const checkSavedGame = () => {
+      try {
+        const savedState = JSON.parse(
+          localStorage.getItem(STORAGE_KEY) || "null"
+        );
+        if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
+          setSavedGameDifficulty(savedState.difficulty);
+        } else {
+          setSavedGameDifficulty(null);
+        }
+      } catch (error) {
+        console.error("Error checking saved game:", error);
+        setSavedGameDifficulty(null);
+      }
+    };
+
+    checkSavedGame();
+  }, [pathname]);
 
   const playItems = [
     {
@@ -176,6 +207,28 @@ const Navbar = () => {
     setIsOpen(false); // Close mobile menu if open
   };
 
+  const handlePlayNavigation = (href: string, difficulty: string) => {
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    const hasSavedGame =
+      savedState?.fen && savedState.fen !== DEFAULT_STATE.fen;
+
+    if (hasSavedGame && savedState.difficulty !== difficulty) {
+      setPendingNavigation(href);
+      setShowSavedGameDialog(true);
+    } else {
+      router.push(href);
+    }
+  };
+
+  const handleConfirmNavigation = () => {
+    if (pendingNavigation) {
+      localStorage.removeItem(STORAGE_KEY);
+      router.push(pendingNavigation);
+    }
+    setShowSavedGameDialog(false);
+    setPendingNavigation(null);
+  };
+
   return (
     <nav
       className={cn(
@@ -243,10 +296,15 @@ const Navbar = () => {
                   <ul className="grid w-[400px] grid-cols-2 gap-3 p-4 rounded-xl">
                     {playItems.map((item) => (
                       <li key={item.href}>
-                        <Link
-                          href={item.href}
+                        <button
+                          onClick={() =>
+                            handlePlayNavigation(
+                              item.href,
+                              item.title.toLowerCase()
+                            )
+                          }
                           className={cn(
-                            "block select-none rounded-xl p-3 text-base font-medium transition-all hover:scale-[1.02]",
+                            "block w-full select-none rounded-xl p-3 text-base font-medium transition-all hover:scale-[1.02]",
                             isActive(item.href)
                               ? `${item.bgColor} ${item.borderColor} border`
                               : "hover:bg-accent hover:text-accent-foreground"
@@ -258,9 +316,16 @@ const Navbar = () => {
                             >
                               <item.icon className={`h-4 w-4 ${item.color}`} />
                             </div>
-                            {item.title}
+                            <span className="flex-1">{item.title}</span>
+                            {savedGameDifficulty?.toLowerCase() ===
+                              item.title.toLowerCase() && (
+                              <Badge variant="secondary" className="ml-2">
+                                <Save className="h-3 w-3 mr-1" />
+                                Saved
+                              </Badge>
+                            )}
                           </span>
-                        </Link>
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -473,38 +538,58 @@ const Navbar = () => {
                       </CollapsibleTrigger>
                       <CollapsibleContent className="mt-1 space-y-1">
                         {playItems.map((item) => (
-                          <Link
+                          <button
                             key={item.href}
-                            href={item.href}
+                            onClick={() => {
+                              handlePlayNavigation(
+                                item.href,
+                                item.title.toLowerCase()
+                              );
+                              setIsOpen(false);
+                            }}
                             className={cn(
-                              "block px-4 py-3 text-base font-medium rounded-xl transition-colors ml-4",
+                              "block w-full px-4 py-3 text-base font-medium rounded-xl transition-colors ml-4",
                               isActive(item.href)
                                 ? `${item.bgColor} ${item.borderColor} border`
                                 : "hover:bg-accent hover:text-accent-foreground"
                             )}
-                            onClick={() => setIsOpen(false)}
                           >
                             <span className="flex items-center gap-3">
                               <div
-                                className={cn("p-1.5 rounded-lg", item.bgColor)}
+                                className={cn(
+                                  "p-1.5 rounded-lg flex-shrink-0",
+                                  item.bgColor
+                                )}
                               >
                                 <item.icon
                                   className={`h-5 w-5 ${item.color}`}
                                 />
                               </div>
-                              {item.title}
+                              <span className="flex-1 text-left">
+                                {item.title}
+                              </span>
+                              {savedGameDifficulty?.toLowerCase() ===
+                                item.title.toLowerCase() && (
+                                <Badge
+                                  variant="secondary"
+                                  className="ml-2 flex-shrink-0"
+                                >
+                                  <Save className="h-3 w-3 mr-1" />
+                                  Saved
+                                </Badge>
+                              )}
                             </span>
-                          </Link>
+                          </button>
                         ))}
                       </CollapsibleContent>
                     </Collapsible>
 
                     {isAuthenticated && (
                       <>
-                        <Button
+                        <button
                           onClick={() => handleProtectedNavigation("/history")}
                           className={cn(
-                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start w-full",
+                            "w-full px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start",
                             isActive("/history")
                               ? "bg-primary/10 text-primary"
                               : "hover:bg-accent hover:text-accent-foreground"
@@ -512,12 +597,12 @@ const Navbar = () => {
                         >
                           <History className="mr-3 h-5 w-5" />
                           <span>History</span>
-                        </Button>
+                        </button>
 
-                        <Button
+                        <button
                           onClick={() => handleProtectedNavigation("/settings")}
                           className={cn(
-                            "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start w-full",
+                            "w-full px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start",
                             isActive("/settings")
                               ? "bg-primary/10 text-primary"
                               : "hover:bg-accent hover:text-accent-foreground"
@@ -525,7 +610,7 @@ const Navbar = () => {
                         >
                           <Settings className="mr-3 h-5 w-5" />
                           <span>Settings</span>
-                        </Button>
+                        </button>
                       </>
                     )}
                   </div>
@@ -638,6 +723,36 @@ const Navbar = () => {
           </Sheet>
         </div>
       </div>
+
+      {/* AlertDialog for saved game warning */}
+      <AlertDialog
+        open={showSavedGameDialog}
+        onOpenChange={setShowSavedGameDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Saved Game Found</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have a saved game in progress at {savedGameDifficulty}{" "}
+              difficulty. Starting a new game at a different difficulty will
+              delete your saved progress.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowSavedGameDialog(false);
+                setPendingNavigation(null);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmNavigation}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   );
 };
