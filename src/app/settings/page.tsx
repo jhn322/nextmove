@@ -23,6 +23,7 @@ import {
   Volume2,
   VolumeX,
   Zap,
+  PartyPopper,
 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -69,6 +70,7 @@ export default function SettingsPage() {
     white_pieces_bottom: true,
     show_coordinates: true,
     enable_animations: true,
+    enable_confetti: true,
   });
   const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState("");
@@ -131,6 +133,7 @@ export default function SettingsPage() {
             white_pieces_bottom: settingsData.white_pieces_bottom !== false,
             show_coordinates: settingsData.show_coordinates !== false,
             enable_animations: settingsData.enable_animations !== false,
+            enable_confetti: settingsData.enable_confetti !== false,
           });
         } else {
           // No settings found, use defaults
@@ -143,6 +146,7 @@ export default function SettingsPage() {
             white_pieces_bottom: true,
             show_coordinates: getShowCoordinates(),
             enable_animations: getEnableAnimations(),
+            enable_confetti: true,
           });
         }
       } catch (error) {
@@ -230,6 +234,7 @@ export default function SettingsPage() {
           showCoordinates: settings.show_coordinates,
           enableAnimations: settings.enable_animations,
           soundEnabled: settings.sound_enabled,
+          enableConfetti: settings.enable_confetti,
         });
 
         // Also save individual settings for backward compatibility
@@ -249,6 +254,10 @@ export default function SettingsPage() {
         localStorage.setItem(
           "chess_sound_enabled",
           settings.sound_enabled.toString()
+        );
+        localStorage.setItem(
+          "chess_enable_confetti",
+          settings.enable_confetti.toString()
         );
 
         setSaveMessage("Settings saved successfully");
@@ -574,6 +583,25 @@ export default function SettingsPage() {
                     checked={settings.enable_animations}
                     onCheckedChange={(checked) =>
                       setSettings({ ...settings, enable_animations: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="enable_confetti">Victory Confetti</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show confetti animation when winning a game
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <PartyPopper className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="enable_confetti"
+                    checked={settings.enable_confetti}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, enable_confetti: checked })
                     }
                   />
                 </div>

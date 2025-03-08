@@ -15,6 +15,7 @@ import { Chess } from "chess.js";
 import Confetti from "react-confetti";
 import { saveGameResult } from "@/lib/game-service";
 import { useAuth } from "@/context/auth-context";
+import { getConfettiEnabled } from "@/lib/settings";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -240,22 +241,26 @@ const VictoryModal = ({
   useEffect(() => {
     if (isOpen) {
       setMessage(renderWinnerText());
-      setShowConfetti(isPlayerWinner());
-      setIsRecycling(true);
+      const shouldShowConfetti = isPlayerWinner() && getConfettiEnabled();
+      setShowConfetti(shouldShowConfetti);
+      setIsRecycling(shouldShowConfetti);
 
-      const timer = setTimeout(() => {
-        setIsRecycling(false);
-        // Give time for remaining confetti to fall before hiding
-        setTimeout(() => {
+      if (shouldShowConfetti) {
+        // Stop confetti after 5 seconds
+        const timer = setTimeout(() => {
+          setIsRecycling(false);
+          // Give time for remaining confetti to fall before hiding
+          setTimeout(() => {
+            setShowConfetti(false);
+          }, 2000);
+        }, 5000);
+
+        return () => {
+          clearTimeout(timer);
           setShowConfetti(false);
-        }, 2000);
-      }, 5000);
-
-      return () => {
-        clearTimeout(timer);
-        setShowConfetti(false);
-        setIsRecycling(false);
-      };
+          setIsRecycling(false);
+        };
+      }
     }
   }, [
     isOpen,

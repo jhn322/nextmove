@@ -7,6 +7,7 @@ const SETTINGS_KEYS = {
   SHOW_COORDINATES: "chess_show_coordinates",
   ENABLE_ANIMATIONS: "chess_enable_animations",
   SOUND_ENABLED: "chess_sound_enabled",
+  ENABLE_CONFETTI: "chess_enable_confetti",
 };
 
 // Default settings values
@@ -16,6 +17,7 @@ const DEFAULT_SETTINGS = {
   showCoordinates: true,
   enableAnimations: true,
   soundEnabled: true,
+  enableConfetti: true,
 };
 
 // Get piece set from localStorage
@@ -80,6 +82,18 @@ export const setSoundEnabled = (enable: boolean): void => {
   localStorage.setItem(SETTINGS_KEYS.SOUND_ENABLED, enable.toString());
 };
 
+// Get confetti enabled setting from localStorage
+export const getConfettiEnabled = (): boolean => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.enableConfetti;
+  return localStorage.getItem(SETTINGS_KEYS.ENABLE_CONFETTI) !== "false";
+};
+
+// Set confetti enabled setting in localStorage
+export const setConfettiEnabled = (enable: boolean): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.ENABLE_CONFETTI, enable.toString());
+};
+
 // Save all settings at once
 export const saveAllSettings = (settings: {
   pieceSet?: string;
@@ -87,6 +101,7 @@ export const saveAllSettings = (settings: {
   showCoordinates?: boolean;
   enableAnimations?: boolean;
   soundEnabled?: boolean;
+  enableConfetti?: boolean;
 }): void => {
   if (typeof window === "undefined") return;
 
@@ -108,5 +123,9 @@ export const saveAllSettings = (settings: {
 
   if (settings.soundEnabled !== undefined) {
     setSoundEnabled(settings.soundEnabled);
+  }
+
+  if (settings.enableConfetti !== undefined) {
+    setConfettiEnabled(settings.enableConfetti);
   }
 };

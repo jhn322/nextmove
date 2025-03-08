@@ -28,6 +28,7 @@ export interface UserSettings {
   white_pieces_bottom: boolean;
   show_coordinates: boolean;
   enable_animations: boolean;
+  enable_confetti: boolean;
 }
 
 interface UserSettingsDoc extends UserSettings, MongoDoc {}
