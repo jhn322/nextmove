@@ -56,6 +56,7 @@ import {
   saveUserSettings,
   UserSettings,
 } from "@/lib/mongodb-service";
+import SettingsLoading from "./loading";
 
 export default function SettingsPage() {
   const { status, session } = useAuth();
@@ -276,28 +277,17 @@ export default function SettingsPage() {
   };
 
   if (status === "loading" || loading) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Loading...</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-    );
+    return <SettingsLoading />;
   }
 
-  if (status === "unauthenticated") {
+  if (error) {
     return (
       <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Not Authenticated</CardTitle>
-            <CardDescription>
-              Please sign in to view your settings.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </div>
     );
   }

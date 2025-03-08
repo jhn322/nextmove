@@ -18,6 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Trophy,
   X,
@@ -38,11 +40,9 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BOTS_BY_DIFFICULTY, Bot } from "@/components/game/data/bots";
 import {
   AlertDialog,
@@ -62,6 +62,7 @@ import {
   clearUserGameHistory,
   GameHistory,
 } from "@/lib/mongodb-service";
+import HistoryLoading from "./loading";
 
 interface GameStats {
   totalGames: number;
@@ -79,7 +80,7 @@ const HistoryPage = () => {
   const { status, session } = useAuth();
   const [gameHistory, setGameHistory] = useState<GameHistory[]>([]);
   const [gameStats, setGameStats] = useState<GameStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
@@ -93,7 +94,7 @@ const HistoryPage = () => {
       }
 
       if (status === "authenticated" && session?.user?.id) {
-        setIsLoading(true);
+        setLoading(true);
         setError(null);
 
         try {
@@ -191,7 +192,7 @@ const HistoryPage = () => {
             setError("An unexpected error occurred. Please try again.");
           }
         } finally {
-          setIsLoading(false);
+          setLoading(false);
         }
       } else if (status === "unauthenticated") {
         setError("You need to sign in to view your game history");
@@ -202,7 +203,23 @@ const HistoryPage = () => {
     };
 
     fetchGameData();
-  }, [status, session, router, refreshTrigger]);
+  }, [status, session, refreshTrigger, router]);
+
+  if (status === "loading" || loading) {
+    return <HistoryLoading />;
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-10">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   const getResultIcon = (result: string) => {
     switch (result) {
@@ -344,33 +361,6 @@ const HistoryPage = () => {
       </AlertDialog>
     );
   };
-
-  if (status === "loading" || isLoading) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Loading...</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated") {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Not Authenticated</CardTitle>
-            <CardDescription>
-              Please sign in to view your game history.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8">

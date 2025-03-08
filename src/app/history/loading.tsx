@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function HistoryLoading() {
   return (
@@ -11,56 +12,52 @@ export default function HistoryLoading() {
       </div>
 
       {/* Game History Tab Content */}
-      <div className="space-y-6">
-        {/* Title and Description */}
-        <div className="space-y-2">
+      <Card>
+        <CardHeader className="space-y-2">
           <Skeleton className="h-8 w-[200px]" />
           <Skeleton className="h-4 w-[300px]" />
-        </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            {/* Table Header */}
+            <div className="w-full min-w-[800px]">
+              <div className="grid grid-cols-6 gap-4 py-4 border-b">
+                <Skeleton className="h-4 w-20" /> {/* Date */}
+                <Skeleton className="h-4 w-24" /> {/* Opponent */}
+                <Skeleton className="h-4 w-24" /> {/* Difficulty */}
+                <Skeleton className="h-4 w-20" /> {/* Result */}
+                <Skeleton className="h-4 w-16" /> {/* Moves */}
+                <Skeleton className="h-4 w-16" /> {/* Time */}
+              </div>
 
-        {/* Table */}
-        <div className="space-y-4">
-          {/* Table Header */}
-          <Skeleton className="h-12 w-full rounded-lg" />
-
-          {/* Table Rows */}
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex gap-4">
-              <Skeleton className="h-16 w-[15%] rounded-lg" /> {/* Date */}
-              <Skeleton className="h-16 w-[20%] rounded-lg" /> {/* Opponent */}
-              <Skeleton className="h-16 w-[15%] rounded-lg" />{" "}
-              {/* Difficulty */}
-              <Skeleton className="h-16 w-[20%] rounded-lg" /> {/* Result */}
-              <Skeleton className="h-16 w-[15%] rounded-lg" /> {/* Moves */}
-              <Skeleton className="h-16 w-[15%] rounded-lg" /> {/* Time */}
+              {/* Table Rows */}
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="grid grid-cols-6 gap-4 py-4 border-b">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-6 w-24" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                  <Skeleton className="h-4 w-12" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Stat Cards */}
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="space-y-2">
-            <Skeleton className="h-8 w-[150px]" /> {/* Title */}
-            <Skeleton className="h-20 w-full rounded-lg" /> {/* Content */}
           </div>
-        ))}
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Bot Challenges Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="space-y-2">
-            <Skeleton className="h-24 w-full rounded-lg" />
-          </div>
-        ))}
-      </div>
-
-      {/* Clear History Button */}
-      <div className="flex justify-end">
-        <Skeleton className="h-10 w-[120px] rounded-md" />
+      {/* Clear History Button Skeleton */}
+      <div className="flex justify-start">
+        <Skeleton className="h-9 w-[120px]" />
       </div>
     </div>
   );
