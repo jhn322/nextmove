@@ -596,8 +596,8 @@ export default function Home() {
                     </div>
                     <h3 className="font-bold text-xl">Congratulations!</h3>
                     <p className="text-muted-foreground">
-                      You've beaten all the bots! Want to challenge yourself
-                      again?
+                      You&apos;ve beaten all the bots! Want to challenge
+                      yourself again?
                     </p>
                     <Button
                       className="w-full mt-2"
