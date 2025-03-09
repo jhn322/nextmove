@@ -46,6 +46,8 @@ const PlayerProfile = ({
   const [showMessage, setShowMessage] = useState(false);
   const [playerName, setPlayerName] = useState<string>("");
   const [playerAvatar, setPlayerAvatar] = useState<string>("");
+  const [countryFlag, setCountryFlag] = useState<string>("");
+  const [flair, setFlair] = useState<string>("");
   const [currentPieceSet, setCurrentPieceSet] = useState(initialPieceSet);
 
   const capitalizedDifficulty =
@@ -74,6 +76,8 @@ const PlayerProfile = ({
             if (settings) {
               setPlayerName(settings.display_name);
               setPlayerAvatar(settings.avatar_url);
+              setCountryFlag(settings.country_flag || "");
+              setFlair(settings.flair || "");
 
               // Update piece set if provided in user settings
               if (settings.piece_set) {
@@ -83,6 +87,11 @@ const PlayerProfile = ({
               // Also update localStorage for offline use
               localStorage.setItem("chess-player-name", settings.display_name);
               localStorage.setItem("chess-player-avatar", settings.avatar_url);
+              localStorage.setItem(
+                "chess-player-flag",
+                settings.country_flag || ""
+              );
+              localStorage.setItem("chess-player-flair", settings.flair || "");
               if (settings.piece_set) {
                 localStorage.setItem("chess-piece-set", settings.piece_set);
               }
@@ -98,6 +107,8 @@ const PlayerProfile = ({
         if (typeof window !== "undefined") {
           const savedPlayerName = localStorage.getItem("chess-player-name");
           const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
+          const savedFlag = localStorage.getItem("chess-player-flag");
+          const savedFlair = localStorage.getItem("chess-player-flair");
           const savedPieceSet = localStorage.getItem("chess-piece-set");
 
           if (savedPlayerName) {
@@ -106,6 +117,14 @@ const PlayerProfile = ({
 
           if (savedAvatarUrl) {
             setPlayerAvatar(savedAvatarUrl);
+          }
+
+          if (savedFlag) {
+            setCountryFlag(savedFlag);
+          }
+
+          if (savedFlair) {
+            setFlair(savedFlair);
           }
 
           if (savedPieceSet) {
@@ -207,7 +226,7 @@ const PlayerProfile = ({
                   ? selectedBot?.name || `${capitalizedDifficulty} Bot`
                   : playerName}
               </span>
-              {isBot && selectedBot && (
+              {isBot && selectedBot ? (
                 <Image
                   src={selectedBot.flag}
                   alt={`${selectedBot.name} flag`}
@@ -215,6 +234,19 @@ const PlayerProfile = ({
                   width={20}
                   height={12}
                 />
+              ) : countryFlag ? (
+                <Image
+                  src={`/flags/${countryFlag}.png`}
+                  alt={`${countryFlag} flag`}
+                  className="w-5 h-3"
+                  width={20}
+                  height={12}
+                />
+              ) : null}
+              {flair && !isBot && (
+                <span className="text-sm" role="img" aria-label="Player Flair">
+                  {flair}
+                </span>
               )}
             </div>
             <CardDescription className="text-[11px]">

@@ -18,6 +18,9 @@ import {
   Swords,
   ChevronDown,
   Save,
+  History,
+  Medal,
+  PartyPopper,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -35,6 +38,12 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import PlayerProfile from "@/components/PlayerProfile";
 import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BOTS_BY_DIFFICULTY, Bot } from "@/components/game/data/bots";
+import { useAuth } from "@/context/auth-context";
+import { getUserGameStats } from "@/lib/game-service";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const difficultyLevels = [
   {
@@ -161,6 +170,7 @@ const difficultyLevels = [
 
 export default function Home() {
   const router = useRouter();
+  const { session, signIn } = useAuth();
   const [showDialog, setShowDialog] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<
     (typeof difficultyLevels)[0] | null
@@ -170,6 +180,14 @@ export default function Home() {
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>(
     {}
   );
+  const [gameStats, setGameStats] = useState<{
+    beatenBots: Array<{ name: string; difficulty: string }>;
+    totalGames: number;
+  } | null>(null);
+  const [nextBot, setNextBot] = useState<(Bot & { difficulty: string }) | null>(
+    null
+  );
+  const [allBotsBeaten, setAllBotsBeaten] = useState(false);
 
   // Track mouse position for spotlight effect
   useEffect(() => {
@@ -182,6 +200,45 @@ export default function Home() {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
+
+  // Fetch game stats and determine next bot
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        const stats = await getUserGameStats(session.user.id, session);
+        setGameStats(stats);
+
+        // Get all bots in order of difficulty
+        const allBots: Array<Bot & { difficulty: string }> = [];
+        Object.keys(BOTS_BY_DIFFICULTY).forEach((difficulty) => {
+          BOTS_BY_DIFFICULTY[
+            difficulty as keyof typeof BOTS_BY_DIFFICULTY
+          ].forEach((bot) => {
+            allBots.push({ ...bot, difficulty });
+          });
+        });
+
+        // Find the first unbeaten bot
+        const nextUnbeatenBot = allBots.find(
+          (bot) => !stats.beatenBots.some((beaten) => beaten.name === bot.name)
+        );
+
+        if (nextUnbeatenBot) {
+          setNextBot(nextUnbeatenBot);
+          setAllBotsBeaten(false);
+        } else {
+          setNextBot(null);
+          setAllBotsBeaten(true);
+        }
+      } catch (error) {
+        console.error("Error fetching game stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, [session]);
 
   // Check for saved game
   const getSavedGameDifficulty = () => {
@@ -505,51 +562,132 @@ export default function Home() {
                 level and progresses toward the formidable Grandmaster bot.
               </p>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Trophy className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">48 Unique Bots</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Each with different playing styles
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Progressive Difficulty</h3>
-                    <p className="text-sm text-muted-foreground">
-                      From beginner to grandmaster level
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Sword className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Improve Your Skills</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Learn tactics and strategies
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                className="w-full mt-6"
-                size="lg"
-                onClick={() => router.push("/play/beginner")}
+              {/* Progress Link */}
+              <Link
+                href="/history?tab=bots"
+                className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors mb-6 group"
+                scroll={false}
               >
-                Start Your Journey
-              </Button>
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <History className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium flex items-center gap-2">
+                    Bot Progression
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Track your victories and challenges
+                  </p>
+                </div>
+                {gameStats && (
+                  <Badge variant="secondary" className="ml-2">
+                    {gameStats.beatenBots.length}/48
+                  </Badge>
+                )}
+              </Link>
+
+              {/* Stats Section */}
+              <div className="space-y-4">
+                {allBotsBeaten ? (
+                  <div className="text-center space-y-4 py-4">
+                    <div className="bg-primary/10 p-4 rounded-full inline-block">
+                      <PartyPopper className="h-8 w-8 text-primary animate-bounce" />
+                    </div>
+                    <h3 className="font-bold text-xl">Congratulations!</h3>
+                    <p className="text-muted-foreground">
+                      You&apos;ve beaten all the bots! Want to challenge
+                      yourself again?
+                    </p>
+                    <Button
+                      className="w-full mt-2"
+                      size="lg"
+                      onClick={() => router.push("/play/beginner")}
+                    >
+                      Start Again
+                    </Button>
+                  </div>
+                ) : nextBot ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Medal className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Next Challenge</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Beat this bot to progress
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Next Bot Card */}
+                    <Link
+                      href={`/play/${nextBot.difficulty.toLowerCase()}`}
+                      className="block p-4 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={nextBot.image} alt={nextBot.name} />
+                          <AvatarFallback>
+                            {nextBot.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold">{nextBot.name}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {nextBot.description}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs",
+                                nextBot.difficulty.toLowerCase() ===
+                                  "beginner" &&
+                                  "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                                nextBot.difficulty.toLowerCase() === "easy" &&
+                                  "bg-green-500/10 text-green-500 border-green-500/20",
+                                nextBot.difficulty.toLowerCase() ===
+                                  "intermediate" &&
+                                  "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                nextBot.difficulty.toLowerCase() ===
+                                  "advanced" &&
+                                  "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                                nextBot.difficulty.toLowerCase() === "hard" &&
+                                  "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                                nextBot.difficulty.toLowerCase() === "expert" &&
+                                  "bg-red-500/10 text-red-500 border-red-500/20",
+                                nextBot.difficulty.toLowerCase() === "master" &&
+                                  "bg-pink-500/10 text-pink-500 border-pink-500/20",
+                                nextBot.difficulty.toLowerCase() ===
+                                  "grandmaster" &&
+                                  "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                              )}
+                            >
+                              {nextBot.difficulty}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Rating: {nextBot.rating}
+                            </span>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </Link>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground">
+                      Sign in to track your progress and see your next
+                      challenge!
+                    </p>
+                    <Button className="mt-4" onClick={() => signIn("google")}>
+                      Sign In
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

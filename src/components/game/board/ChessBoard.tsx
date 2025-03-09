@@ -386,11 +386,12 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   // Game restart
   const handleGameReset = () => {
     game.reset();
+    game.isResigned = false;
     setBoard(game.board());
     setSelectedPiece(null);
     setPossibleMoves([]);
     resetTimers();
-    setGameStarted(false);
+    setGameStarted(true);
     setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
     setCurrentMove(1);
     setLastMove(null);
@@ -403,6 +404,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       playerColor,
       difficulty,
       lastMove: null,
+      gameStarted: true, // Ensure the saved state also has gameStarted as true
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
 

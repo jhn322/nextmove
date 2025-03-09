@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Bot } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
+import { HandshakeIcon, UserPlus } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -14,6 +15,7 @@ import { Chess } from "chess.js";
 import Confetti from "react-confetti";
 import { saveGameResult } from "@/lib/game-service";
 import { useAuth } from "@/context/auth-context";
+import { getConfettiEnabled } from "@/lib/settings";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -239,8 +241,26 @@ const VictoryModal = ({
   useEffect(() => {
     if (isOpen) {
       setMessage(renderWinnerText());
-      setShowConfetti(isPlayerWinner());
-      setIsRecycling(true);
+      const shouldShowConfetti = isPlayerWinner() && getConfettiEnabled();
+      setShowConfetti(shouldShowConfetti);
+      setIsRecycling(shouldShowConfetti);
+
+      if (shouldShowConfetti) {
+        // Stop confetti after 5 seconds
+        const timer = setTimeout(() => {
+          setIsRecycling(false);
+          // Give time for remaining confetti to fall before hiding
+          setTimeout(() => {
+            setShowConfetti(false);
+          }, 2000);
+        }, 5000);
+
+        return () => {
+          clearTimeout(timer);
+          setShowConfetti(false);
+          setIsRecycling(false);
+        };
+      }
     }
   }, [
     isOpen,
@@ -379,6 +399,7 @@ const VictoryModal = ({
                   variant="default"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
+                  <HandshakeIcon className="h-5 w-5" />
                   Rematch
                 </Button>
                 <Button
@@ -386,6 +407,7 @@ const VictoryModal = ({
                   variant="outline"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
+                  <UserPlus className="h-5 w-5" />
                   New Bot
                 </Button>
               </>

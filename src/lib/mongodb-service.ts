@@ -21,6 +21,9 @@ type SerializedDoc<T> = {
 export interface UserSettings {
   user_id: string;
   display_name: string;
+  first_name: string;
+  last_name: string;
+  location: string;
   avatar_url: string;
   preferred_difficulty: string;
   sound_enabled: boolean;
@@ -28,6 +31,11 @@ export interface UserSettings {
   white_pieces_bottom: boolean;
   show_coordinates: boolean;
   enable_animations: boolean;
+  enable_confetti: boolean;
+  timezone: string;
+  clock_format: "12" | "24";
+  country_flag: string;
+  flair: string;
 }
 
 interface UserSettingsDoc extends UserSettings, MongoDoc {}

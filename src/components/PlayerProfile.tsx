@@ -16,6 +16,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Pencil } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { getUserSettings, saveUserSettings } from "@/lib/mongodb-service";
+import Image from "next/image";
+import HoverText from "@/components/ui/hover-text";
+import { getCharacterNameFromPath } from "@/lib/utils";
 
 interface PlayerProfileProps {
   className?: string;
@@ -27,6 +30,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/avatars/jake.png");
+  const [countryFlag, setCountryFlag] = useState<string>("");
+  const [flair, setFlair] = useState<string>("");
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,6 +56,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
             setPlayerName(settings.display_name || "Player");
             setInputValue(settings.display_name || "Player");
             setAvatarUrl(settings.avatar_url || "/avatars/jake.png");
+            setCountryFlag(settings.country_flag || "");
+            setFlair(settings.flair || "");
           } else {
             // Use defaults or user info from session
             const defaultName = session.user.name || "Player";
@@ -58,6 +65,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
             setPlayerName(defaultName);
             setInputValue(defaultName);
             setAvatarUrl(defaultAvatar);
+            setCountryFlag("");
+            setFlair("");
           }
         } catch (error) {
           console.error("Unexpected error:", error);
@@ -65,6 +74,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
           setPlayerName("Player");
           setInputValue("Player");
           setAvatarUrl("/avatars/jake.png");
+          setCountryFlag("");
+          setFlair("");
         } finally {
           setIsLoading(false);
         }
@@ -74,6 +85,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
         setPlayerName("Player");
         setInputValue("Player");
         setAvatarUrl("/avatars/jake.png");
+        setCountryFlag("");
+        setFlair("");
       }
     }
 
@@ -84,19 +97,53 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
   useEffect(() => {
     const avatars = [
       "/avatars/aang.png",
+      "/avatars/bart.png",
+      "/avatars/bender.png",
+      "/avatars/benson.png",
+      "/avatars/blossom.png",
       "/avatars/bojack.png",
+      "/avatars/bubbles.png",
       "/avatars/bubblegum.png",
+      "/avatars/buttercup.png",
+      "/avatars/catdog.png",
+      "/avatars/courage.png",
+      "/avatars/darwin.png",
+      "/avatars/deedee.png",
+      "/avatars/dexter.png",
+      "/avatars/dipper.png",
+      "/avatars/ed.png",
+      "/avatars/edd.png",
+      "/avatars/eddy.png",
       "/avatars/finn.png",
+      "/avatars/flame.png",
+      "/avatars/gir.png",
+      "/avatars/grim.png",
+      "/avatars/gumball.png",
       "/avatars/homer.png",
       "/avatars/jake.png",
+      "/avatars/jerry.png",
+      "/avatars/jimmy.png",
+      "/avatars/johnny.png",
       "/avatars/marceline.png",
       "/avatars/mordecai.png",
+      "/avatars/morty.png",
       "/avatars/patrick.png",
+      "/avatars/perry.png",
       "/avatars/peter.png",
+      "/avatars/rick.png",
       "/avatars/rigby.png",
+      "/avatars/samurai.png",
       "/avatars/sandy.png",
+      "/avatars/scooby.png",
+      "/avatars/shaggy.png",
+      "/avatars/skips.png",
       "/avatars/spongebob.png",
       "/avatars/squidward.png",
+      "/avatars/stewie.png",
+      "/avatars/timmy.png",
+      "/avatars/tom.png",
+      "/avatars/wendy.png",
+      "/avatars/zim.png",
     ];
 
     setAvailableAvatars(avatars);
@@ -201,20 +248,45 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
             onOpenChange={setIsAvatarDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                className="p-0 h-auto rounded-full relative group"
-              >
-                <Avatar className="h-16 w-16 cursor-pointer border-2 border-primary/50 group-hover:border-primary transition-all">
-                  <AvatarImage src={avatarUrl} alt={playerName || "Player"} />
-                  <AvatarFallback>
-                    {(playerName || "P").charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                  <Pencil className="h-5 w-5 text-white" />
-                </div>
-              </Button>
+              {isAvatarDialogOpen ? (
+                <HoverText
+                  text={getCharacterNameFromPath(avatarUrl)}
+                  side="right"
+                >
+                  <Button
+                    variant="ghost"
+                    className="p-0 h-auto rounded-full relative group"
+                  >
+                    <Avatar className="h-16 w-16 cursor-pointer border-2 border-primary/50 group-hover:border-primary transition-all">
+                      <AvatarImage
+                        src={avatarUrl}
+                        alt={playerName || "Player"}
+                      />
+                      <AvatarFallback>
+                        {(playerName || "P").charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Pencil className="h-5 w-5 text-white" />
+                    </div>
+                  </Button>
+                </HoverText>
+              ) : (
+                <Button
+                  variant="ghost"
+                  className="p-0 h-auto rounded-full relative group"
+                >
+                  <Avatar className="h-16 w-16 cursor-pointer border-2 border-primary/50 group-hover:border-primary transition-all">
+                    <AvatarImage src={avatarUrl} alt={playerName || "Player"} />
+                    <AvatarFallback>
+                      {(playerName || "P").charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <Pencil className="h-5 w-5 text-white" />
+                  </div>
+                </Button>
+              )}
             </DialogTrigger>
             <DialogContent
               className="sm:max-w-md"
@@ -232,27 +304,32 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
               <ScrollArea className="h-[300px] mt-2">
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
                   {availableAvatars.map((avatar, index) => (
-                    <Button
+                    <HoverText
                       key={index}
-                      variant="ghost"
-                      className="p-1 h-auto relative"
-                      onClick={() => handleAvatarSelect(avatar)}
+                      text={getCharacterNameFromPath(avatar)}
+                      side="bottom"
                     >
-                      <div className="relative">
-                        <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
-                          <AvatarImage
-                            src={avatar}
-                            alt={`Avatar ${index + 1}`}
-                          />
-                          <AvatarFallback>?</AvatarFallback>
-                        </Avatar>
-                        {avatar === avatarUrl && (
-                          <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
-                            <Check className="h-4 w-4" />
-                          </div>
-                        )}
-                      </div>
-                    </Button>
+                      <Button
+                        variant="ghost"
+                        className="p-1 h-auto relative"
+                        onClick={() => handleAvatarSelect(avatar)}
+                      >
+                        <div className="relative">
+                          <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
+                            <AvatarImage
+                              src={avatar}
+                              alt={`Avatar ${index + 1}`}
+                            />
+                            <AvatarFallback>?</AvatarFallback>
+                          </Avatar>
+                          {avatar === avatarUrl && (
+                            <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
+                              <Check className="h-4 w-4" />
+                            </div>
+                          )}
+                        </div>
+                      </Button>
+                    </HoverText>
                   ))}
                 </div>
               </ScrollArea>
@@ -277,9 +354,29 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
                 </div>
               ) : (
                 <>
-                  <span className="text-xl font-bold">
-                    {playerName || "Player"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold">
+                      {playerName || "Player"}
+                    </span>
+                    {countryFlag && (
+                      <Image
+                        src={`/flags/${countryFlag}.png`}
+                        alt={`${countryFlag} flag`}
+                        width={20}
+                        height={12}
+                        className="h-3 w-5"
+                      />
+                    )}
+                    {flair && (
+                      <span
+                        className="text-xl"
+                        role="img"
+                        aria-label="Player Flair"
+                      >
+                        {flair}
+                      </span>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"

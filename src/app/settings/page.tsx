@@ -23,6 +23,11 @@ import {
   Volume2,
   VolumeX,
   Zap,
+  PartyPopper,
+  Clock,
+  Flag,
+  Sparkles,
+  Pencil,
 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -56,11 +61,17 @@ import {
   saveUserSettings,
   UserSettings,
 } from "@/lib/mongodb-service";
+import SettingsLoading from "./loading";
+import HoverText from "@/components/ui/hover-text";
+import { getCharacterNameFromPath } from "@/lib/utils";
 
 export default function SettingsPage() {
   const { status, session } = useAuth();
   const [settings, setSettings] = useState<Omit<UserSettings, "user_id">>({
     display_name: "",
+    first_name: "",
+    last_name: "",
+    location: "",
     avatar_url: "",
     preferred_difficulty: "intermediate",
     sound_enabled: true,
@@ -68,25 +79,19 @@ export default function SettingsPage() {
     white_pieces_bottom: true,
     show_coordinates: true,
     enable_animations: true,
+    enable_confetti: true,
+    timezone: "UTC",
+    clock_format: "24",
+    country_flag: "",
+    flair: "",
   });
   const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [flairDialogOpen, setFlairDialogOpen] = useState(false);
   const router = useRouter();
-
-  // Define the difficulty levels
-  const difficultyLevels = [
-    "beginner",
-    "easy",
-    "intermediate",
-    "advanced",
-    "hard",
-    "expert",
-    "master",
-    "grandmaster",
-  ];
 
   // Define the piece sets
   const pieceSets = [
@@ -122,6 +127,9 @@ export default function SettingsPage() {
         if (settingsData) {
           setSettings({
             display_name: settingsData.display_name || "",
+            first_name: settingsData.first_name || "",
+            last_name: settingsData.last_name || "",
+            location: settingsData.location || "",
             avatar_url: settingsData.avatar_url || "",
             preferred_difficulty:
               settingsData.preferred_difficulty || "intermediate",
@@ -130,11 +138,19 @@ export default function SettingsPage() {
             white_pieces_bottom: settingsData.white_pieces_bottom !== false,
             show_coordinates: settingsData.show_coordinates !== false,
             enable_animations: settingsData.enable_animations !== false,
+            enable_confetti: settingsData.enable_confetti !== false,
+            timezone: settingsData.timezone || "UTC",
+            clock_format: settingsData.clock_format || "24",
+            country_flag: settingsData.country_flag || "",
+            flair: settingsData.flair || "",
           });
         } else {
           // No settings found, use defaults
           setSettings({
             display_name: session.user.name || "",
+            first_name: "",
+            last_name: "",
+            location: "",
             avatar_url: session.user.image || "",
             preferred_difficulty: "intermediate",
             sound_enabled: true,
@@ -142,6 +158,11 @@ export default function SettingsPage() {
             white_pieces_bottom: true,
             show_coordinates: getShowCoordinates(),
             enable_animations: getEnableAnimations(),
+            enable_confetti: true,
+            timezone: "UTC",
+            clock_format: "24",
+            country_flag: "",
+            flair: "",
           });
         }
       } catch (error) {
@@ -191,19 +212,53 @@ export default function SettingsPage() {
   useEffect(() => {
     const avatars = [
       "/avatars/aang.png",
+      "/avatars/bart.png",
+      "/avatars/bender.png",
+      "/avatars/benson.png",
+      "/avatars/blossom.png",
       "/avatars/bojack.png",
+      "/avatars/bubbles.png",
       "/avatars/bubblegum.png",
+      "/avatars/buttercup.png",
+      "/avatars/catdog.png",
+      "/avatars/courage.png",
+      "/avatars/darwin.png",
+      "/avatars/deedee.png",
+      "/avatars/dexter.png",
+      "/avatars/dipper.png",
+      "/avatars/ed.png",
+      "/avatars/edd.png",
+      "/avatars/eddy.png",
       "/avatars/finn.png",
+      "/avatars/flame.png",
+      "/avatars/gir.png",
+      "/avatars/grim.png",
+      "/avatars/gumball.png",
       "/avatars/homer.png",
       "/avatars/jake.png",
+      "/avatars/jerry.png",
+      "/avatars/jimmy.png",
+      "/avatars/johnny.png",
       "/avatars/marceline.png",
       "/avatars/mordecai.png",
+      "/avatars/morty.png",
       "/avatars/patrick.png",
+      "/avatars/perry.png",
       "/avatars/peter.png",
+      "/avatars/rick.png",
       "/avatars/rigby.png",
+      "/avatars/samurai.png",
       "/avatars/sandy.png",
+      "/avatars/scooby.png",
+      "/avatars/shaggy.png",
+      "/avatars/skips.png",
       "/avatars/spongebob.png",
       "/avatars/squidward.png",
+      "/avatars/stewie.png",
+      "/avatars/timmy.png",
+      "/avatars/tom.png",
+      "/avatars/wendy.png",
+      "/avatars/zim.png",
     ];
 
     setAvailableAvatars(avatars);
@@ -229,6 +284,11 @@ export default function SettingsPage() {
           showCoordinates: settings.show_coordinates,
           enableAnimations: settings.enable_animations,
           soundEnabled: settings.sound_enabled,
+          enableConfetti: settings.enable_confetti,
+          timezone: settings.timezone,
+          clockFormat: settings.clock_format,
+          countryFlag: settings.country_flag,
+          flair: settings.flair,
         });
 
         // Also save individual settings for backward compatibility
@@ -249,6 +309,14 @@ export default function SettingsPage() {
           "chess_sound_enabled",
           settings.sound_enabled.toString()
         );
+        localStorage.setItem(
+          "chess_enable_confetti",
+          settings.enable_confetti.toString()
+        );
+        localStorage.setItem("chess_timezone", settings.timezone);
+        localStorage.setItem("chess_clock_format", settings.clock_format);
+        localStorage.setItem("chess_country_flag", settings.country_flag);
+        localStorage.setItem("chess_flair", settings.flair);
 
         setSaveMessage("Settings saved successfully");
         setTimeout(() => setSaveMessage(""), 3000);
@@ -276,28 +344,17 @@ export default function SettingsPage() {
   };
 
   if (status === "loading" || loading) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Loading...</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-    );
+    return <SettingsLoading />;
   }
 
-  if (status === "unauthenticated") {
+  if (error) {
     return (
       <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Not Authenticated</CardTitle>
-            <CardDescription>
-              Please sign in to view your settings.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </div>
     );
   }
@@ -330,7 +387,7 @@ export default function SettingsPage() {
             </Alert>
           )}
 
-          <Tabs defaultValue="profile" className="w-full">
+          <Tabs defaultValue="profile">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="game">Game Settings</TabsTrigger>
@@ -346,6 +403,50 @@ export default function SettingsPage() {
                     setSettings({ ...settings, display_name: e.target.value })
                   }
                   maxLength={20}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="first_name">First Name</Label>
+                <Input
+                  id="first_name"
+                  value={settings.first_name}
+                  onChange={(e) =>
+                    setSettings({ ...settings, first_name: e.target.value })
+                  }
+                  maxLength={50}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  value={settings.last_name}
+                  onChange={(e) =>
+                    setSettings({ ...settings, last_name: e.target.value })
+                  }
+                  maxLength={50}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Email</Label>
+                <p className="text-sm text-muted-foreground mt-1.5">
+                  {session?.user?.email || "No email available"}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={settings.location}
+                  onChange={(e) =>
+                    setSettings({ ...settings, location: e.target.value })
+                  }
+                  maxLength={100}
+                  placeholder="City, Country"
                 />
               </div>
 
@@ -368,49 +469,44 @@ export default function SettingsPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                          <span className="text-xs text-white font-medium">
-                            Change
-                          </span>
+                          <Pencil className="h-5 w-5 text-white" />
                         </div>
                       </Button>
                     </DialogTrigger>
-                    <DialogContent
-                      className="sm:max-w-md"
-                      aria-describedby="avatar-dialog-description"
-                    >
+                    <DialogContent className="sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle>Choose Avatar</DialogTitle>
                       </DialogHeader>
-                      <div
-                        id="avatar-dialog-description"
-                        className="text-sm text-muted-foreground mb-4"
-                      >
-                        Select an avatar to represent you in games
-                      </div>
                       <ScrollArea className="h-[300px] mt-2">
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
                           {availableAvatars.map((avatar, index) => (
-                            <Button
+                            <HoverText
                               key={index}
-                              variant="ghost"
-                              className="p-1 h-auto relative"
-                              onClick={() => handleAvatarSelect(avatar)}
+                              text={getCharacterNameFromPath(avatar)}
+                              side="bottom"
                             >
-                              <div className="relative">
-                                <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
-                                  <AvatarImage
-                                    src={avatar}
-                                    alt={`Avatar ${index + 1}`}
-                                  />
-                                  <AvatarFallback>?</AvatarFallback>
-                                </Avatar>
-                                {avatar === settings.avatar_url && (
-                                  <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
-                                    <Check className="h-4 w-4" />
-                                  </div>
-                                )}
-                              </div>
-                            </Button>
+                              <Button
+                                key={index}
+                                variant="ghost"
+                                className="p-1 h-auto relative"
+                                onClick={() => handleAvatarSelect(avatar)}
+                              >
+                                <div className="relative">
+                                  <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
+                                    <AvatarImage
+                                      src={avatar}
+                                      alt={`Avatar ${index + 1}`}
+                                    />
+                                    <AvatarFallback>?</AvatarFallback>
+                                  </Avatar>
+                                  {avatar === settings.avatar_url && (
+                                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
+                                      <Check className="h-4 w-4" />
+                                    </div>
+                                  )}
+                                </div>
+                              </Button>
+                            </HoverText>
                           ))}
                         </div>
                       </ScrollArea>
@@ -423,32 +519,397 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-            </TabsContent>
 
-            <TabsContent value="game" className="space-y-6 mt-6">
               <div className="space-y-2">
-                <Label htmlFor="preferred_difficulty">
-                  Preferred Difficulty
-                </Label>
+                <Label>Country Flag</Label>
                 <Select
-                  value={settings.preferred_difficulty}
+                  value={settings.country_flag || "none"}
                   onValueChange={(value) =>
-                    setSettings({ ...settings, preferred_difficulty: value })
+                    setSettings({
+                      ...settings,
+                      country_flag: value === "none" ? "" : value,
+                    })
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select difficulty" />
+                    <SelectValue placeholder="Select country flag">
+                      <div className="flex items-center gap-2">
+                        <Flag className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        {settings.country_flag ? (
+                          <div className="flex items-center gap-2">
+                            <Image
+                              src={`/flags/${settings.country_flag}.png`}
+                              alt={settings.country_flag}
+                              width={20}
+                              height={12}
+                              className="h-3 w-5"
+                            />
+                            <span className="capitalize">
+                              {settings.country_flag.toUpperCase()}
+                            </span>
+                          </div>
+                        ) : (
+                          <span>Select country flag</span>
+                        )}
+                      </div>
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {difficultyLevels.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level.charAt(0).toUpperCase() + level.slice(1)}
+                    {[
+                      "none",
+                      "ad",
+                      "am",
+                      "ar",
+                      "au",
+                      "ba",
+                      "bg",
+                      "ca",
+                      "cn",
+                      "cu",
+                      "cy",
+                      "cz",
+                      "de",
+                      "dk",
+                      "ec",
+                      "eng",
+                      "fi",
+                      "fr",
+                      "ge",
+                      "gr",
+                      "ie",
+                      "il",
+                      "in",
+                      "is",
+                      "it",
+                      "jp",
+                      "kr",
+                      "lt",
+                      "lu",
+                      "lv",
+                      "my",
+                      "no",
+                      "nz",
+                      "ph",
+                      "pk",
+                      "ps",
+                      "pt",
+                      "ro",
+                      "rs",
+                      "ru",
+                      "sct",
+                      "se",
+                      "sy",
+                      "tr",
+                      "ua",
+                      "ug",
+                      "us",
+                      "uy",
+                      "wls",
+                    ].map((flag) => (
+                      <SelectItem key={flag} value={flag}>
+                        <div className="flex items-center gap-2">
+                          {flag !== "none" ? (
+                            <>
+                              <Image
+                                src={`/flags/${flag}.png`}
+                                alt={flag}
+                                width={20}
+                                height={12}
+                                className="h-3 w-5"
+                              />
+                              <span className="capitalize">
+                                {flag.toUpperCase()}
+                              </span>
+                            </>
+                          ) : (
+                            <span>None</span>
+                          )}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
+              <div className="space-y-2">
+                <Label>Flair</Label>
+                <div className="flex items-center gap-4">
+                  <Dialog
+                    open={flairDialogOpen}
+                    onOpenChange={setFlairDialogOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-muted-foreground" />
+                          <span>{settings.flair || "Choose a flair"}</span>
+                        </div>
+                        <span className="text-2xl">{settings.flair}</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Choose Flair</DialogTitle>
+                      </DialogHeader>
+                      <ScrollArea className="h-[300px]">
+                        <div className="grid grid-cols-5 gap-2 p-2">
+                          {[
+                            "⚔️",
+                            "🎮",
+                            "🎯",
+                            "🎲",
+                            "🏆",
+                            "👑",
+                            "⭐",
+                            "💫",
+                            "✨",
+                            "🌟",
+                            "🌈",
+                            "💥",
+                            "🔥",
+                            "⚡",
+                            "🌀",
+                            "🌪️",
+                            "🌊",
+                            "☄️",
+                            "🌌",
+                            "🌠",
+                            "🪐",
+                            "🌙",
+                            "☀️",
+                            "🌤️",
+                            "🌍",
+                            "🌎",
+                            "🌏",
+                            "🧭",
+                            "🕹️",
+                            "🎼",
+                            "🎵",
+                            "🎶",
+                            "🎤",
+                            "🎧",
+                            "🎷",
+                            "🎸",
+                            "🎻",
+                            "🥁",
+                            "📯",
+                            "🎺",
+                            "🎹",
+                            "📀",
+                            "💿",
+                            "📸",
+                            "🎥",
+                            "🎬",
+                            "📽️",
+                            "📡",
+                            "🔮",
+                            "🕶️",
+                            "🕵️‍♂️",
+                            "🕵️‍♀️",
+                            "🤖",
+                            "👾",
+                            "🎃",
+                            "💀",
+                            "👻",
+                            "👽",
+                            "🛸",
+                            "🚀",
+                            "🛰️",
+                            "🛠️",
+                            "🗡️",
+                            "🔫",
+                            "🏹",
+                            "🛡️",
+                            "💣",
+                            "📜",
+                            "🏰",
+                            "🕌",
+                            "🛕",
+                            "⛩️",
+                            "🌋",
+                            "🏔️",
+                            "⛰️",
+                            "🗻",
+                            "🏕️",
+                            "🌄",
+                            "🌅",
+                            "🎑",
+                            "🏜️",
+                            "🏝️",
+                            "🏞️",
+                            "🌇",
+                            "🌆",
+                            "🏙️",
+                            "🌃",
+                            "🌉",
+                            "🌁",
+                            "🛤️",
+                            "🚆",
+                            "🚄",
+                            "🛳️",
+                            "🚢",
+                            "⛵",
+                            "🛶",
+                            "🛺",
+                            "🚘",
+                            "🚖",
+                            "🚍",
+                            "🚌",
+                            "🚋",
+                            "🚊",
+                            "🚉",
+                            "🚁",
+                            "🛩️",
+                            "🦄",
+                            "🐉",
+                            "🐲",
+                            "🐍",
+                            "🦅",
+                            "🦇",
+                            "🐺",
+                            "🦊",
+                            "🐗",
+                            "🦬",
+                            "🦓",
+                            "🦒",
+                            "🐪",
+                            "🐫",
+                            "🦘",
+                            "🐃",
+                            "🐂",
+                            "🐄",
+                            "🦝",
+                            "🦡",
+                            "🦢",
+                            "🦜",
+                            "🐧",
+                            "🦆",
+                            "🐦",
+                            "🕊️",
+                            "🐕",
+                            "🐩",
+                            "🐈",
+                            "🦁",
+                            "🐅",
+                            "🐆",
+                            "🐎",
+                            "🦏",
+                            "🐘",
+                            "🦛",
+                            "🐁",
+                            "🐀",
+                            "🐿️",
+                            "🦔",
+                            "🐾",
+                            "🦖",
+                            "🦕",
+                            "🦦",
+                            "🦨",
+                            "🦥",
+                            "🦫",
+                            "🐓",
+                            "🦃",
+                            "🦩",
+                            "🦉",
+                            "🎭",
+                            "🎨",
+                            "🖌️",
+                            "🖍️",
+                            "📝",
+                            "✏️",
+                            "🖊️",
+                            "🖋️",
+                            "📖",
+                            "📚",
+                            "🔖",
+                            "🏹",
+                            "🛠️",
+                            "⚒️",
+                            "🔨",
+                            "⛏️",
+                            "🧨",
+                            "🚀",
+                          ].map((emoji, index) => (
+                            <Button
+                              key={index}
+                              variant="ghost"
+                              className="h-12 text-2xl hover:bg-accent"
+                              onClick={() => {
+                                setSettings({ ...settings, flair: emoji });
+                                setFlairDialogOpen(false);
+                              }}
+                            >
+                              {emoji}
+                            </Button>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="timezone">Timezone</Label>
+                <Select
+                  value={settings.timezone}
+                  onValueChange={(value) =>
+                    setSettings({ ...settings, timezone: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select timezone">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <span className="truncate">{settings.timezone}</span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Intl.supportedValuesOf("timeZone").map((tz) => (
+                      <SelectItem key={tz} value={tz}>
+                        {tz}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="clock_format">Clock Format</Label>
+                <div className="flex gap-3 mt-2">
+                  <Button
+                    onClick={() =>
+                      setSettings({ ...settings, clock_format: "12" })
+                    }
+                    variant={
+                      settings.clock_format === "12" ? "default" : "outline"
+                    }
+                    className="flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Clock className="h-4 w-4" />
+                    12-hour
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      setSettings({ ...settings, clock_format: "24" })
+                    }
+                    variant={
+                      settings.clock_format === "24" ? "default" : "outline"
+                    }
+                    className="flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Clock className="h-4 w-4" />
+                    24-hour
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="game" className="space-y-6 mt-6">
               <div className="space-y-2">
                 <Label htmlFor="piece_set">Chess Piece Set</Label>
                 <Select
@@ -588,10 +1049,29 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="enable_confetti">Victory Confetti</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show confetti animation when winning a game
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <PartyPopper className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="enable_confetti"
+                    checked={settings.enable_confetti}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, enable_confetti: checked })
+                    }
+                  />
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex flex-col items-start gap-2">
+        <CardFooter>
           <Button onClick={handleSaveSettings} disabled={loading}>
             Save Settings
           </Button>
