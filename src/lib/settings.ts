@@ -8,6 +8,10 @@ const SETTINGS_KEYS = {
   ENABLE_ANIMATIONS: "chess_enable_animations",
   SOUND_ENABLED: "chess_sound_enabled",
   ENABLE_CONFETTI: "chess_enable_confetti",
+  TIMEZONE: "chess_timezone",
+  CLOCK_FORMAT: "chess_clock_format",
+  COUNTRY_FLAG: "chess_country_flag",
+  FLAIR: "chess_flair",
 };
 
 // Default settings values
@@ -18,6 +22,10 @@ const DEFAULT_SETTINGS = {
   enableAnimations: true,
   soundEnabled: true,
   enableConfetti: true,
+  timezone: "UTC",
+  clockFormat: "24" as "12" | "24",
+  countryFlag: "",
+  flair: "",
 };
 
 // Get piece set from localStorage
@@ -94,6 +102,60 @@ export const setConfettiEnabled = (enable: boolean): void => {
   localStorage.setItem(SETTINGS_KEYS.ENABLE_CONFETTI, enable.toString());
 };
 
+// Get timezone from localStorage
+export const getTimezone = (): string => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.timezone;
+  return (
+    localStorage.getItem(SETTINGS_KEYS.TIMEZONE) || DEFAULT_SETTINGS.timezone
+  );
+};
+
+// Set timezone in localStorage
+export const setTimezone = (timezone: string): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.TIMEZONE, timezone);
+};
+
+// Get clock format from localStorage
+export const getClockFormat = (): "12" | "24" => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.clockFormat;
+  return (localStorage.getItem(SETTINGS_KEYS.CLOCK_FORMAT) ||
+    DEFAULT_SETTINGS.clockFormat) as "12" | "24";
+};
+
+// Set clock format in localStorage
+export const setClockFormat = (format: "12" | "24"): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.CLOCK_FORMAT, format);
+};
+
+// Get country flag from localStorage
+export const getCountryFlag = (): string => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.countryFlag;
+  return (
+    localStorage.getItem(SETTINGS_KEYS.COUNTRY_FLAG) ||
+    DEFAULT_SETTINGS.countryFlag
+  );
+};
+
+// Set country flag in localStorage
+export const setCountryFlag = (flag: string): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.COUNTRY_FLAG, flag);
+};
+
+// Get flair from localStorage
+export const getFlair = (): string => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.flair;
+  return localStorage.getItem(SETTINGS_KEYS.FLAIR) || DEFAULT_SETTINGS.flair;
+};
+
+// Set flair in localStorage
+export const setFlair = (flair: string): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.FLAIR, flair);
+};
+
 // Save all settings at once
 export const saveAllSettings = (settings: {
   pieceSet?: string;
@@ -102,6 +164,10 @@ export const saveAllSettings = (settings: {
   enableAnimations?: boolean;
   soundEnabled?: boolean;
   enableConfetti?: boolean;
+  timezone?: string;
+  clockFormat?: "12" | "24";
+  countryFlag?: string;
+  flair?: string;
 }): void => {
   if (typeof window === "undefined") return;
 
@@ -127,5 +193,21 @@ export const saveAllSettings = (settings: {
 
   if (settings.enableConfetti !== undefined) {
     setConfettiEnabled(settings.enableConfetti);
+  }
+
+  if (settings.timezone) {
+    setTimezone(settings.timezone);
+  }
+
+  if (settings.clockFormat) {
+    setClockFormat(settings.clockFormat);
+  }
+
+  if (settings.countryFlag) {
+    setCountryFlag(settings.countryFlag);
+  }
+
+  if (settings.flair) {
+    setFlair(settings.flair);
   }
 };

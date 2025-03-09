@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Pencil } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { getUserSettings, saveUserSettings } from "@/lib/mongodb-service";
+import Image from "next/image";
 
 interface PlayerProfileProps {
   className?: string;
@@ -27,6 +28,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/avatars/jake.png");
+  const [countryFlag, setCountryFlag] = useState<string>("");
+  const [flair, setFlair] = useState<string>("");
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,6 +54,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
             setPlayerName(settings.display_name || "Player");
             setInputValue(settings.display_name || "Player");
             setAvatarUrl(settings.avatar_url || "/avatars/jake.png");
+            setCountryFlag(settings.country_flag || "");
+            setFlair(settings.flair || "");
           } else {
             // Use defaults or user info from session
             const defaultName = session.user.name || "Player";
@@ -58,6 +63,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
             setPlayerName(defaultName);
             setInputValue(defaultName);
             setAvatarUrl(defaultAvatar);
+            setCountryFlag("");
+            setFlair("");
           }
         } catch (error) {
           console.error("Unexpected error:", error);
@@ -65,6 +72,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
           setPlayerName("Player");
           setInputValue("Player");
           setAvatarUrl("/avatars/jake.png");
+          setCountryFlag("");
+          setFlair("");
         } finally {
           setIsLoading(false);
         }
@@ -74,6 +83,8 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
         setPlayerName("Player");
         setInputValue("Player");
         setAvatarUrl("/avatars/jake.png");
+        setCountryFlag("");
+        setFlair("");
       }
     }
 
@@ -277,9 +288,29 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
                 </div>
               ) : (
                 <>
-                  <span className="text-xl font-bold">
-                    {playerName || "Player"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold">
+                      {playerName || "Player"}
+                    </span>
+                    {countryFlag && (
+                      <Image
+                        src={`/flags/${countryFlag}.png`}
+                        alt={`${countryFlag} flag`}
+                        width={20}
+                        height={12}
+                        className="h-3 w-5"
+                      />
+                    )}
+                    {flair && (
+                      <span
+                        className="text-xl"
+                        role="img"
+                        aria-label="Player Flair"
+                      >
+                        {flair}
+                      </span>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"

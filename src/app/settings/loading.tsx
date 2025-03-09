@@ -29,6 +29,30 @@ export default function SettingsLoading() {
               <Skeleton className="h-10 w-full rounded-md" />
             </div>
 
+            {/* First Name */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[80px]" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+
+            {/* Last Name */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[80px]" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[50px]" />
+              <Skeleton className="h-6 w-[250px] rounded-md" />
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[70px]" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+
             {/* Avatar */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[60px]" />
@@ -38,6 +62,18 @@ export default function SettingsLoading() {
                   <Skeleton className="h-4 w-[200px]" />
                 </div>
               </div>
+            </div>
+
+            {/* Country Flag */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[90px]" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+
+            {/* Flair */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[50px]" />
+              <Skeleton className="h-10 w-full rounded-md" />
             </div>
           </div>
         </CardContent>
