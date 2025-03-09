@@ -27,6 +27,7 @@ import {
   Clock,
   Flag,
   Sparkles,
+  Pencil,
 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,6 +62,8 @@ import {
   UserSettings,
 } from "@/lib/mongodb-service";
 import SettingsLoading from "./loading";
+import HoverText from "@/components/ui/hover-text";
+import { getCharacterNameFromPath } from "@/lib/utils";
 
 export default function SettingsPage() {
   const { status, session } = useAuth();
@@ -209,19 +212,53 @@ export default function SettingsPage() {
   useEffect(() => {
     const avatars = [
       "/avatars/aang.png",
+      "/avatars/bart.png",
+      "/avatars/bender.png",
+      "/avatars/benson.png",
+      "/avatars/blossom.png",
       "/avatars/bojack.png",
+      "/avatars/bubbles.png",
       "/avatars/bubblegum.png",
+      "/avatars/buttercup.png",
+      "/avatars/catdog.png",
+      "/avatars/courage.png",
+      "/avatars/darwin.png",
+      "/avatars/deedee.png",
+      "/avatars/dexter.png",
+      "/avatars/dipper.png",
+      "/avatars/ed.png",
+      "/avatars/edd.png",
+      "/avatars/eddy.png",
       "/avatars/finn.png",
+      "/avatars/flame.png",
+      "/avatars/gir.png",
+      "/avatars/grim.png",
+      "/avatars/gumball.png",
       "/avatars/homer.png",
       "/avatars/jake.png",
+      "/avatars/jerry.png",
+      "/avatars/jimmy.png",
+      "/avatars/johnny.png",
       "/avatars/marceline.png",
       "/avatars/mordecai.png",
+      "/avatars/morty.png",
       "/avatars/patrick.png",
+      "/avatars/perry.png",
       "/avatars/peter.png",
+      "/avatars/rick.png",
       "/avatars/rigby.png",
+      "/avatars/samurai.png",
       "/avatars/sandy.png",
+      "/avatars/scooby.png",
+      "/avatars/shaggy.png",
+      "/avatars/skips.png",
       "/avatars/spongebob.png",
       "/avatars/squidward.png",
+      "/avatars/stewie.png",
+      "/avatars/timmy.png",
+      "/avatars/tom.png",
+      "/avatars/wendy.png",
+      "/avatars/zim.png",
     ];
 
     setAvailableAvatars(avatars);
@@ -432,9 +469,7 @@ export default function SettingsPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                          <span className="text-xs text-white font-medium">
-                            Change
-                          </span>
+                          <Pencil className="h-5 w-5 text-white" />
                         </div>
                       </Button>
                     </DialogTrigger>
@@ -445,27 +480,33 @@ export default function SettingsPage() {
                       <ScrollArea className="h-[300px] mt-2">
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
                           {availableAvatars.map((avatar, index) => (
-                            <Button
+                            <HoverText
                               key={index}
-                              variant="ghost"
-                              className="p-1 h-auto relative"
-                              onClick={() => handleAvatarSelect(avatar)}
+                              text={getCharacterNameFromPath(avatar)}
+                              side="bottom"
                             >
-                              <div className="relative">
-                                <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
-                                  <AvatarImage
-                                    src={avatar}
-                                    alt={`Avatar ${index + 1}`}
-                                  />
-                                  <AvatarFallback>?</AvatarFallback>
-                                </Avatar>
-                                {avatar === settings.avatar_url && (
-                                  <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
-                                    <Check className="h-4 w-4" />
-                                  </div>
-                                )}
-                              </div>
-                            </Button>
+                              <Button
+                                key={index}
+                                variant="ghost"
+                                className="p-1 h-auto relative"
+                                onClick={() => handleAvatarSelect(avatar)}
+                              >
+                                <div className="relative">
+                                  <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
+                                    <AvatarImage
+                                      src={avatar}
+                                      alt={`Avatar ${index + 1}`}
+                                    />
+                                    <AvatarFallback>?</AvatarFallback>
+                                  </Avatar>
+                                  {avatar === settings.avatar_url && (
+                                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
+                                      <Check className="h-4 w-4" />
+                                    </div>
+                                  )}
+                                </div>
+                              </Button>
+                            </HoverText>
                           ))}
                         </div>
                       </ScrollArea>
