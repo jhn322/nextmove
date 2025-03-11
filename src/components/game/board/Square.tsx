@@ -44,6 +44,8 @@ interface SquareProps {
   isLastMove: boolean;
   isHintMove?: boolean;
   isRedHighlighted?: boolean;
+  isPreMadeMove?: boolean;
+  isPreMadePossibleMove?: boolean;
   coordinate?: string;
   showRank?: boolean;
   showFile?: boolean;
@@ -61,6 +63,8 @@ const Square = ({
   isLastMove,
   isHintMove = false,
   isRedHighlighted = false,
+  isPreMadeMove = false,
+  isPreMadePossibleMove = false,
   coordinate,
   showRank,
   showFile,
@@ -75,6 +79,9 @@ const Square = ({
     }
     if (isRedHighlighted) {
       return "before:absolute before:inset-0 before:bg-red-600 before:bg-opacity-50 before:pointer-events-none before:z-10";
+    }
+    if (isPreMadeMove) {
+      return "before:absolute before:inset-0 before:bg-blue-500 before:bg-opacity-60 before:pointer-events-none before:z-10 before:animate-pulse";
     }
     if (isHintMove) {
       return "before:absolute before:inset-0 before:bg-purple-500 before:bg-opacity-50 before:pointer-events-none before:z-10 before:animate-pulse";
@@ -118,6 +125,9 @@ const Square = ({
         {children}
         {isPossibleMove && !children && (
           <div className="w-10 h-10 max-lg:w-8 max-lg:h-8 rounded-full bg-black bg-opacity-40" />
+        )}
+        {isPreMadePossibleMove && !children && (
+          <div className="w-10 h-10 max-lg:w-8 max-lg:h-8 rounded-full bg-blue-500 bg-opacity-40" />
         )}
       </div>
     </div>

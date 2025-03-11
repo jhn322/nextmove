@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
 import { STORAGE_KEY, DEFAULT_STATE } from "../../../config/game";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ import VictoryModal from "../modal/VictoryModal";
 import PlayerProfile from "./PlayerProfile";
 import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
 import PawnPromotionModal from "./PawnPromotionModal";
+import PreMadeMove from "./PreMadeMove";
 import { useAuth } from "@/context/auth-context";
 import { getUserSettings } from "@/lib/mongodb-service";
 
@@ -30,6 +31,15 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
     null
   );
+  const [isPreMadeMove, setIsPreMadeMove] = useState<
+    (square: string) => boolean
+  >(() => () => false);
+  const [preMadeMoveHandler, setPreMadeMoveHandler] = useState<
+    (row: number, col: number) => boolean
+  >(() => () => false);
+  const [isPreMadePossibleMove, setIsPreMadePossibleMove] = useState<
+    (square: string) => boolean
+  >(() => () => false);
 
   const { handleRightClick, handleLeftClick, clearHighlights, isHighlighted } =
     useHighlightedSquares();
@@ -155,13 +165,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Check if there's a saved game state
     const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
 
-    // if there's a valid game position saved
-    if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
+    if (
+      savedState?.fen &&
+      savedState.fen !== DEFAULT_STATE.fen &&
+      (savedState.lastMove !== null ||
+        (savedState.history && savedState.history.length > 1))
+    ) {
       setShowBotSelection(false);
       setGameStarted(true);
     } else {
       setShowBotSelection(true);
       setGameStarted(false);
+
+      // If there's a saved state but no moves have been made, remove it
+      if (
+        savedState &&
+        (!savedState.lastMove ||
+          (savedState.history && savedState.history.length <= 1))
+      ) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
     }
 
     if (savedState?.pieceSet) {
@@ -226,7 +249,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   // Save state
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && gameStarted) {
       const gameState = {
         fen: game.fen(),
         playerColor,
@@ -262,21 +285,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   useEffect(() => {
     return () => {
       if (typeof window !== "undefined") {
-        const gameState = {
-          fen: game.fen(),
-          playerColor,
-          gameTime,
-          whiteTime,
-          blackTime,
-          difficulty,
-          gameStarted,
-          history,
-          currentMove,
-          lastMove,
-          pieceSet,
-          capturedPieces,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+        if (gameStarted) {
+          const gameState = {
+            fen: game.fen(),
+            playerColor,
+            gameTime,
+            whiteTime,
+            blackTime,
+            difficulty,
+            gameStarted,
+            history,
+            currentMove,
+            lastMove,
+            pieceSet,
+            capturedPieces,
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+        } else {
+          // If no moves made, remove any saved state
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
     };
   }, [
@@ -315,26 +343,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleSelectBot = (bot: Bot) => {
     setSelectedBot(bot);
     setShowBotSelection(false);
-    setGameStarted(true);
-
-    // Save the game state immediately with gameStarted set to true
-    if (typeof window !== "undefined") {
-      const gameState = {
-        fen: game.fen(),
-        playerColor,
-        gameTime,
-        whiteTime,
-        blackTime,
-        difficulty,
-        gameStarted: true,
-        history,
-        currentMove,
-        lastMove,
-        pieceSet,
-        capturedPieces,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
-    }
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -343,6 +351,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     } else {
       localStorage.removeItem("selectedBot");
       handleGameReset();
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
   };
@@ -350,8 +361,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleConfirmDifficultyChange = () => {
     if (pendingDifficulty) {
       localStorage.removeItem("chess-game-state");
-
       localStorage.removeItem("selectedBot");
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
       router.push(`/play/${pendingDifficulty.toLowerCase()}`);
     }
     setShowDifficultyDialog(false);
@@ -397,6 +410,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setLastMove(null);
     resetCapturedPieces();
     setHintMove(null);
+    setIsPreMadeMove(() => () => false);
+    setPreMadeMoveHandler(() => () => false);
+    setIsPreMadePossibleMove(() => () => false);
 
     // Save state with preserved player color
     const currentState = {
@@ -429,6 +445,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       resetCapturedPieces();
       setLastMove(null);
       setHintMove(null);
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
 
       // Save the new state with updated color
       const newState = {
@@ -457,6 +476,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       resetCapturedPieces();
       setLastMove(null);
       setHintMove(null);
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
 
       // Save the new state with updated color
       const newState = {
@@ -529,7 +551,39 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
   };
 
+  const handlePreMadeMoveChange = useCallback(
+    (handler: (square: string) => boolean) => {
+      setIsPreMadeMove(() => handler);
+    },
+    []
+  );
+
+  const handlePreMadeMoveSquareClick = useCallback(
+    (handler: (row: number, col: number) => boolean) => {
+      setPreMadeMoveHandler(() => handler);
+    },
+    []
+  );
+
+  const handlePreMadePossibleMovesChange = useCallback(
+    (handler: (square: string) => boolean) => {
+      setIsPreMadePossibleMove(() => handler);
+    },
+    []
+  );
+
   const handleSquareClick = (row: number, col: number) => {
+    // First try to handle as a pre-made move if it's not the player's turn
+    if (game.turn() !== playerColor) {
+      try {
+        const handled = preMadeMoveHandler(row, col);
+        if (handled) {
+          // If the pre-made move was handled, don't proceed with normal move handling
+          return;
+        }
+      } catch {}
+    }
+
     handleLeftClick(); // Clear highlights on left click
     originalHandleSquareClick(row, col);
   };
@@ -588,19 +642,41 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
       // This is a saved game, so make sure we show the game controls
       setShowBotSelection(false);
-      setGameStarted(true);
 
-      // Also ensure the gameStarted flag is set in localStorage
-      if (!savedState.gameStarted) {
-        savedState.gameStarted = true;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+      const hasMovesBeenMade =
+        savedState.lastMove !== null ||
+        (savedState.history && savedState.history.length > 1);
+
+      if (hasMovesBeenMade) {
+        setGameStarted(true);
+
+        // Also ensure the gameStarted flag is set in localStorage
+        if (!savedState.gameStarted) {
+          savedState.gameStarted = true;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+        }
+      } else {
+        setGameStarted(false);
+
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
-  }, []); // Empty dependency array means this runs once when component mounts
+  }, []);
 
   return (
     <div className="flex flex-col h-full w-full">
       <main className="flex flex-col w-full items-center justify-start">
+        <PreMadeMove
+          game={game}
+          board={board}
+          playerColor={playerColor}
+          makeMove={makeMove}
+          getBotMove={getBotMove}
+          onPreMadeMoveChange={handlePreMadeMoveChange}
+          onHandleSquareClick={handlePreMadeMoveSquareClick}
+          onPossibleMovesChange={handlePreMadePossibleMovesChange}
+        />
+
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
           <div className="relative w-full max-w-[min(85vh,95vw)] sm:max-w-[min(85vh,85vw)] md:max-w-[min(90vh,80vw)] lg:max-w-[107vh]">
             {/* Chess board and profiles */}
@@ -703,6 +779,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                           isLastMove={isLastMove ?? false}
                           isHintMove={isHintMove ?? false}
                           isRedHighlighted={isHighlighted(square)}
+                          isPreMadeMove={isPreMadeMove(square)}
+                          isPreMadePossibleMove={isPreMadePossibleMove(square)}
                           showRank={showRank}
                           showFile={showFile}
                           coordinate={coordinate}

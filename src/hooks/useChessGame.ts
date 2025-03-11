@@ -69,9 +69,14 @@ export const useChessGame = (difficulty: string) => {
           game.load(savedState.fen);
           setBoard(game.board());
 
-          // If there's a valid FEN that's different from the default, consider it a started game
-          // even if the gameStarted flag is false
-          const isStartedGame = savedState.fen !== DEFAULT_STATE.fen;
+          // Check if there's gameplay in progress
+          const hasMovesBeenMade =
+            savedState.lastMove !== null ||
+            (savedState.history && savedState.history.length > 1);
+
+          // Only consider it a started game if there are actual moves made
+          const isStartedGame =
+            savedState.fen !== DEFAULT_STATE.fen && hasMovesBeenMade;
           setGameStarted(savedState.gameStarted || isStartedGame);
 
           setPlayerColor(savedState.playerColor || "w");
