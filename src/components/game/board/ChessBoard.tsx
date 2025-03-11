@@ -573,20 +573,15 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   );
 
   const handleSquareClick = (row: number, col: number) => {
-    const square = `${"abcdefgh"[col]}${8 - row}`;
-
     // First try to handle as a pre-made move if it's not the player's turn
     if (game.turn() !== playerColor) {
-      console.log("Attempting to handle as pre-made move");
       try {
         const handled = preMadeMoveHandler(row, col);
         if (handled) {
           // If the pre-made move was handled, don't proceed with normal move handling
           return;
         }
-      } catch (error) {
-        console.error("Error handling pre-made move:", error);
-      }
+      } catch {}
     }
 
     handleLeftClick(); // Clear highlights on left click
