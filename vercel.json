@@ -4,13 +4,7 @@
       "maxDuration": 60
     }
   },
-  "routes": [
-    {
-      "src": "/api/auth/(.*)",
-      "dest": "/api/auth/$1",
-      "continue": true
-    }
-  ],
+  "rewrites": [{ "source": "/api/auth/(.*)", "destination": "/api/auth/$1" }],
   "headers": [
     {
       "source": "/(.*)",
