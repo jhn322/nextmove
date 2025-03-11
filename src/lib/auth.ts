@@ -83,7 +83,7 @@ export const authOptions: NextAuthOptions = {
   // },
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
-  // JWT configuration to make it more efficient
+  // Added JWT configuration to make it more efficient
   jwt: {
     maxAge: 60 * 60 * 24 * 30, // 30 days
   },
