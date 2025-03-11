@@ -22,10 +22,15 @@ export const usePreMadeMove = (
     toCol: number;
   } | null>(null);
 
+  const [preMadePossibleMoves, setPreMadePossibleMoves] = useState<string[]>(
+    []
+  );
+
   useEffect(() => {
     // Clear pre-made move if the game is over
     if (game.isGameOver() || game.isResigned) {
       setPreMadeMove(null);
+      setPreMadePossibleMoves([]);
     }
   }, [game]);
 
@@ -38,9 +43,18 @@ export const usePreMadeMove = (
     [preMadeMove]
   );
 
+  // Check if a square is a possible move for the pre-made move
+  const isPreMadePossibleMove = useCallback(
+    (square: string): boolean => {
+      return preMadePossibleMoves.includes(square);
+    },
+    [preMadePossibleMoves]
+  );
+
   // Create a temporary game to check valid moves
   const createTempGame = useCallback((fen: string, turn: "w" | "b") => {
     const tempGame = new Chess(fen);
+    // Change the turn to the specified color
     const fenParts = tempGame.fen().split(" ");
     fenParts[1] = turn;
     const modifiedFen = fenParts.join(" ");
@@ -52,6 +66,7 @@ export const usePreMadeMove = (
   const handlePreMadeMove = useCallback(
     (row: number, col: number) => {
       try {
+        // Only allow pre-made moves when it's not the player's turn
         if (
           game.turn() === playerColor ||
           game.isGameOver() ||
@@ -64,10 +79,12 @@ export const usePreMadeMove = (
         const square = `${"abcdefgh"[col]}${8 - row}` as Square;
         const piece = board[row][col];
 
+        // First click - select a piece
         if (!preMadeMove) {
           if (piece && piece.color === playerColor) {
             const tempGame = createTempGame(game.fen(), playerColor);
 
+            // Check if the piece has any legal moves
             const moves = tempGame.moves({ square, verbose: true });
 
             if (moves.length > 0) {
@@ -79,6 +96,10 @@ export const usePreMadeMove = (
                 toRow: -1,
                 toCol: -1,
               });
+
+              // Set possible moves for the selected piece
+              setPreMadePossibleMoves(moves.map((move) => move.to));
+
               return true;
             }
           } else {
@@ -88,25 +109,19 @@ export const usePreMadeMove = (
         else if (preMadeMove.from && preMadeMove.to === "") {
           if (square === preMadeMove.from) {
             setPreMadeMove(null);
+            setPreMadePossibleMoves([]);
             return true;
           }
 
-          const tempGame = createTempGame(game.fen(), playerColor);
-
-          const moves = tempGame.moves({
-            square: preMadeMove.from as Square,
-            verbose: true,
-          });
-
-          const isValidMove = moves.some((move) => move.to === square);
-
-          if (isValidMove) {
+          if (preMadePossibleMoves.includes(square)) {
             setPreMadeMove({
               ...preMadeMove,
               to: square,
               toRow: row,
               toCol: col,
             });
+            // Clear possible moves once destination is selected
+            setPreMadePossibleMoves([]);
             return true;
           } else {
             return true;
@@ -116,6 +131,7 @@ export const usePreMadeMove = (
         else if (preMadeMove.from && preMadeMove.to) {
           if (square === preMadeMove.from || square === preMadeMove.to) {
             setPreMadeMove(null);
+            setPreMadePossibleMoves([]);
             return true;
           }
         }
@@ -126,19 +142,24 @@ export const usePreMadeMove = (
         return false;
       }
     },
-    [game, board, playerColor, preMadeMove, createTempGame]
+    [
+      game,
+      board,
+      playerColor,
+      preMadeMove,
+      createTempGame,
+      preMadePossibleMoves,
+    ]
   );
 
   // Execute the pre-made move after the bot has moved
   const executePreMadeMove = useCallback(() => {
     if (preMadeMove && preMadeMove.to && game.turn() === playerColor) {
-      console.log(
-        `Executing pre-made move from ${preMadeMove.from} to ${preMadeMove.to}`
-      );
       const moveSuccessful = makeMove(preMadeMove.from, preMadeMove.to);
 
       if (moveSuccessful) {
         setPreMadeMove(null);
+        setPreMadePossibleMoves([]);
 
         if (!game.isGameOver()) {
           setTimeout(getBotMove, 1000);
@@ -146,8 +167,9 @@ export const usePreMadeMove = (
 
         return true;
       } else {
+        // If move failed, clear the pre-made move
         setPreMadeMove(null);
-        console.log("Pre-made move execution failed");
+        setPreMadePossibleMoves([]);
       }
     }
 
@@ -156,11 +178,13 @@ export const usePreMadeMove = (
 
   const cancelPreMadeMove = useCallback(() => {
     setPreMadeMove(null);
+    setPreMadePossibleMoves([]);
   }, []);
 
   return {
     preMadeMove,
     isPreMadeMove,
+    isPreMadePossibleMove,
     handlePreMadeMove,
     executePreMadeMove,
     cancelPreMadeMove,

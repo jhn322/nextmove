@@ -37,6 +37,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [preMadeMoveHandler, setPreMadeMoveHandler] = useState<
     (row: number, col: number) => boolean
   >(() => () => false);
+  const [isPreMadePossibleMove, setIsPreMadePossibleMove] = useState<
+    (square: string) => boolean
+  >(() => () => false);
 
   const { handleRightClick, handleLeftClick, clearHighlights, isHighlighted } =
     useHighlightedSquares();
@@ -350,6 +353,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       handleGameReset();
       setIsPreMadeMove(() => () => false);
       setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
   };
@@ -360,6 +364,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       localStorage.removeItem("selectedBot");
       setIsPreMadeMove(() => () => false);
       setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
       router.push(`/play/${pendingDifficulty.toLowerCase()}`);
     }
     setShowDifficultyDialog(false);
@@ -407,6 +412,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setHintMove(null);
     setIsPreMadeMove(() => () => false);
     setPreMadeMoveHandler(() => () => false);
+    setIsPreMadePossibleMove(() => () => false);
 
     // Save state with preserved player color
     const currentState = {
@@ -441,6 +447,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setHintMove(null);
       setIsPreMadeMove(() => () => false);
       setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
 
       // Save the new state with updated color
       const newState = {
@@ -471,6 +478,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       setHintMove(null);
       setIsPreMadeMove(() => () => false);
       setPreMadeMoveHandler(() => () => false);
+      setIsPreMadePossibleMove(() => () => false);
 
       // Save the new state with updated color
       const newState = {
@@ -543,7 +551,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
   };
 
-  // Handle pre-made move change
   const handlePreMadeMoveChange = useCallback(
     (handler: (square: string) => boolean) => {
       setIsPreMadeMove(() => handler);
@@ -551,7 +558,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     []
   );
 
-  // Handle pre-made move square click
   const handlePreMadeMoveSquareClick = useCallback(
     (handler: (row: number, col: number) => boolean) => {
       setPreMadeMoveHandler(() => handler);
@@ -559,19 +565,21 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     []
   );
 
+  const handlePreMadePossibleMovesChange = useCallback(
+    (handler: (square: string) => boolean) => {
+      setIsPreMadePossibleMove(() => handler);
+    },
+    []
+  );
+
   const handleSquareClick = (row: number, col: number) => {
     const square = `${"abcdefgh"[col]}${8 - row}`;
-
-    console.log(
-      `Square clicked: ${square}, turn: ${game.turn()}, playerColor: ${playerColor}`
-    );
 
     // First try to handle as a pre-made move if it's not the player's turn
     if (game.turn() !== playerColor) {
       console.log("Attempting to handle as pre-made move");
       try {
         const handled = preMadeMoveHandler(row, col);
-        console.log(`Pre-made move handler result: ${handled}`);
         if (handled) {
           // If the pre-made move was handled, don't proceed with normal move handling
           return;
@@ -671,6 +679,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           getBotMove={getBotMove}
           onPreMadeMoveChange={handlePreMadeMoveChange}
           onHandleSquareClick={handlePreMadeMoveSquareClick}
+          onPossibleMovesChange={handlePreMadePossibleMovesChange}
         />
 
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
@@ -776,6 +785,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                           isHintMove={isHintMove ?? false}
                           isRedHighlighted={isHighlighted(square)}
                           isPreMadeMove={isPreMadeMove(square)}
+                          isPreMadePossibleMove={isPreMadePossibleMove(square)}
                           showRank={showRank}
                           showFile={showFile}
                           coordinate={coordinate}

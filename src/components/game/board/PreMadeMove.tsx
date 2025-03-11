@@ -15,6 +15,7 @@ interface PreMadeMoveProps {
   getBotMove: () => void;
   onPreMadeMoveChange: (isPreMadeMove: (square: string) => boolean) => void;
   onHandleSquareClick: (handler: (row: number, col: number) => boolean) => void;
+  onPossibleMovesChange: (isPossibleMove: (square: string) => boolean) => void;
 }
 
 const PreMadeMove = ({
@@ -25,9 +26,15 @@ const PreMadeMove = ({
   getBotMove,
   onPreMadeMoveChange,
   onHandleSquareClick,
+  onPossibleMovesChange,
 }: PreMadeMoveProps) => {
-  const { isPreMadeMove, handlePreMadeMove, executePreMadeMove, preMadeMove } =
-    usePreMadeMove(game, board, playerColor, makeMove, getBotMove);
+  const {
+    isPreMadeMove,
+    handlePreMadeMove,
+    executePreMadeMove,
+    preMadeMove,
+    isPreMadePossibleMove,
+  } = usePreMadeMove(game, board, playerColor, makeMove, getBotMove);
 
   // Use a ref to track the previous turn
   const prevTurnRef = useRef(game.turn());
@@ -37,6 +44,11 @@ const PreMadeMove = ({
   useEffect(() => {
     onPreMadeMoveChange(isPreMadeMove);
   }, [isPreMadeMove, onPreMadeMoveChange]);
+
+  // Pass the isPreMadePossibleMove function to the parent component
+  useEffect(() => {
+    onPossibleMovesChange(isPreMadePossibleMove);
+  }, [isPreMadePossibleMove, onPossibleMovesChange]);
 
   // Execute the pre-made move when the turn changes to the player's turn
   useEffect(() => {
@@ -63,13 +75,16 @@ const PreMadeMove = ({
       return () => clearTimeout(timer);
     }
 
+    // Reset execution attempted flag when turn changes
     if (prevTurnRef.current !== currentTurn) {
       executionAttemptedRef.current = false;
     }
 
+    // Update the previous turn ref
     prevTurnRef.current = currentTurn;
   }, [game.turn(), playerColor, executePreMadeMove, preMadeMove]);
 
+  // Pass the handlePreMadeMove function to the parent component
   useEffect(() => {
     onHandleSquareClick(handlePreMadeMove);
   }, [handlePreMadeMove, onHandleSquareClick]);
