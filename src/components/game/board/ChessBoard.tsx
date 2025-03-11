@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
 import { STORAGE_KEY, DEFAULT_STATE } from "../../../config/game";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ import VictoryModal from "../modal/VictoryModal";
 import PlayerProfile from "./PlayerProfile";
 import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
 import PawnPromotionModal from "./PawnPromotionModal";
+import PreMadeMove from "./PreMadeMove";
 import { useAuth } from "@/context/auth-context";
 import { getUserSettings } from "@/lib/mongodb-service";
 
@@ -30,6 +31,12 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
     null
   );
+  const [isPreMadeMove, setIsPreMadeMove] = useState<
+    (square: string) => boolean
+  >(() => () => false);
+  const [preMadeMoveHandler, setPreMadeMoveHandler] = useState<
+    (row: number, col: number) => boolean
+  >(() => () => false);
 
   const { handleRightClick, handleLeftClick, clearHighlights, isHighlighted } =
     useHighlightedSquares();
@@ -341,6 +348,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     } else {
       localStorage.removeItem("selectedBot");
       handleGameReset();
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
       router.push(`/play/${newDifficulty.toLowerCase()}`);
     }
   };
@@ -348,8 +357,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleConfirmDifficultyChange = () => {
     if (pendingDifficulty) {
       localStorage.removeItem("chess-game-state");
-
       localStorage.removeItem("selectedBot");
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
       router.push(`/play/${pendingDifficulty.toLowerCase()}`);
     }
     setShowDifficultyDialog(false);
@@ -395,6 +405,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     setLastMove(null);
     resetCapturedPieces();
     setHintMove(null);
+    setIsPreMadeMove(() => () => false);
+    setPreMadeMoveHandler(() => () => false);
 
     // Save state with preserved player color
     const currentState = {
@@ -427,6 +439,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       resetCapturedPieces();
       setLastMove(null);
       setHintMove(null);
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
 
       // Save the new state with updated color
       const newState = {
@@ -455,6 +469,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       resetCapturedPieces();
       setLastMove(null);
       setHintMove(null);
+      setIsPreMadeMove(() => () => false);
+      setPreMadeMoveHandler(() => () => false);
 
       // Save the new state with updated color
       const newState = {
@@ -527,7 +543,44 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
   };
 
+  // Handle pre-made move change
+  const handlePreMadeMoveChange = useCallback(
+    (handler: (square: string) => boolean) => {
+      setIsPreMadeMove(() => handler);
+    },
+    []
+  );
+
+  // Handle pre-made move square click
+  const handlePreMadeMoveSquareClick = useCallback(
+    (handler: (row: number, col: number) => boolean) => {
+      setPreMadeMoveHandler(() => handler);
+    },
+    []
+  );
+
   const handleSquareClick = (row: number, col: number) => {
+    const square = `${"abcdefgh"[col]}${8 - row}`;
+
+    console.log(
+      `Square clicked: ${square}, turn: ${game.turn()}, playerColor: ${playerColor}`
+    );
+
+    // First try to handle as a pre-made move if it's not the player's turn
+    if (game.turn() !== playerColor) {
+      console.log("Attempting to handle as pre-made move");
+      try {
+        const handled = preMadeMoveHandler(row, col);
+        console.log(`Pre-made move handler result: ${handled}`);
+        if (handled) {
+          // If the pre-made move was handled, don't proceed with normal move handling
+          return;
+        }
+      } catch (error) {
+        console.error("Error handling pre-made move:", error);
+      }
+    }
+
     handleLeftClick(); // Clear highlights on left click
     originalHandleSquareClick(row, col);
   };
@@ -610,6 +663,16 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   return (
     <div className="flex flex-col h-full w-full">
       <main className="flex flex-col w-full items-center justify-start">
+        <PreMadeMove
+          game={game}
+          board={board}
+          playerColor={playerColor}
+          makeMove={makeMove}
+          getBotMove={getBotMove}
+          onPreMadeMoveChange={handlePreMadeMoveChange}
+          onHandleSquareClick={handlePreMadeMoveSquareClick}
+        />
+
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
           <div className="relative w-full max-w-[min(85vh,95vw)] sm:max-w-[min(85vh,85vw)] md:max-w-[min(90vh,80vw)] lg:max-w-[107vh]">
             {/* Chess board and profiles */}
@@ -712,6 +775,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                           isLastMove={isLastMove ?? false}
                           isHintMove={isHintMove ?? false}
                           isRedHighlighted={isHighlighted(square)}
+                          isPreMadeMove={isPreMadeMove(square)}
                           showRank={showRank}
                           showFile={showFile}
                           coordinate={coordinate}
