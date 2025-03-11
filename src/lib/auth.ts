@@ -12,25 +12,16 @@ declare module "next-auth" {
   }
 }
 
-// Determine the base URL based on environment
+// Simplified base URL function
 const getBaseUrl = () => {
-  // For production, always use the main domain
-  if (process.env.NODE_ENV === "production") {
-    return "https://next-move-js.vercel.app";
-  }
-
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
   // For Vercel preview deployments
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
-  // If NEXTAUTH_URL is explicitly set
-  if (process.env.NEXTAUTH_URL) {
-    return process.env.NEXTAUTH_URL;
-  }
-
-  // Default to localhost in development
-  return "http://localhost:3000";
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  // For production, always use the main domain
+  return process.env.NODE_ENV === "production"
+    ? "https://next-move-js.vercel.app"
+    : // Default to localhost in development
+      "http://localhost:3000";
 };
 
 export const authOptions: NextAuthOptions = {
@@ -38,8 +29,16 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // Add authorization params to request offline access
+      authorization: {
+        params: {
+          prompt: "select_account",
+          access_type: "online",
+        },
+      },
     }),
   ],
+  // Use MongoDB adapter with minimal options
   adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: "jwt",
@@ -47,39 +46,51 @@ export const authOptions: NextAuthOptions = {
     updateAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async session({ session, token }) {
+    // Simple session callback
+    session({ session, token }) {
       if (session?.user && token.sub) {
         session.user.id = token.sub;
       }
       return session;
     },
-    async jwt({ token, user }) {
+    // Simple JWT callback
+    jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
-    async redirect({ url }) {
-      const dynamicBaseUrl = getBaseUrl();
+    // Simple redirect callback
+    redirect({ url }) {
+      // If it's a relative URL, prepend the base URL
+      if (url.startsWith("/")) {
+        return `${getBaseUrl()}${url}`;
+      }
 
-      // If the URL is absolute and matches our base URL, allow it
-      if (url.startsWith(dynamicBaseUrl)) {
+      // If it's already an absolute URL, use it
+      if (url.startsWith("http")) {
         return url;
       }
 
-      // If it's a relative URL, append it to our base URL
-      if (url.startsWith("/")) {
-        return `${dynamicBaseUrl}${url}`;
-      }
-
-      // For safety, default to the base URL
-      return dynamicBaseUrl;
+      // Default to the base URL
+      return getBaseUrl();
     },
   },
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
-  },
+  // Skip custom pages to avoid additional redirects
+  // pages: {
+  //   signIn: "/auth/signin",
+  //   error: "/auth/error",
+  // },
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
+  // JWT configuration to make it more efficient
+  jwt: {
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+  },
+  // Events for better debugging
+  events: {
+    async signIn({ user }) {
+      console.log("User signed in:", user.email);
+    },
+  },
 };
