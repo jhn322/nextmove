@@ -155,13 +155,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Check if there's a saved game state
     const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
 
-    // if there's a valid game position saved
-    if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
+    if (
+      savedState?.fen &&
+      savedState.fen !== DEFAULT_STATE.fen &&
+      (savedState.lastMove !== null ||
+        (savedState.history && savedState.history.length > 1))
+    ) {
       setShowBotSelection(false);
       setGameStarted(true);
     } else {
       setShowBotSelection(true);
       setGameStarted(false);
+
+      // If there's a saved state but no moves have been made, remove it
+      if (
+        savedState &&
+        (!savedState.lastMove ||
+          (savedState.history && savedState.history.length <= 1))
+      ) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
     }
 
     if (savedState?.pieceSet) {
@@ -226,7 +239,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   // Save state
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && gameStarted) {
       const gameState = {
         fen: game.fen(),
         playerColor,
@@ -262,21 +275,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   useEffect(() => {
     return () => {
       if (typeof window !== "undefined") {
-        const gameState = {
-          fen: game.fen(),
-          playerColor,
-          gameTime,
-          whiteTime,
-          blackTime,
-          difficulty,
-          gameStarted,
-          history,
-          currentMove,
-          lastMove,
-          pieceSet,
-          capturedPieces,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+        if (gameStarted) {
+          const gameState = {
+            fen: game.fen(),
+            playerColor,
+            gameTime,
+            whiteTime,
+            blackTime,
+            difficulty,
+            gameStarted,
+            history,
+            currentMove,
+            lastMove,
+            pieceSet,
+            capturedPieces,
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+        } else {
+          // If no moves made, remove any saved state
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
     };
   }, [
@@ -315,26 +333,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleSelectBot = (bot: Bot) => {
     setSelectedBot(bot);
     setShowBotSelection(false);
-    setGameStarted(true);
-
-    // Save the game state immediately with gameStarted set to true
-    if (typeof window !== "undefined") {
-      const gameState = {
-        fen: game.fen(),
-        playerColor,
-        gameTime,
-        whiteTime,
-        blackTime,
-        difficulty,
-        gameStarted: true,
-        history,
-        currentMove,
-        lastMove,
-        pieceSet,
-        capturedPieces,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
-    }
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -588,15 +586,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
       // This is a saved game, so make sure we show the game controls
       setShowBotSelection(false);
-      setGameStarted(true);
 
-      // Also ensure the gameStarted flag is set in localStorage
-      if (!savedState.gameStarted) {
-        savedState.gameStarted = true;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+      const hasMovesBeenMade =
+        savedState.lastMove !== null ||
+        (savedState.history && savedState.history.length > 1);
+
+      if (hasMovesBeenMade) {
+        setGameStarted(true);
+
+        // Also ensure the gameStarted flag is set in localStorage
+        if (!savedState.gameStarted) {
+          savedState.gameStarted = true;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+        }
+      } else {
+        setGameStarted(false);
+
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
-  }, []); // Empty dependency array means this runs once when component mounts
+  }, []);
 
   return (
     <div className="flex flex-col h-full w-full">
