@@ -682,8 +682,11 @@ export default function Home() {
                       Sign in to track your progress and see your next
                       challenge!
                     </p>
-                    <Button className="mt-4" onClick={() => signIn("google")}>
-                      Sign In
+                    <Button
+                      className="mt-4"
+                      onClick={() => signIn("google", "/")}
+                    >
+                      Sign In with Google
                     </Button>
                   </div>
                 )}
