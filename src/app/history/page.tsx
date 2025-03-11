@@ -453,17 +453,17 @@ const HistoryPage = () => {
                                 game.difficulty === "easy" &&
                                   "bg-green-500/10 text-green-500 border-green-500/20",
                                 game.difficulty === "intermediate" &&
-                                  "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                  "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
                                 game.difficulty === "advanced" &&
-                                  "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                                  "bg-blue-500/10 text-blue-500 border-blue-500/20",
                                 game.difficulty === "hard" &&
-                                  "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                                  "bg-violet-500/10 text-violet-500 border-violet-500/20",
                                 game.difficulty === "expert" &&
-                                  "bg-red-500/10 text-red-500 border-red-500/20",
+                                  "bg-purple-500/10 text-purple-500 border-purple-500/20",
                                 game.difficulty === "master" &&
-                                  "bg-pink-500/10 text-pink-500 border-pink-500/20",
+                                  "bg-orange-500/10 text-orange-500 border-orange-500/20",
                                 game.difficulty === "grandmaster" &&
-                                  "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                                  "bg-red-500/10 text-red-500 border-red-500/20"
                               )}
                             >
                               {game.difficulty.charAt(0).toUpperCase() +
@@ -657,17 +657,17 @@ const HistoryPage = () => {
                                 game.difficulty === "easy" &&
                                   "bg-green-500/10 text-green-500 border-green-500/20",
                                 game.difficulty === "intermediate" &&
-                                  "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                  "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
                                 game.difficulty === "advanced" &&
-                                  "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                                  "bg-blue-500/10 text-blue-500 border-blue-500/20",
                                 game.difficulty === "hard" &&
-                                  "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                                  "bg-violet-500/10 text-violet-500 border-violet-500/20",
                                 game.difficulty === "expert" &&
-                                  "bg-red-500/10 text-red-500 border-red-500/20",
+                                  "bg-purple-500/10 text-purple-500 border-purple-500/20",
                                 game.difficulty === "master" &&
-                                  "bg-pink-500/10 text-pink-500 border-pink-500/20",
+                                  "bg-orange-500/10 text-orange-500 border-orange-500/20",
                                 game.difficulty === "grandmaster" &&
-                                  "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                                  "bg-red-500/10 text-red-500 border-red-500/20"
                               )}
                             >
                               {game.difficulty.charAt(0).toUpperCase() +
@@ -718,17 +718,17 @@ const HistoryPage = () => {
                             difficulty === "easy" &&
                               "bg-green-500/10 text-green-500 border-green-500/20",
                             difficulty === "intermediate" &&
-                              "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                              "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
                             difficulty === "advanced" &&
-                              "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                              "bg-blue-500/10 text-blue-500 border-blue-500/20",
                             difficulty === "hard" &&
-                              "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                              "bg-violet-500/10 text-violet-500 border-violet-500/20",
                             difficulty === "expert" &&
-                              "bg-red-500/10 text-red-500 border-red-500/20",
+                              "bg-purple-500/10 text-purple-500 border-purple-500/20",
                             difficulty === "master" &&
-                              "bg-pink-500/10 text-pink-500 border-pink-500/20",
+                              "bg-orange-500/10 text-orange-500 border-orange-500/20",
                             difficulty === "grandmaster" &&
-                              "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                              "bg-red-500/10 text-red-500 border-red-500/20"
                           )}
                         >
                           {difficulty.charAt(0).toUpperCase() +
