@@ -350,7 +350,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       handleDifficultyDialogOpen(newDifficulty);
     } else {
       localStorage.removeItem("selectedBot");
-      handleGameReset();
+      handleGameReset(false);
       setIsPreMadeMove(() => () => false);
       setPreMadeMoveHandler(() => () => false);
       setIsPreMadePossibleMove(() => () => false);
@@ -393,18 +393,18 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   const handleRematch = () => {
     handleModalClose();
-    setTimeout(handleGameReset, 0);
+    setTimeout(() => handleGameReset(true), 0);
   };
 
   // Game restart
-  const handleGameReset = () => {
+  const handleGameReset = (setStarted = true) => {
     game.reset();
     game.isResigned = false;
     setBoard(game.board());
     setSelectedPiece(null);
     setPossibleMoves([]);
     resetTimers();
-    setGameStarted(true);
+    setGameStarted(setStarted);
     setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
     setCurrentMove(1);
     setLastMove(null);
@@ -420,11 +420,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       playerColor,
       difficulty,
       lastMove: null,
-      gameStarted: true, // Ensure the saved state also has gameStarted as true
+      gameStarted: setStarted, // Use the parameter value
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
 
-    if (playerColor === "b") {
+    if (playerColor === "b" && setStarted) {
       setTimeout(getBotMove, 500);
     }
   };
@@ -513,7 +513,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleNewBot = () => {
     handleModalClose();
     setTimeout(() => {
-      handleGameReset();
+      handleGameReset(false);
       setShowBotSelection(true); // Show bot selection again
       // highlight the difficulty section
       const difficultySection = document.querySelector(
@@ -535,7 +535,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Select the first bot from the current difficulty
     setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
     setShowBotSelection(true);
-    handleGameReset();
+    handleGameReset(false);
 
     // Close dialog if it was open
     setShowNewBotDialog(false);
@@ -817,7 +817,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           <div className="w-full sm:max-w-[min(85vh,85vw)] md:max-w-[min(90vh,80vw)] lg:w-80 lg:flex flex-col">
             <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4">
               {/* Bot selection panel */}
-              {showBotSelection && !gameStarted ? (
+              {showBotSelection ? (
                 <div className={`w-full ${shouldPulse ? "pulse-border" : ""}`}>
                   <BotSelectionPanel
                     bots={BOTS_BY_DIFFICULTY[difficulty]}
