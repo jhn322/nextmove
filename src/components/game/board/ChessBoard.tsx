@@ -788,6 +788,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
                   {board.map((row, rowIndex) =>
                     row.map((_, colIndex) => {
+                      // Determine if we should flip the board based on player color and settings
+                      // By default, always show player's pieces at the bottom
                       const shouldFlipBoard = whitePiecesBottom
                         ? playerColor === "b"
                         : playerColor === "w";
@@ -812,17 +814,20 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                       const isHintMove =
                         hintMove &&
                         (square === hintMove.from || square === hintMove.to);
-                      const showRank =
-                        showCoordinates &&
-                        (shouldFlipBoard ? colIndex === 7 : colIndex === 0);
-                      const showFile =
-                        showCoordinates &&
-                        (shouldFlipBoard ? rowIndex === 0 : rowIndex === 7);
+
+                      // Always show coordinates in the same position regardless of board orientation
+                      const showRank = showCoordinates && colIndex === 0;
+                      const showFile = showCoordinates && rowIndex === 7;
+
+                      // But the coordinate values need to account for the board orientation
+                      const rankValue = 8 - actualRowIndex;
+                      const fileValue = "abcdefgh"[actualColIndex];
+
                       const coordinate = showCoordinates
                         ? showRank
-                          ? `${8 - actualRowIndex}`
+                          ? `${rankValue}`
                           : showFile
-                          ? `${"abcdefgh"[actualColIndex]}`
+                          ? fileValue
                           : ""
                         : "";
 

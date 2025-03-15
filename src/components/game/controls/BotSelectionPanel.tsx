@@ -194,7 +194,7 @@ const BotSelectionPanel = ({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    Choose which color pieces you want to play with. You'll
+                    Choose which color pieces you want to play with. You&apos;ll
                     always move first, regardless of color.
                   </p>
                 </TooltipContent>
@@ -232,49 +232,57 @@ const BotSelectionPanel = ({
       </Card>
 
       {/* Difficulty Selection */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          Difficulty category
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Info className="h-4 w-4 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Change the skill level category of the bot.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <Select value={difficulty} onValueChange={onDifficultyChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue>
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const { icon: Icon, color } =
-                    difficultyIcons[difficulty as keyof typeof difficultyIcons];
-                  return <Icon className={`h-4 w-4 flex-shrink-0 ${color}`} />;
-                })()}
-                <span className="capitalize truncate">{difficulty}</span>
-              </div>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {difficulties.map((diff) => {
-              const { icon: Icon, color } =
-                difficultyIcons[diff as keyof typeof difficultyIcons];
-              return (
-                <SelectItem key={diff} value={diff}>
-                  <div className="flex items-center gap-2">
-                    <Icon className={`h-4 w-4 ${color}`} />
-                    <span className="capitalize">{diff}</span>
-                  </div>
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-      </div>
+      <Card className="border-0 shadow-none">
+        <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
+          <CardTitle className="flex items-center gap-2 text-md">
+            Difficulty category
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Change the skill level category of the bot.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
+          <Select value={difficulty} onValueChange={onDifficultyChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const { icon: Icon, color } =
+                      difficultyIcons[
+                        difficulty as keyof typeof difficultyIcons
+                      ];
+                    return (
+                      <Icon className={`h-4 w-4 flex-shrink-0 ${color}`} />
+                    );
+                  })()}
+                  <span className="capitalize truncate">{difficulty}</span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {difficulties.map((diff) => {
+                const { icon: Icon, color } =
+                  difficultyIcons[diff as keyof typeof difficultyIcons];
+                return (
+                  <SelectItem key={diff} value={diff}>
+                    <div className="flex items-center gap-2">
+                      <Icon className={`h-4 w-4 ${color}`} />
+                      <span className="capitalize">{diff}</span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
     </div>
   );
 };

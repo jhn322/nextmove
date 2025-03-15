@@ -127,7 +127,6 @@ const PlayerIndicator = ({
 const GameControls = ({
   gameStatus,
   onResign,
-  onDifficultyChange,
   playerColor,
   gameTime,
   whiteTime,
