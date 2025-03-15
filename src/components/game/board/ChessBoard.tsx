@@ -31,6 +31,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
     null
   );
+
+  const [whitePiecesBottom, setWhitePiecesBottom] = useState(true);
   const [isPreMadeMove, setIsPreMadeMove] = useState<
     (square: string) => boolean
   >(() => () => false);
@@ -77,7 +79,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const { status, session } = useAuth();
   const [pieceSet, setPieceSet] = useState("staunty");
   const [showCoordinates, setShowCoordinates] = useState(true);
-  const [whitePiecesBottom, setWhitePiecesBottom] = useState(true);
 
   // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
@@ -167,12 +168,24 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
     if (
       savedState?.fen &&
-      savedState.fen !== DEFAULT_STATE.fen &&
+      (savedState.fen !== DEFAULT_STATE.fen ||
+        savedState.playerColor === "b") &&
       (savedState.lastMove !== null ||
         (savedState.history && savedState.history.length > 1))
     ) {
       setShowBotSelection(false);
       setGameStarted(true);
+
+      // Load the saved FEN which might be modified for black players
+      if (savedState.fen) {
+        game.load(savedState.fen);
+        setBoard(game.board());
+      }
+
+      // Set player color
+      if (savedState.playerColor) {
+        setPlayerColor(savedState.playerColor);
+      }
     } else {
       setShowBotSelection(true);
       setGameStarted(false);
@@ -185,12 +198,19 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       ) {
         localStorage.removeItem(STORAGE_KEY);
       }
+
+      // Initialize the game based on player color
+      if (savedState?.playerColor === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        setBoard(game.board());
+        setPlayerColor("b");
+      }
     }
 
     if (savedState?.pieceSet) {
       setPieceSet(savedState.pieceSet);
     }
-  }, [difficulty]);
+  }, [difficulty, game]);
 
   const {
     showDifficultyDialog,
@@ -343,6 +363,25 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleSelectBot = (bot: Bot) => {
     setSelectedBot(bot);
     setShowBotSelection(false);
+
+    // Initialize the game based on player color
+    if (playerColor === "b") {
+      game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+      setBoard(game.board());
+      setHistory([{ fen: game.fen(), lastMove: null }]);
+    }
+
+    setGameStarted(true);
+
+    const currentState = {
+      ...DEFAULT_STATE,
+      playerColor,
+      difficulty,
+      lastMove: null,
+      gameStarted: true,
+      fen: game.fen(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -350,7 +389,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       handleDifficultyDialogOpen(newDifficulty);
     } else {
       localStorage.removeItem("selectedBot");
-      handleGameReset();
+      handleGameReset(false);
       setIsPreMadeMove(() => () => false);
       setPreMadeMoveHandler(() => () => false);
       setIsPreMadePossibleMove(() => () => false);
@@ -393,19 +432,25 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
   const handleRematch = () => {
     handleModalClose();
-    setTimeout(handleGameReset, 0);
+    setTimeout(() => handleGameReset(true), 0);
   };
 
   // Game restart
-  const handleGameReset = () => {
+  const handleGameReset = (setStarted = true) => {
     game.reset();
     game.isResigned = false;
+
+    // If player is black, set up the board for black to move first
+    if (playerColor === "b") {
+      game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+    }
+
     setBoard(game.board());
     setSelectedPiece(null);
     setPossibleMoves([]);
     resetTimers();
-    setGameStarted(true);
-    setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
+    setGameStarted(setStarted);
+    setHistory([{ fen: game.fen(), lastMove: null }]);
     setCurrentMove(1);
     setLastMove(null);
     resetCapturedPieces();
@@ -420,13 +465,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       playerColor,
       difficulty,
       lastMove: null,
-      gameStarted: true, // Ensure the saved state also has gameStarted as true
+      gameStarted: setStarted, // Use the parameter value
+      fen: game.fen(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
-
-    if (playerColor === "b") {
-      setTimeout(getBotMove, 500);
-    }
   };
 
   const handleColorChange = (color: "w" | "b") => {
@@ -437,6 +479,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       // If no game in progress, change color directly
       setPlayerColor(color);
       game.reset();
+
+      if (color === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+      }
+
       setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
@@ -455,12 +502,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         playerColor: color,
         difficulty,
         lastMove: null,
+        fen: game.fen(), // Save the current FEN which might be modified for black
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-
-      if (color === "b") {
-        setTimeout(getBotMove, 500);
-      }
     }
   };
 
@@ -468,6 +512,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     if (pendingColor) {
       setPlayerColor(pendingColor);
       game.reset();
+
+      if (pendingColor === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+      }
+
       setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
@@ -486,12 +535,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         playerColor: pendingColor,
         difficulty,
         lastMove: null,
+        fen: game.fen(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-
-      if (pendingColor === "b") {
-        setTimeout(getBotMove, 500);
-      }
     }
     setShowColorDialog(false);
     setPendingColor(null);
@@ -513,7 +559,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleNewBot = () => {
     handleModalClose();
     setTimeout(() => {
-      handleGameReset();
+      handleGameReset(false);
       setShowBotSelection(true); // Show bot selection again
       // highlight the difficulty section
       const difficultySection = document.querySelector(
@@ -535,7 +581,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     // Select the first bot from the current difficulty
     setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
     setShowBotSelection(true);
-    handleGameReset();
+    handleGameReset(false);
 
     // Close dialog if it was open
     setShowNewBotDialog(false);
@@ -631,6 +677,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     difficulty={difficulty}
     onDifficultyChange={handleDifficultyChange}
     selectedBot={selectedBot}
+    playerColor={playerColor}
+    onColorChange={handleColorChange}
   />;
 
   // Add a specific effect to handle navigation back to the game
@@ -639,7 +687,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
 
     // If there's a valid saved game state with a non-default FEN, ensure we show the game controls
-    if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
+    if (
+      savedState?.fen &&
+      (savedState.fen !== DEFAULT_STATE.fen || savedState.playerColor === "b")
+    ) {
       // This is a saved game, so make sure we show the game controls
       setShowBotSelection(false);
 
@@ -655,13 +706,23 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           savedState.gameStarted = true;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
         }
+
+        if (savedState.fen) {
+          game.load(savedState.fen);
+          setBoard(game.board());
+        }
       } else {
         setGameStarted(false);
-
         localStorage.removeItem(STORAGE_KEY);
+
+        if (savedState.playerColor === "b") {
+          game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+          setBoard(game.board());
+          setPlayerColor("b");
+        }
       }
     }
-  }, []);
+  }, [game]);
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -727,12 +788,18 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
                   {board.map((row, rowIndex) =>
                     row.map((_, colIndex) => {
-                      const actualRowIndex = whitePiecesBottom
-                        ? rowIndex
-                        : 7 - rowIndex;
-                      const actualColIndex = whitePiecesBottom
-                        ? colIndex
-                        : 7 - colIndex;
+                      // Determine if we should flip the board based on player color and settings
+                      // By default, always show player's pieces at the bottom
+                      const shouldFlipBoard = whitePiecesBottom
+                        ? playerColor === "b"
+                        : playerColor === "w";
+
+                      const actualRowIndex = shouldFlipBoard
+                        ? 7 - rowIndex
+                        : rowIndex;
+                      const actualColIndex = shouldFlipBoard
+                        ? 7 - colIndex
+                        : colIndex;
                       const piece = board[actualRowIndex][actualColIndex];
                       const square = `${"abcdefgh"[actualColIndex]}${
                         8 - actualRowIndex
@@ -747,17 +814,20 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                       const isHintMove =
                         hintMove &&
                         (square === hintMove.from || square === hintMove.to);
-                      const showRank =
-                        showCoordinates &&
-                        (whitePiecesBottom ? colIndex === 0 : colIndex === 7);
-                      const showFile =
-                        showCoordinates &&
-                        (whitePiecesBottom ? rowIndex === 7 : rowIndex === 0);
+
+                      // Always show coordinates in the same position regardless of board orientation
+                      const showRank = showCoordinates && colIndex === 0;
+                      const showFile = showCoordinates && rowIndex === 7;
+
+                      // But the coordinate values need to account for the board orientation
+                      const rankValue = 8 - actualRowIndex;
+                      const fileValue = "abcdefgh"[actualColIndex];
+
                       const coordinate = showCoordinates
                         ? showRank
-                          ? `${8 - actualRowIndex}`
+                          ? `${rankValue}`
                           : showFile
-                          ? `${"abcdefgh"[actualColIndex]}`
+                          ? fileValue
                           : ""
                         : "";
 
@@ -817,7 +887,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           <div className="w-full sm:max-w-[min(85vh,85vw)] md:max-w-[min(90vh,80vw)] lg:w-80 lg:flex flex-col">
             <div className="flex flex-col lg:flex-row w-full lg:items-start sm:items-center justify-center gap-4">
               {/* Bot selection panel */}
-              {showBotSelection && !gameStarted ? (
+              {showBotSelection ? (
                 <div className={`w-full ${shouldPulse ? "pulse-border" : ""}`}>
                   <BotSelectionPanel
                     bots={BOTS_BY_DIFFICULTY[difficulty]}
@@ -825,6 +895,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     difficulty={difficulty}
                     onDifficultyChange={handleDifficultyChange}
                     selectedBot={selectedBot}
+                    playerColor={playerColor}
+                    onColorChange={handleColorChange}
                   />
                 </div>
               ) : (
@@ -833,7 +905,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     difficulty={difficulty}
                     gameStatus={getGameStatus()}
                     onResign={handleResign}
-                    onColorChange={handleColorChange}
                     onDifficultyChange={handleDifficultyChange}
                     playerColor={playerColor}
                     gameTime={gameTime}

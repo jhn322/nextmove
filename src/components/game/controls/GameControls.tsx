@@ -21,7 +21,6 @@ interface GameControlsProps {
   difficulty: string;
   gameStatus: string;
   onResign: () => void;
-  onColorChange: (color: "w" | "b") => void;
   onDifficultyChange: (difficulty: string) => void;
   playerColor: "w" | "b";
   gameTime: number;
@@ -55,35 +54,35 @@ interface PlayerIndicatorProps {
 const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
   if (game.isCheckmate()) {
     return (
-      <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-3 py-1.5 rounded-full animate-pulse">
-        <Swords className="h-4 w-4" />
-        <span className="font-semibold">Checkmate!</span>
+      <div className="inline-flex items-center gap-1 sm:gap-2 bg-red-500/10 text-red-500 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full animate-pulse">
+        <Swords className="h-3 w-3 sm:h-4 sm:w-4" />
+        <span className="font-semibold text-xs sm:text-sm">Checkmate!</span>
       </div>
     );
   }
 
   if (game.isCheck()) {
     return (
-      <div className="inline-flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-3 py-1.5 rounded-full animate-pulse">
-        <AlertCircle className="h-4 w-4" />
-        <span className="font-semibold">Check!</span>
+      <div className="inline-flex items-center gap-1 sm:gap-2 bg-yellow-500/10 text-yellow-500 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full animate-pulse">
+        <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+        <span className="font-semibold text-xs sm:text-sm">Check!</span>
       </div>
     );
   }
 
   if (game.isDraw()) {
     return (
-      <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-500 px-3 py-1.5 rounded-full">
-        <HandshakeIcon className="h-4 w-4" />
-        <span className="font-semibold">Draw!</span>
+      <div className="inline-flex items-center gap-1 sm:gap-2 bg-blue-500/10 text-blue-500 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+        <HandshakeIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+        <span className="font-semibold text-xs sm:text-sm">Draw!</span>
       </div>
     );
   }
 
   return (
-    <div className="inline-flex items-center gap-2 bg-green-500/10 text-green-500 px-3 py-1.5 rounded-full">
-      <PlayCircle className="h-4 w-4" />
-      <span className="font-semibold">In Progress</span>
+    <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-500/10 text-green-500 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+      <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+      <span className="font-semibold text-xs sm:text-sm">In Progress</span>
     </div>
   );
 };
@@ -113,14 +112,14 @@ const PlayerIndicator = ({
 
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${bg} ${text} ${border} transition-all duration-200`}
+      className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg border ${bg} ${text} ${border} transition-all duration-200`}
     >
       <Crown
-        className={`h-5 w-5 ${isActive ? "animate-pulse" : "opacity-50"} ${
-          color === "w" ? "fill-current" : ""
-        }`}
+        className={`h-4 w-4 sm:h-5 sm:w-5 ${
+          isActive ? "animate-pulse" : "opacity-50"
+        } ${color === "w" ? "fill-current" : ""}`}
       />
-      <span className="font-medium">{children}</span>
+      <span className="font-medium text-sm sm:text-base">{children}</span>
     </div>
   );
 };
@@ -128,7 +127,6 @@ const PlayerIndicator = ({
 const GameControls = ({
   gameStatus,
   onResign,
-  onColorChange,
   playerColor,
   gameTime,
   whiteTime,
@@ -180,17 +178,19 @@ const GameControls = ({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:p-4">
+    <div className="space-y-3 laptop-screen:space-y-2 rounded-lg border border-border bg-card p-3 w-full lg:p-4 max-h-[calc(100vh-8rem)] laptop-screen:max-h-[calc(100vh-6rem)] overflow-y-auto">
       {/* Game Info Group */}
-      <div className="space-y-2">
+      <div className="space-y-2 laptop-screen:space-y-1">
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="flex items-center text-md">
-              <span className="mr-2 text-muted-foreground">Game Status:</span>
+          <CardHeader className="p-2 pb-1 md:p-3 md:pb-1 lg:p-4 lg:pb-2">
+            <CardTitle className="flex items-center text-sm sm:text-md">
+              <span className="mr-2 text-muted-foreground text-xs sm:text-sm">
+                Game Status:
+              </span>
               <GameStatusIndicator game={game} />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
+          <CardContent className="p-2 pt-0 md:p-3 md:pt-0 lg:p-4 lg:pt-0">
             <div className="flex items-center gap-3">
               <PlayerIndicator color="w" isActive={currentTurn === "w"}>
                 White
@@ -204,19 +204,25 @@ const GameControls = ({
         </Card>
 
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="text-md">Game Timer</CardTitle>
+          <CardHeader className="p-2 pb-1 md:p-3 md:pb-1 lg:p-4 lg:pb-2">
+            <CardTitle className="text-sm sm:text-md">Game Timer</CardTitle>
           </CardHeader>
-          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0 space-y-2">
+          <CardContent className="p-2 pt-0 md:p-3 md:pt-0 lg:p-4 lg:pt-0 space-y-1 sm:space-y-2 laptop-screen:space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total:</span>
-              <span className="font-mono text-xl">{formatTime(gameTime)}</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">
+                Total:
+              </span>
+              <span className="font-mono text-base sm:text-xl">
+                {formatTime(gameTime)}
+              </span>
             </div>
             <div className="h-px bg-border/50" />
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">White:</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">
+                White:
+              </span>
               <span
-                className={`font-mono text-xl ${
+                className={`font-mono text-base sm:text-xl ${
                   currentTurn === "w" && !game.isGameOver()
                     ? "text-blue-400"
                     : ""
@@ -226,9 +232,11 @@ const GameControls = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Black:</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">
+                Black:
+              </span>
               <span
-                className={`font-mono text-xl ${
+                className={`font-mono text-base sm:text-xl ${
                   currentTurn === "b" && !game.isGameOver()
                     ? "text-red-400"
                     : ""
@@ -243,12 +251,12 @@ const GameControls = ({
 
       {/* Move History */}
       <Card className="border-0 shadow-none">
-        <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-          <CardTitle className="text-md">Move History</CardTitle>
+        <CardHeader className="p-2 pb-1 md:p-3 md:pb-1 lg:p-4 lg:pb-2">
+          <CardTitle className="text-sm sm:text-md">Move History</CardTitle>
         </CardHeader>
-        <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
-          <ScrollArea className="h-[200px] w-full rounded-md border">
-            <div className="p-4 space-y-1">
+        <CardContent className="p-2 pt-0 md:p-3 md:pt-0 lg:p-4 lg:pt-0">
+          <ScrollArea className="h-[200px] sm:h-[300px] md:h-[300px] lg:h-[300px] xl:h-[400px] laptop-screen:h-[200px] w-full rounded-md border">
+            <div className="p-2 sm:p-4 space-y-1">
               {history.slice(1).map((historyItem, index) => {
                 const pieceType = historyItem.lastMove
                   ? getPieceMoved(history[index].fen, historyItem.lastMove)
@@ -257,14 +265,17 @@ const GameControls = ({
                 const isLatestMove = index === history.length - 2;
 
                 return (
-                  <div key={index} className="flex items-center text-sm">
+                  <div
+                    key={index}
+                    className="flex items-center text-xs sm:text-sm"
+                  >
                     {index % 2 === 0 ? (
                       // White's move
                       <div className="flex items-center w-full bg-accent/50 rounded-sm">
-                        <span className="text-muted-foreground w-4 text-right mr-4 pl-2">
+                        <span className="text-muted-foreground w-3 sm:w-4 text-right mr-2 sm:mr-4 pl-1 sm:pl-2">
                           {getMoveNumber(index)}.
                         </span>
-                        <div className="flex items-center gap-1 text-blue-400 w-full py-1 pr-2">
+                        <div className="flex items-center gap-1 text-blue-400 w-full py-0.5 sm:py-1 pr-1 sm:pr-2">
                           <div className="flex-1 flex items-center">
                             <span
                               className={`${
@@ -277,7 +288,7 @@ const GameControls = ({
                             </span>
                           </div>
                           {pieceType && (
-                            <div className="w-5 h-5 flex items-center justify-center brightness-0 dark:brightness-0 dark:invert">
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center brightness-0 dark:brightness-0 dark:invert">
                               <Piece
                                 type={pieceType.toUpperCase()}
                                 pieceSet={pieceSet}
@@ -290,10 +301,10 @@ const GameControls = ({
                     ) : (
                       // Black's move
                       <div className="flex items-center w-full bg-background">
-                        <span className="text-muted-foreground w-4 text-right mr-4 pl-2">
+                        <span className="text-muted-foreground w-3 sm:w-4 text-right mr-2 sm:mr-4 pl-1 sm:pl-2">
                           {getMoveNumber(index)}.
                         </span>
-                        <div className="flex items-center gap-1 text-red-400 w-full py-1 pr-2">
+                        <div className="flex items-center gap-1 text-red-400 w-full py-0.5 sm:py-1 pr-1 sm:pr-2">
                           <div className="flex-1 flex items-center">
                             <span
                               className={`${
@@ -306,7 +317,7 @@ const GameControls = ({
                             </span>
                           </div>
                           {pieceType && (
-                            <div className="w-5 h-5 flex items-center justify-center brightness-0 dark:brightness-0 dark:invert">
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center brightness-0 dark:brightness-0 dark:invert">
                               <Piece
                                 type={pieceType.toUpperCase()}
                                 pieceSet={pieceSet}
@@ -331,50 +342,20 @@ const GameControls = ({
       {/* Player Controls Group */}
       <div className="space-y-2">
         <Card className="border-0 shadow-none">
-          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="flex items-center gap-2 text-md">
-              Play As
-            </CardTitle>
+          <CardHeader className="p-2 pb-1 md:p-3 md:pb-1 lg:p-4 lg:pb-2">
+            <CardTitle className="text-sm sm:text-md">Game Controls</CardTitle>
           </CardHeader>
-          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
-            <div className="flex gap-3">
-              <Button
-                onClick={() => onColorChange("w")}
-                variant={playerColor === "w" ? "default" : "outline"}
-                className="flex-1 flex items-center justify-center gap-2"
-                disabled={playerColor === "w"}
-              >
-                <Crown className="h-4 w-4 fill-current" />
-                White
-              </Button>
-              <Button
-                onClick={() => onColorChange("b")}
-                variant={playerColor === "b" ? "default" : "outline"}
-                className="flex-1 flex items-center justify-center gap-2"
-                disabled={playerColor === "b"}
-              >
-                <Crown className="h-4 w-4" />
-                Black
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-none">
-          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="text-md">Game Controls</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0 space-y-4">
+          <CardContent className="p-2 pt-0 md:p-3 md:pt-0 lg:p-4 lg:pt-0 space-y-2 sm:space-y-3 laptop-screen:space-y-2">
             {/* Move Controls */}
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-3 laptop-screen:gap-2 justify-center">
               <Button
                 variant="outline"
                 size="default"
                 onClick={onMoveBack}
                 disabled={!canMoveBack || isGameOver}
-                className="flex-1 flex items-center justify-center gap-2"
+                className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 Back
               </Button>
               <Button
@@ -382,17 +363,17 @@ const GameControls = ({
                 size="default"
                 onClick={onMoveForward}
                 disabled={!canMoveForward || isGameOver}
-                className="flex-1 flex items-center justify-center gap-2"
+                className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
               >
                 Forward
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
 
             {/* Primary Action Buttons */}
-            <div className="grid grid-cols-1 gap-3 pt-2">
+            <div className="grid grid-cols-1 gap-3 laptop-screen:gap-2 pt-2 laptop-screen:pt-1">
               {/* Gameplay Buttons Row */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 laptop-screen:gap-2">
                 {/* Hint Button */}
                 <Button
                   onClick={onHintRequested}
@@ -402,10 +383,10 @@ const GameControls = ({
                     game.turn() !== playerColor ||
                     isCalculatingHint
                   }
-                  className="flex-1 py-5 text-base font-medium flex items-center justify-center gap-2"
+                  className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
                 >
                   <Lightbulb
-                    className={`h-5 w-5 ${
+                    className={`h-4 w-4 sm:h-5 sm:w-5 ${
                       isCalculatingHint ? "animate-pulse" : ""
                     }`}
                   />
@@ -417,19 +398,19 @@ const GameControls = ({
                   <Button
                     onClick={onRematch}
                     variant="default"
-                    className="flex-1 py-5 text-base font-medium flex items-center justify-center gap-2"
+                    className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
                   >
-                    <HandshakeIcon className="h-5 w-5" />
+                    <HandshakeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                     Rematch
                   </Button>
                 ) : (
                   <Button
                     onClick={onResign}
                     variant="destructive"
-                    className="flex-1 py-5 text-base font-medium flex items-center justify-center gap-2"
+                    className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
                     disabled={game.isGameOver()}
                   >
-                    <Flag className="h-5 w-5" />
+                    <Flag className="h-4 w-4 sm:h-5 sm:w-5" />
                     Resign
                   </Button>
                 )}
@@ -439,9 +420,9 @@ const GameControls = ({
               <Button
                 onClick={handleNewBotDialog}
                 variant="secondary"
-                className="w-full py-5 text-base font-medium flex items-center justify-center gap-2"
+                className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
               >
-                <UserPlus className="h-5 w-5" />
+                <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
                 New Bot
               </Button>
             </div>

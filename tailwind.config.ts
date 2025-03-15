@@ -16,6 +16,9 @@ const config = {
       },
     },
     extend: {
+      screens: {
+        "laptop-screen": { raw: "(min-width: 1030px) and (max-height: 930px)" },
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
