@@ -33,7 +33,7 @@ interface PlayerProfileProps {
 const PlayerProfile = ({
   difficulty,
   isBot,
-  rating = 1500,
+  rating = 1000,
   capturedPieces = [],
   selectedBot,
   lastMove,
@@ -44,8 +44,8 @@ const PlayerProfile = ({
   const { session, status } = useAuth();
   const [message, setMessage] = useState<string>("");
   const [showMessage, setShowMessage] = useState(false);
-  const [playerName, setPlayerName] = useState<string>("");
-  const [playerAvatar, setPlayerAvatar] = useState<string>("");
+  const [playerName, setPlayerName] = useState<string>("Player");
+  const [playerAvatar, setPlayerAvatar] = useState<string>("/default-pfp.png");
   const [countryFlag, setCountryFlag] = useState<string>("");
   const [flair, setFlair] = useState<string>("");
   const [currentPieceSet, setCurrentPieceSet] = useState(initialPieceSet);
