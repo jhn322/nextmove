@@ -21,7 +21,6 @@ interface GameControlsProps {
   difficulty: string;
   gameStatus: string;
   onResign: () => void;
-  onColorChange: (color: "w" | "b") => void;
   onDifficultyChange: (difficulty: string) => void;
   playerColor: "w" | "b";
   gameTime: number;
@@ -128,7 +127,7 @@ const PlayerIndicator = ({
 const GameControls = ({
   gameStatus,
   onResign,
-  onColorChange,
+  onDifficultyChange,
   playerColor,
   gameTime,
   whiteTime,
@@ -330,36 +329,6 @@ const GameControls = ({
 
       {/* Player Controls Group */}
       <div className="space-y-2">
-        <Card className="border-0 shadow-none">
-          <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-            <CardTitle className="flex items-center gap-2 text-md">
-              Play As
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
-            <div className="flex gap-3">
-              <Button
-                onClick={() => onColorChange("w")}
-                variant={playerColor === "w" ? "default" : "outline"}
-                className="flex-1 flex items-center justify-center gap-2"
-                disabled={playerColor === "w"}
-              >
-                <Crown className="h-4 w-4 fill-current" />
-                White
-              </Button>
-              <Button
-                onClick={() => onColorChange("b")}
-                variant={playerColor === "b" ? "default" : "outline"}
-                className="flex-1 flex items-center justify-center gap-2"
-                disabled={playerColor === "b"}
-              >
-                <Crown className="h-4 w-4" />
-                Black
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         <Card className="border-0 shadow-none">
           <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
             <CardTitle className="text-md">Game Controls</CardTitle>

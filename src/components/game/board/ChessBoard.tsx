@@ -31,6 +31,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
     null
   );
+
+  const [whitePiecesBottom, setWhitePiecesBottom] = useState(true);
   const [isPreMadeMove, setIsPreMadeMove] = useState<
     (square: string) => boolean
   >(() => () => false);
@@ -77,7 +79,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const { status, session } = useAuth();
   const [pieceSet, setPieceSet] = useState("staunty");
   const [showCoordinates, setShowCoordinates] = useState(true);
-  const [whitePiecesBottom, setWhitePiecesBottom] = useState(true);
 
   // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
@@ -167,12 +168,24 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
     if (
       savedState?.fen &&
-      savedState.fen !== DEFAULT_STATE.fen &&
+      (savedState.fen !== DEFAULT_STATE.fen ||
+        savedState.playerColor === "b") &&
       (savedState.lastMove !== null ||
         (savedState.history && savedState.history.length > 1))
     ) {
       setShowBotSelection(false);
       setGameStarted(true);
+
+      // Load the saved FEN which might be modified for black players
+      if (savedState.fen) {
+        game.load(savedState.fen);
+        setBoard(game.board());
+      }
+
+      // Set player color
+      if (savedState.playerColor) {
+        setPlayerColor(savedState.playerColor);
+      }
     } else {
       setShowBotSelection(true);
       setGameStarted(false);
@@ -185,12 +198,19 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       ) {
         localStorage.removeItem(STORAGE_KEY);
       }
+
+      // Initialize the game based on player color
+      if (savedState?.playerColor === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        setBoard(game.board());
+        setPlayerColor("b");
+      }
     }
 
     if (savedState?.pieceSet) {
       setPieceSet(savedState.pieceSet);
     }
-  }, [difficulty]);
+  }, [difficulty, game]);
 
   const {
     showDifficultyDialog,
@@ -343,6 +363,25 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleSelectBot = (bot: Bot) => {
     setSelectedBot(bot);
     setShowBotSelection(false);
+
+    // Initialize the game based on player color
+    if (playerColor === "b") {
+      game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+      setBoard(game.board());
+      setHistory([{ fen: game.fen(), lastMove: null }]);
+    }
+
+    setGameStarted(true);
+
+    const currentState = {
+      ...DEFAULT_STATE,
+      playerColor,
+      difficulty,
+      lastMove: null,
+      gameStarted: true,
+      fen: game.fen(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -400,12 +439,18 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handleGameReset = (setStarted = true) => {
     game.reset();
     game.isResigned = false;
+
+    // If player is black, set up the board for black to move first
+    if (playerColor === "b") {
+      game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+    }
+
     setBoard(game.board());
     setSelectedPiece(null);
     setPossibleMoves([]);
     resetTimers();
     setGameStarted(setStarted);
-    setHistory([{ fen: DEFAULT_STATE.fen, lastMove: null }]);
+    setHistory([{ fen: game.fen(), lastMove: null }]);
     setCurrentMove(1);
     setLastMove(null);
     resetCapturedPieces();
@@ -421,12 +466,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       difficulty,
       lastMove: null,
       gameStarted: setStarted, // Use the parameter value
+      fen: game.fen(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
-
-    if (playerColor === "b" && setStarted) {
-      setTimeout(getBotMove, 500);
-    }
   };
 
   const handleColorChange = (color: "w" | "b") => {
@@ -437,6 +479,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       // If no game in progress, change color directly
       setPlayerColor(color);
       game.reset();
+
+      if (color === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+      }
+
       setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
@@ -455,12 +502,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         playerColor: color,
         difficulty,
         lastMove: null,
+        fen: game.fen(), // Save the current FEN which might be modified for black
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-
-      if (color === "b") {
-        setTimeout(getBotMove, 500);
-      }
     }
   };
 
@@ -468,6 +512,11 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     if (pendingColor) {
       setPlayerColor(pendingColor);
       game.reset();
+
+      if (pendingColor === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+      }
+
       setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
@@ -486,12 +535,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
         playerColor: pendingColor,
         difficulty,
         lastMove: null,
+        fen: game.fen(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-
-      if (pendingColor === "b") {
-        setTimeout(getBotMove, 500);
-      }
     }
     setShowColorDialog(false);
     setPendingColor(null);
@@ -631,6 +677,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     difficulty={difficulty}
     onDifficultyChange={handleDifficultyChange}
     selectedBot={selectedBot}
+    playerColor={playerColor}
+    onColorChange={handleColorChange}
   />;
 
   // Add a specific effect to handle navigation back to the game
@@ -639,7 +687,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
 
     // If there's a valid saved game state with a non-default FEN, ensure we show the game controls
-    if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
+    if (
+      savedState?.fen &&
+      (savedState.fen !== DEFAULT_STATE.fen || savedState.playerColor === "b")
+    ) {
       // This is a saved game, so make sure we show the game controls
       setShowBotSelection(false);
 
@@ -655,13 +706,23 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           savedState.gameStarted = true;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
         }
+
+        if (savedState.fen) {
+          game.load(savedState.fen);
+          setBoard(game.board());
+        }
       } else {
         setGameStarted(false);
-
         localStorage.removeItem(STORAGE_KEY);
+
+        if (savedState.playerColor === "b") {
+          game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+          setBoard(game.board());
+          setPlayerColor("b");
+        }
       }
     }
-  }, []);
+  }, [game]);
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -727,12 +788,16 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                 <div className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden">
                   {board.map((row, rowIndex) =>
                     row.map((_, colIndex) => {
-                      const actualRowIndex = whitePiecesBottom
-                        ? rowIndex
-                        : 7 - rowIndex;
-                      const actualColIndex = whitePiecesBottom
-                        ? colIndex
-                        : 7 - colIndex;
+                      const shouldFlipBoard = whitePiecesBottom
+                        ? playerColor === "b"
+                        : playerColor === "w";
+
+                      const actualRowIndex = shouldFlipBoard
+                        ? 7 - rowIndex
+                        : rowIndex;
+                      const actualColIndex = shouldFlipBoard
+                        ? 7 - colIndex
+                        : colIndex;
                       const piece = board[actualRowIndex][actualColIndex];
                       const square = `${"abcdefgh"[actualColIndex]}${
                         8 - actualRowIndex
@@ -749,10 +814,10 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                         (square === hintMove.from || square === hintMove.to);
                       const showRank =
                         showCoordinates &&
-                        (whitePiecesBottom ? colIndex === 0 : colIndex === 7);
+                        (shouldFlipBoard ? colIndex === 7 : colIndex === 0);
                       const showFile =
                         showCoordinates &&
-                        (whitePiecesBottom ? rowIndex === 7 : rowIndex === 0);
+                        (shouldFlipBoard ? rowIndex === 0 : rowIndex === 7);
                       const coordinate = showCoordinates
                         ? showRank
                           ? `${8 - actualRowIndex}`
@@ -825,6 +890,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     difficulty={difficulty}
                     onDifficultyChange={handleDifficultyChange}
                     selectedBot={selectedBot}
+                    playerColor={playerColor}
+                    onColorChange={handleColorChange}
                   />
                 </div>
               ) : (
@@ -833,7 +900,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     difficulty={difficulty}
                     gameStatus={getGameStatus()}
                     onResign={handleResign}
-                    onColorChange={handleColorChange}
                     onDifficultyChange={handleDifficultyChange}
                     playerColor={playerColor}
                     gameTime={gameTime}

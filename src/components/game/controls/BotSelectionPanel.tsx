@@ -23,6 +23,8 @@ import {
   Target,
   Trophy,
   Award,
+  Crown,
+  Shuffle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -44,6 +46,8 @@ interface BotSelectionPanelProps {
   difficulty: string;
   onDifficultyChange: (difficulty: string) => void;
   selectedBot: Bot | null;
+  playerColor: "w" | "b";
+  onColorChange: (color: "w" | "b") => void;
 }
 
 const BotSelectionPanel = ({
@@ -52,6 +56,8 @@ const BotSelectionPanel = ({
   difficulty,
   onDifficultyChange,
   selectedBot,
+  playerColor,
+  onColorChange,
 }: BotSelectionPanelProps) => {
   const difficulties = [
     "beginner",
@@ -82,6 +88,12 @@ const BotSelectionPanel = ({
     expert: { icon: Target, color: "text-purple-500" },
     master: { icon: Award, color: "text-orange-500" },
     grandmaster: { icon: Trophy, color: "text-red-500" },
+  };
+
+  // Handle random color selection
+  const handleRandomColor = () => {
+    const randomColor = Math.random() < 0.5 ? "w" : "b";
+    onColorChange(randomColor);
   };
 
   return (
@@ -170,6 +182,56 @@ const BotSelectionPanel = ({
         </CardContent>
       </Card>
 
+      {/* Color Selection */}
+      <Card className="border-0 shadow-none">
+        <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
+          <CardTitle className="flex items-center gap-2 text-md">
+            Play As
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Choose which color pieces you want to play with. You'll
+                    always move first, regardless of color.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
+          <div className="flex gap-2">
+            <Button
+              onClick={() => onColorChange("w")}
+              variant={playerColor === "w" ? "default" : "outline"}
+              className="flex-1 flex items-center justify-center gap-2"
+            >
+              <Crown className="h-4 w-4 fill-current" />
+              White
+            </Button>
+            <Button
+              onClick={() => onColorChange("b")}
+              variant={playerColor === "b" ? "default" : "outline"}
+              className="flex-1 flex items-center justify-center gap-2"
+            >
+              <Crown className="h-4 w-4" />
+              Black
+            </Button>
+            <Button
+              onClick={handleRandomColor}
+              variant="outline"
+              className="flex-1 flex items-center justify-center gap-2"
+            >
+              <Shuffle className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Difficulty Selection */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-sm font-medium">
           Difficulty category
