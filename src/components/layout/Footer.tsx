@@ -23,6 +23,58 @@ const Footer = () => {
               <Heart className="inline-block h-3 w-3 text-red-500 mx-1 animate-pulse" />{" "}
               for chess enthusiasts
             </p>
+            <div className="flex space-x-4 mt-2">
+              <Link
+                href="/privacypolicy"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                onMouseEnter={() => setHoveredElement("privacy")}
+                onMouseLeave={() => setHoveredElement(null)}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setMousePosition({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                  });
+                }}
+              >
+                Privacy Policy
+                {hoveredElement === "privacy" && (
+                  <div
+                    className="h-0.5 bg-primary mt-0.5 transform origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100"
+                    style={{
+                      transform:
+                        hoveredElement === "privacy"
+                          ? "scaleX(1)"
+                          : "scaleX(0)",
+                    }}
+                  />
+                )}
+              </Link>
+              <Link
+                href="/termsofservice"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                onMouseEnter={() => setHoveredElement("terms")}
+                onMouseLeave={() => setHoveredElement(null)}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setMousePosition({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                  });
+                }}
+              >
+                Terms of Service
+                {hoveredElement === "terms" && (
+                  <div
+                    className="h-0.5 bg-primary mt-0.5 transform origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100"
+                    style={{
+                      transform:
+                        hoveredElement === "terms" ? "scaleX(1)" : "scaleX(0)",
+                    }}
+                  />
+                )}
+              </Link>
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">

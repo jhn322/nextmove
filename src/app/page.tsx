@@ -665,7 +665,8 @@ export default function Home() {
                                   "bg-rose-500/10 text-rose-500 border-rose-500/20"
                               )}
                             >
-                              {nextBot.difficulty}
+                              {nextBot.difficulty.charAt(0).toUpperCase() +
+                                nextBot.difficulty.slice(1).toLowerCase()}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
                               Rating: {nextBot.rating}

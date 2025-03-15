@@ -138,6 +138,8 @@ const Navbar = () => {
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20",
+      eloRange: "800-1000",
+      playStyle: "Random",
     },
     {
       title: "Easy",
@@ -146,6 +148,8 @@ const Navbar = () => {
       color: "text-green-500",
       bgColor: "bg-green-500/10",
       borderColor: "border-green-500/20",
+      eloRange: "1000-1200",
+      playStyle: "Aggressive",
     },
     {
       title: "Intermediate",
@@ -154,6 +158,8 @@ const Navbar = () => {
       color: "text-cyan-500",
       bgColor: "bg-cyan-500/10",
       borderColor: "border-cyan-500/20",
+      eloRange: "1200-1400",
+      playStyle: "Balanced",
     },
     {
       title: "Advanced",
@@ -162,6 +168,8 @@ const Navbar = () => {
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20",
+      eloRange: "1400-1600",
+      playStyle: "Positional",
     },
     {
       title: "Hard",
@@ -170,6 +178,8 @@ const Navbar = () => {
       color: "text-violet-500",
       bgColor: "bg-violet-500/10",
       borderColor: "border-violet-500/20",
+      eloRange: "1600-1800",
+      playStyle: "Tactical",
     },
     {
       title: "Expert",
@@ -178,6 +188,8 @@ const Navbar = () => {
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
       borderColor: "border-purple-500/20",
+      eloRange: "1800-2000",
+      playStyle: "Dynamic",
     },
     {
       title: "Master",
@@ -186,6 +198,8 @@ const Navbar = () => {
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
       borderColor: "border-orange-500/20",
+      eloRange: "2000-2200",
+      playStyle: "Strategic",
     },
     {
       title: "Grandmaster",
@@ -194,6 +208,8 @@ const Navbar = () => {
       color: "text-red-500",
       bgColor: "bg-red-500/10",
       borderColor: "border-red-500/20",
+      eloRange: "2200-2400",
+      playStyle: "Universal",
     },
   ];
 
@@ -295,10 +311,11 @@ const Navbar = () => {
                     Play
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] grid-cols-2 gap-3 p-4 rounded-xl">
-                      {playItems.map((item) => (
-                        <li key={item.href}>
+                    <div className="w-[500px] p-4 md:w-[600px]">
+                      <div className="grid grid-cols-2 gap-4">
+                        {playItems.map((item) => (
                           <button
+                            key={item.href}
                             onClick={() =>
                               handlePlayNavigation(
                                 item.href,
@@ -306,33 +323,51 @@ const Navbar = () => {
                               )
                             }
                             className={cn(
-                              "block w-full select-none rounded-xl p-3 text-base font-medium transition-all hover:scale-[1.02]",
+                              "relative flex flex-col space-y-2 rounded-xl p-3 text-left transition-colors hover:bg-accent/50",
                               isActive(item.href)
-                                ? `${item.bgColor} ${item.borderColor} border`
-                                : "hover:bg-accent hover:text-accent-foreground"
+                                ? `${item.bgColor} ${item.borderColor} border shadow-sm`
+                                : "hover:shadow-sm"
                             )}
                           >
-                            <span className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <div
-                                className={cn("p-1.5 rounded-lg", item.bgColor)}
+                                className={cn(
+                                  "flex h-10 w-10 items-center justify-center rounded-lg",
+                                  item.bgColor
+                                )}
                               >
                                 <item.icon
-                                  className={`h-4 w-4 ${item.color}`}
+                                  className={cn("h-5 w-5", item.color)}
                                 />
                               </div>
-                              <span className="flex-1">{item.title}</span>
-                              {savedGameDifficulty?.toLowerCase() ===
-                                item.title.toLowerCase() && (
-                                <Badge variant="secondary" className="ml-2">
-                                  <Save className="h-3 w-3 mr-1" />
-                                  Saved
-                                </Badge>
-                              )}
-                            </span>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium leading-none">
+                                    {item.title}
+                                  </span>
+                                  {savedGameDifficulty?.toLowerCase() ===
+                                    item.title.toLowerCase() && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="bg-green-500 animate-pulse"
+                                    >
+                                      <Save className="h-3 w-3" />
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className={item.color}>
+                                    {item.eloRange} ELO
+                                  </span>
+                                  <span>•</span>
+                                  <span>{item.playStyle}</span>
+                                </div>
+                              </div>
+                            </div>
                           </button>
-                        </li>
-                      ))}
-                    </ul>
+                        ))}
+                      </div>
+                    </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
@@ -557,37 +592,47 @@ const Navbar = () => {
                                 setIsOpen(false);
                               }}
                               className={cn(
-                                "block w-full px-4 py-3 text-base font-medium rounded-xl transition-colors ml-4",
+                                "w-full rounded-xl p-3 transition-colors",
                                 isActive(item.href)
-                                  ? `${item.bgColor} ${item.borderColor} border`
-                                  : "hover:bg-accent hover:text-accent-foreground"
+                                  ? `${item.bgColor} ${item.borderColor} border shadow-sm`
+                                  : "hover:bg-accent/50 hover:shadow-sm"
                               )}
                             >
-                              <span className="flex items-center gap-3">
+                              <div className="flex items-center gap-3">
                                 <div
                                   className={cn(
-                                    "p-1.5 rounded-lg flex-shrink-0",
+                                    "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg",
                                     item.bgColor
                                   )}
                                 >
                                   <item.icon
-                                    className={`h-5 w-5 ${item.color}`}
+                                    className={cn("h-6 w-6", item.color)}
                                   />
                                 </div>
-                                <span className="flex-1 text-left">
-                                  {item.title}
-                                </span>
-                                {savedGameDifficulty?.toLowerCase() ===
-                                  item.title.toLowerCase() && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="ml-2 flex-shrink-0"
-                                  >
-                                    <Save className="h-3 w-3 mr-1" />
-                                    Saved
-                                  </Badge>
-                                )}
-                              </span>
+                                <div className="flex-1 space-y-1 text-left">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">
+                                      {item.title}
+                                    </span>
+                                    {savedGameDifficulty?.toLowerCase() ===
+                                      item.title.toLowerCase() && (
+                                      <Badge
+                                        variant="secondary"
+                                        className="bg-green-500 animate-pulse"
+                                      >
+                                        <Save className="h-3 w-3" />
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span className={item.color}>
+                                      {item.eloRange} ELO
+                                    </span>
+                                    <span>•</span>
+                                    <span>{item.playStyle}</span>
+                                  </div>
+                                </div>
+                              </div>
                             </button>
                           ))}
                         </CollapsibleContent>
