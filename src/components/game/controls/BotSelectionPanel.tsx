@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Bot } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface BotSelectionPanelProps {
   bots: Bot[];
@@ -58,6 +58,9 @@ const BotSelectionPanel = ({
 }: BotSelectionPanelProps) => {
   const router = useRouter();
   const [isRandomColor, setIsRandomColor] = useState(false);
+  // Use a ref to track if the random button was just clicked
+  const randomButtonJustClicked = useRef(false);
+
   const difficulties = [
     "beginner",
     "easy",
@@ -91,11 +94,19 @@ const BotSelectionPanel = ({
 
   // Handle random color selection
   const handleRandomColor = () => {
+    // Set the ref to true to indicate the random button was just clicked
+    randomButtonJustClicked.current = true;
+
     setIsRandomColor(true);
     const randomColor = Math.random() < 0.5 ? "w" : "b";
     onColorChange(randomColor);
+
+    setTimeout(() => {
+      randomButtonJustClicked.current = false;
+    }, 100);
   };
 
+  // Handle specific color selection
   const handleSpecificColor = (color: "w" | "b") => {
     setIsRandomColor(false);
     onColorChange(color);
@@ -107,6 +118,10 @@ const BotSelectionPanel = ({
   };
 
   const handlePlayGame = () => {
+    if (randomButtonJustClicked.current) {
+      return;
+    }
+
     // If random color is selected, roll for a new color before starting the game
     if (isRandomColor) {
       const randomColor = Math.random() < 0.5 ? "w" : "b";
@@ -336,7 +351,7 @@ const BotSelectionPanel = ({
         disabled={!selectedBot}
       >
         <Play className="h-4 w-4" />
-        Play
+        Play Game
       </Button>
     </div>
   );
