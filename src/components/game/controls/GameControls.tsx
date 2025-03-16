@@ -19,6 +19,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
+import { Bot } from "@/components/game/data/bots";
 
 interface GameControlsProps {
   difficulty: string;
@@ -41,7 +42,7 @@ interface GameControlsProps {
   handleNewBotDialog: () => void;
   onHintRequested: () => void;
   isCalculatingHint: boolean;
-  selectedBot?: any;
+  selectedBot?: Bot & { difficulty?: string };
 }
 
 interface GameStatusIndicatorProps {

@@ -990,7 +990,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     handleNewBotDialog={handleNewBotDialog}
                     onHintRequested={handleHintRequest}
                     isCalculatingHint={isCalculating}
-                    selectedBot={selectedBot}
+                    selectedBot={selectedBot || undefined}
                   />
                 </div>
               )}
