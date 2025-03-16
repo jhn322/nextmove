@@ -24,7 +24,12 @@ import PreMadeMove from "./PreMadeMove";
 import { useAuth } from "@/context/auth-context";
 import { getUserSettings } from "@/lib/mongodb-service";
 
-const ChessBoard = ({ difficulty }: { difficulty: string }) => {
+interface ChessBoardProps {
+  difficulty: string;
+  initialBot?: (Bot & { difficulty: string }) | null;
+}
+
+const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const [shouldPulse, setShouldPulse] = useState(false);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
   const [showBotSelection, setShowBotSelection] = useState(true);
@@ -144,6 +149,43 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
 
     loadSettings();
   }, [status, session]);
+
+  useEffect(() => {
+    if (initialBot) {
+      // Extract just the Bot properties if a bot with difficulty is passed
+      const botWithoutDifficulty: Bot = {
+        id: initialBot.id,
+        name: initialBot.name,
+        image: initialBot.image,
+        rating: initialBot.rating,
+        description: initialBot.description,
+        skillLevel: initialBot.skillLevel,
+        depth: initialBot.depth,
+        moveTime: initialBot.moveTime,
+        flag: initialBot.flag,
+      };
+
+      setSelectedBot(botWithoutDifficulty);
+      setShowBotSelection(false);
+      setGameStarted(true);
+
+      if (playerColor === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        setBoard(game.board());
+        setHistory([{ fen: game.fen(), lastMove: null }]);
+      }
+
+      const currentState = {
+        ...DEFAULT_STATE,
+        playerColor,
+        difficulty,
+        selectedBot: botWithoutDifficulty,
+        gameStarted: true,
+        fen: game.fen(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
+    }
+  }, [initialBot, difficulty, game, playerColor]);
 
   useEffect(() => {
     // Load selected bot
@@ -360,8 +402,20 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
   }, [lastMove, clearHighlights]);
 
-  const handleSelectBot = (bot: Bot) => {
-    setSelectedBot(bot);
+  const handleSelectBot = (bot: Bot | (Bot & { difficulty: string })) => {
+    const botWithoutDifficulty: Bot = {
+      id: bot.id,
+      name: bot.name,
+      image: bot.image,
+      rating: bot.rating,
+      description: bot.description,
+      skillLevel: bot.skillLevel,
+      depth: bot.depth,
+      moveTime: bot.moveTime,
+      flag: bot.flag,
+    };
+
+    setSelectedBot(botWithoutDifficulty);
     setShowBotSelection(false);
 
     // Initialize the game based on player color
@@ -377,7 +431,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       ...DEFAULT_STATE,
       playerColor,
       difficulty,
-      lastMove: null,
+      selectedBot: botWithoutDifficulty,
       gameStarted: true,
       fen: game.fen(),
     };

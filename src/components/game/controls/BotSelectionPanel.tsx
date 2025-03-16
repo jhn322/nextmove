@@ -28,21 +28,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-
-interface Bot {
-  name: string;
-  image: string;
-  rating: number;
-  description: string;
-  skillLevel: number;
-  depth: number;
-  moveTime: number;
-  flag: string;
-}
+import { Bot } from "@/components/game/data/bots";
 
 interface BotSelectionPanelProps {
   bots: Bot[];
-  onSelectBot: (bot: Bot) => void;
+  onSelectBot: (bot: Bot | (Bot & { difficulty: string })) => void;
   difficulty: string;
   onDifficultyChange: (difficulty: string) => void;
   selectedBot: Bot | null;
