@@ -627,7 +627,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           // If the pre-made move was handled, don't proceed with normal move handling
           return;
         }
-      } catch {}
+      } catch (error) {
+        console.error("Error handling pre-made move:", error);
+      }
     }
 
     handleLeftClick(); // Clear highlights on left click

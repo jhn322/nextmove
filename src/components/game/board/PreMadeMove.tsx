@@ -34,6 +34,7 @@ const PreMadeMove = ({
     executePreMadeMove,
     preMadeMove,
     isPreMadePossibleMove,
+    cancelPreMadeMove,
   } = usePreMadeMove(game, board, playerColor, makeMove, getBotMove);
 
   // Use a ref to track the previous turn
@@ -62,13 +63,15 @@ const PreMadeMove = ({
       preMadeMove.to &&
       !executionAttemptedRef.current
     ) {
-      console.log("Turn changed to player's turn, executing pre-made move");
       executionAttemptedRef.current = true;
 
       // Use a small delay to ensure the board is updated
       const timer = setTimeout(() => {
         const result = executePreMadeMove();
-        console.log("Pre-made move execution result:", result);
+        if (!result) {
+          // If execution failed, cancel the pre-made move to clear highlights
+          cancelPreMadeMove();
+        }
         executionAttemptedRef.current = false;
       }, 300);
 
@@ -82,12 +85,25 @@ const PreMadeMove = ({
 
     // Update the previous turn ref
     prevTurnRef.current = currentTurn;
-  }, [game.turn(), playerColor, executePreMadeMove, preMadeMove]);
+  }, [
+    game.turn(),
+    playerColor,
+    executePreMadeMove,
+    preMadeMove,
+    cancelPreMadeMove,
+  ]);
 
   // Pass the handlePreMadeMove function to the parent component
   useEffect(() => {
     onHandleSquareClick(handlePreMadeMove);
   }, [handlePreMadeMove, onHandleSquareClick]);
+
+  // Clear pre-made move when game is over
+  useEffect(() => {
+    if (game.isGameOver() || game.isResigned) {
+      cancelPreMadeMove();
+    }
+  }, [game.isGameOver(), game.isResigned, cancelPreMadeMove]);
 
   return null;
 };

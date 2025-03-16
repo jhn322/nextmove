@@ -102,7 +102,6 @@ export const usePreMadeMove = (
 
               return true;
             }
-          } else {
           }
         }
         // Second click - select destination or cancel selection
@@ -176,10 +175,31 @@ export const usePreMadeMove = (
     return false;
   }, [preMadeMove, game, playerColor, makeMove, getBotMove]);
 
+  // Clear the pre-made move
   const cancelPreMadeMove = useCallback(() => {
     setPreMadeMove(null);
     setPreMadePossibleMoves([]);
   }, []);
+
+  // Clear pre-made move when the turn changes
+  useEffect(() => {
+    if (game.turn() === playerColor && preMadeMove && !executePreMadeMove()) {
+      cancelPreMadeMove();
+    }
+  }, [
+    game.turn(),
+    playerColor,
+    preMadeMove,
+    executePreMadeMove,
+    cancelPreMadeMove,
+  ]);
+
+  useEffect(() => {
+    if (game.turn() === playerColor && preMadeMove && preMadeMove.to === "") {
+      // If player only selected a piece but didn't complete the move, clear it
+      cancelPreMadeMove();
+    }
+  }, [game.turn(), playerColor, preMadeMove, cancelPreMadeMove]);
 
   return {
     preMadeMove,

@@ -81,7 +81,7 @@ const Square = ({
       return "before:absolute before:inset-0 before:bg-red-600 before:bg-opacity-50 before:pointer-events-none before:z-10";
     }
     if (isPreMadeMove) {
-      return "before:absolute before:inset-0 before:bg-blue-500 before:bg-opacity-60 before:pointer-events-none before:z-10 before:animate-pulse";
+      return "before:absolute before:inset-0 before:bg-blue-500 before:bg-opacity-50 before:pointer-events-none before:z-10";
     }
     if (isHintMove) {
       return "before:absolute before:inset-0 before:bg-purple-500 before:bg-opacity-50 before:pointer-events-none before:z-10 before:animate-pulse";
