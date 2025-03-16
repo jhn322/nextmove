@@ -25,6 +25,7 @@ import {
   Award,
   Crown,
   Shuffle,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -41,6 +42,7 @@ interface BotSelectionPanelProps {
   playerColor: "w" | "b";
   onColorChange: (color: "w" | "b") => void;
   useDirectNavigation?: boolean;
+  onPlayGame?: () => void;
 }
 
 const BotSelectionPanel = ({
@@ -52,6 +54,7 @@ const BotSelectionPanel = ({
   playerColor,
   onColorChange,
   useDirectNavigation = false,
+  onPlayGame,
 }: BotSelectionPanelProps) => {
   const router = useRouter();
   const difficulties = [
@@ -91,37 +94,34 @@ const BotSelectionPanel = ({
     onColorChange(randomColor);
   };
 
-  // Handle bot selection with optional direct navigation
+  // Handle bot selection without direct navigation
   const handleBotSelect = (bot: Bot) => {
-    if (useDirectNavigation) {
-      // Navigate directly to the bot's page
-      router.push(`/play/${difficulty}/${bot.id}`);
-    } else {
-      // Use the traditional selection method
-      onSelectBot(bot);
+    onSelectBot(bot);
+  };
+
+  const handlePlayGame = () => {
+    if (selectedBot && onPlayGame) {
+      onPlayGame();
+    } else if (selectedBot && useDirectNavigation) {
+      router.push(`/play/${difficulty}/${selectedBot.id}`);
     }
   };
 
-  // If useDirectNavigation is true and a bot is already selected,
-  // ensure we have its ID for navigation
+  // Ensure the first bot is selected by default and has an ID
   useEffect(() => {
-    if (
-      useDirectNavigation &&
-      selectedBot &&
-      !selectedBot.id &&
-      bots.length > 0
-    ) {
+    if (bots.length > 0 && !selectedBot) {
+      onSelectBot(bots[0]);
+    } else if (selectedBot && !selectedBot.id && bots.length > 0) {
+      // Find the matching bot to get its ID
       const matchingBot = bots.find((bot) => bot.name === selectedBot.name);
       if (matchingBot) {
         onSelectBot({
           ...selectedBot,
           id: matchingBot.id,
         });
-      } else {
-        onSelectBot(bots[0]);
       }
     }
-  }, [useDirectNavigation, selectedBot, bots, onSelectBot]);
+  }, [bots, selectedBot, onSelectBot]);
 
   return (
     <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:p-4">
@@ -310,6 +310,17 @@ const BotSelectionPanel = ({
           </Select>
         </CardContent>
       </Card>
+
+      {/* Play Button */}
+      <Button
+        className="w-full flex items-center justify-center gap-2 mt-4"
+        size="lg"
+        onClick={handlePlayGame}
+        disabled={!selectedBot}
+      >
+        <Play className="h-4 w-4" />
+        Play Game
+      </Button>
     </div>
   );
 };
