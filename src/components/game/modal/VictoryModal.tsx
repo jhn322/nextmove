@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
-import { HandshakeIcon, UserPlus, ArrowRight } from "lucide-react";
+import { HandshakeIcon, UserPlus, TrendingUp } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -17,6 +17,12 @@ import { saveGameResult } from "@/lib/game-service";
 import { useAuth } from "@/context/auth-context";
 import { getConfettiEnabled } from "@/lib/settings";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -455,34 +461,97 @@ const VictoryModal = ({
               <>
                 {/* "Next Bot" button only when player wins */}
                 {isPlayerWinner() && !game.isDraw() && (
-                  <Button
-                    onClick={handlePlayNextBot}
-                    variant="default"
-                    className="w-full text-sm sm:text-base py-2 h-auto bg-green-500 hover:bg-green-600 text-white font-medium"
-                  >
-                    <ArrowRight className="h-5 w-5 mr-2" />
-                    Play Next Bot
-                  </Button>
+                  <>
+                    <div className="mb-2 text-center">
+                      <span className="text-sm text-muted-foreground">
+                        Ready for a tougher challenge?
+                      </span>
+                      {(() => {
+                        const nextBotInfo = findNextHarderBot();
+                        if (nextBotInfo) {
+                          return (
+                            <div className="flex items-center justify-center gap-2 mt-1">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage
+                                  src={nextBotInfo.bot.image}
+                                  alt={nextBotInfo.bot.name}
+                                />
+                                <AvatarFallback>B</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">
+                                {nextBotInfo.bot.name}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-full capitalize">
+                                {nextBotInfo.difficulty}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded-full">
+                                {nextBotInfo.bot.rating} ELO
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={handlePlayNextBot}
+                            variant="default"
+                            className="w-full text-sm sm:text-base py-2 h-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-medium"
+                          >
+                            <TrendingUp className="h-5 w-5 mr-2" />
+                            Next Challenge
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Face the next stronger opponent with higher ELO
+                            rating and skill level
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </>
                 )}
 
                 <div className="flex gap-3">
-                  <Button
-                    onClick={handleRematch}
-                    variant="secondary"
-                    className="flex-1 text-sm sm:text-base py-2 h-auto"
-                  >
-                    <HandshakeIcon className="h-5 w-5 mr-2" />
-                    Rematch
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleRematch}
+                          variant="secondary"
+                          className="flex-1 text-sm sm:text-base py-2 h-auto"
+                        >
+                          <HandshakeIcon className="h-5 w-5 mr-2" />
+                          Rematch
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Play again versus the same bot and settings</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
-                  <Button
-                    onClick={handleNewBot}
-                    variant="outline"
-                    className="flex-1 text-sm sm:text-base py-2 h-auto"
-                  >
-                    <UserPlus className="h-5 w-5 mr-2" />
-                    New Bot
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleNewBot}
+                          variant="outline"
+                          className="flex-1 text-sm sm:text-base py-2 h-auto"
+                        >
+                          <UserPlus className="h-5 w-5 mr-2" />
+                          New Bot
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Choose a different bot to play against</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </>
             )}

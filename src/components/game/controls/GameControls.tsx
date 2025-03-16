@@ -14,12 +14,19 @@ import {
   Lightbulb,
   PlayCircle,
   Swords,
-  ArrowRight,
+  TrendingUp,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
 import { Bot } from "@/components/game/data/bots";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface GameControlsProps {
   difficulty: string;
@@ -446,70 +453,151 @@ const GameControls = ({
             <div className="space-y-2 laptop-screen:space-y-1">
               {/* "Next Bot" button only when player wins */}
               {isGameOver && isPlayerWinner() && selectedBot && (
-                <Button
-                  onClick={handlePlayNextBot}
-                  variant="default"
-                  className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white"
-                >
-                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Play Next Bot
-                </Button>
+                <>
+                  <div className="mb-4 text-center">
+                    <span className="text-xs text-muted-foreground">
+                      Ready for a tougher challenge?
+                    </span>
+                    {(() => {
+                      const nextBotInfo = findNextHarderBot();
+                      if (nextBotInfo) {
+                        return (
+                          <div className="flex items-center justify-center gap-2 mt-1">
+                            <Avatar className="h-5 w-5">
+                              <AvatarImage
+                                src={nextBotInfo.bot.image}
+                                alt={nextBotInfo.bot.name}
+                              />
+                              <AvatarFallback>B</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-xs">
+                              {nextBotInfo.bot.name}
+                            </span>
+                            <span className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-500 rounded-full capitalize">
+                              {nextBotInfo.difficulty}
+                            </span>
+                            <span className="text-xs px-1.5 py-0.5 bg-amber-500/10 text-amber-500 rounded-full">
+                              {nextBotInfo.bot.rating} ELO
+                            </span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handlePlayNextBot}
+                          variant="default"
+                          className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+                        >
+                          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Next Challenge
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Face the next stronger opponent with higher ELO rating
+                          and skill level
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </>
               )}
 
               {/* Game Action Buttons */}
               <div className="flex gap-3 laptop-screen:gap-2">
                 {/* Hint Button */}
                 {!isGameOver && (
-                  <Button
-                    onClick={onHintRequested}
-                    variant="outline"
-                    disabled={
-                      game.isGameOver() ||
-                      game.turn() !== playerColor ||
-                      isCalculatingHint
-                    }
-                    className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
-                  >
-                    <Lightbulb
-                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                        isCalculatingHint ? "animate-pulse" : ""
-                      }`}
-                    />
-                    {isCalculatingHint ? "Thinking..." : "Hint"}
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={onHintRequested}
+                          variant="outline"
+                          disabled={
+                            game.isGameOver() ||
+                            game.turn() !== playerColor ||
+                            isCalculatingHint
+                          }
+                          className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
+                        >
+                          <Lightbulb
+                            className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                              isCalculatingHint ? "animate-pulse" : ""
+                            }`}
+                          />
+                          {isCalculatingHint ? "Thinking..." : "Hint"}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Get a suggestion for your next move</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
 
                 {/* Rematch Button - Only show when game is over */}
                 {isGameOver ? (
-                  <Button
-                    onClick={onRematch}
-                    variant="secondary"
-                    className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
-                  >
-                    <HandshakeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Rematch
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={onRematch}
+                          variant="secondary"
+                          className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
+                        >
+                          <HandshakeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Rematch
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Play again versus the same bot and settings</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : (
-                  <Button
-                    onClick={onResign}
-                    variant="destructive"
-                    className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
-                  >
-                    <Flag className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Resign
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={onResign}
+                          variant="destructive"
+                          className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
+                        >
+                          <Flag className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Resign
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Forfeit the current game</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
 
               {/* New Bot Button */}
-              <Button
-                onClick={handleNewBotDialog}
-                variant="outline"
-                className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
-              >
-                <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
-                New Bot
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleNewBotDialog}
+                      variant="outline"
+                      className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
+                    >
+                      <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
+                      New Bot
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Choose a different bot to play against</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardContent>
         </Card>
