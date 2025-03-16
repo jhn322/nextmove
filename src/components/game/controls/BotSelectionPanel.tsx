@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Bot } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface BotSelectionPanelProps {
   bots: Bot[];
@@ -57,6 +57,7 @@ const BotSelectionPanel = ({
   onPlayGame,
 }: BotSelectionPanelProps) => {
   const router = useRouter();
+  const [isRandomColor, setIsRandomColor] = useState(false);
   const difficulties = [
     "beginner",
     "easy",
@@ -90,8 +91,14 @@ const BotSelectionPanel = ({
 
   // Handle random color selection
   const handleRandomColor = () => {
+    setIsRandomColor(true);
     const randomColor = Math.random() < 0.5 ? "w" : "b";
     onColorChange(randomColor);
+  };
+
+  const handleSpecificColor = (color: "w" | "b") => {
+    setIsRandomColor(false);
+    onColorChange(color);
   };
 
   // Handle bot selection without direct navigation
@@ -100,6 +107,12 @@ const BotSelectionPanel = ({
   };
 
   const handlePlayGame = () => {
+    // If random color is selected, roll for a new color before starting the game
+    if (isRandomColor) {
+      const randomColor = Math.random() < 0.5 ? "w" : "b";
+      onColorChange(randomColor);
+    }
+
     if (selectedBot && onPlayGame) {
       onPlayGame();
     } else if (selectedBot && useDirectNavigation) {
@@ -232,27 +245,31 @@ const BotSelectionPanel = ({
         <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
           <div className="flex gap-2">
             <Button
-              onClick={() => onColorChange("w")}
-              variant={playerColor === "w" ? "default" : "outline"}
+              onClick={() => handleSpecificColor("w")}
+              variant={
+                playerColor === "w" && !isRandomColor ? "default" : "outline"
+              }
               className="flex-1 flex items-center justify-center gap-2"
             >
-              <Crown className="h-4 w-4 fill-current" />
-              White
+              <Crown className="h-4 w-4 flex-shrink-0 fill-current" />
+              <span className="truncate">White</span>
             </Button>
             <Button
-              onClick={() => onColorChange("b")}
-              variant={playerColor === "b" ? "default" : "outline"}
+              onClick={() => handleSpecificColor("b")}
+              variant={
+                playerColor === "b" && !isRandomColor ? "default" : "outline"
+              }
               className="flex-1 flex items-center justify-center gap-2"
             >
-              <Crown className="h-4 w-4" />
-              Black
+              <Crown className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Black</span>
             </Button>
             <Button
               onClick={handleRandomColor}
-              variant="outline"
+              variant={isRandomColor ? "default" : "outline"}
               className="flex-1 flex items-center justify-center gap-2"
             >
-              <Shuffle className="h-4 w-4" />
+              <Shuffle className="h-4 w-4 flex-shrink-0" />
             </Button>
           </div>
         </CardContent>
