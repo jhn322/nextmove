@@ -175,15 +175,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         setHistory([{ fen: game.fen(), lastMove: null }]);
       }
 
-      const currentState = {
-        ...DEFAULT_STATE,
-        playerColor,
-        difficulty,
-        selectedBot: botWithoutDifficulty,
-        gameStarted: true,
-        fen: game.fen(),
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
+      localStorage.setItem("selectedBot", JSON.stringify(botWithoutDifficulty));
     }
   }, [initialBot, difficulty, game, playerColor]);
 
@@ -313,21 +305,26 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   // Save state
   useEffect(() => {
     if (typeof window !== "undefined" && gameStarted) {
-      const gameState = {
-        fen: game.fen(),
-        playerColor,
-        gameTime,
-        whiteTime,
-        blackTime,
-        difficulty,
-        gameStarted,
-        history,
-        currentMove,
-        lastMove,
-        pieceSet,
-        capturedPieces,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+      const hasMovesBeenMade =
+        lastMove !== null || (history && history.length > 1);
+
+      if (hasMovesBeenMade) {
+        const gameState = {
+          fen: game.fen(),
+          playerColor,
+          gameTime,
+          whiteTime,
+          blackTime,
+          difficulty,
+          gameStarted,
+          history,
+          currentMove,
+          lastMove,
+          pieceSet,
+          capturedPieces,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+      }
     }
   }, [
     game,
@@ -349,23 +346,30 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     return () => {
       if (typeof window !== "undefined") {
         if (gameStarted) {
-          const gameState = {
-            fen: game.fen(),
-            playerColor,
-            gameTime,
-            whiteTime,
-            blackTime,
-            difficulty,
-            gameStarted,
-            history,
-            currentMove,
-            lastMove,
-            pieceSet,
-            capturedPieces,
-          };
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+          const hasMovesBeenMade =
+            lastMove !== null || (history && history.length > 1);
+
+          if (hasMovesBeenMade) {
+            const gameState = {
+              fen: game.fen(),
+              playerColor,
+              gameTime,
+              whiteTime,
+              blackTime,
+              difficulty,
+              gameStarted,
+              history,
+              currentMove,
+              lastMove,
+              pieceSet,
+              capturedPieces,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+          } else {
+            // If no moves made, remove any saved state
+            localStorage.removeItem(STORAGE_KEY);
+          }
         } else {
-          // If no moves made, remove any saved state
           localStorage.removeItem(STORAGE_KEY);
         }
       }
