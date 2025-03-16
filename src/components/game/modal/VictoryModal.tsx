@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Bot } from "@/components/game/data/bots";
+import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
-import { HandshakeIcon, UserPlus } from "lucide-react";
+import { HandshakeIcon, UserPlus, ArrowRight } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -16,6 +16,7 @@ import Confetti from "react-confetti";
 import { saveGameResult } from "@/lib/game-service";
 import { useAuth } from "@/context/auth-context";
 import { getConfettiEnabled } from "@/lib/settings";
+import { useRouter } from "next/navigation";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -65,6 +66,7 @@ const VictoryModal = ({
   gameTime,
   movesCount,
 }: VictoryModalProps) => {
+  const router = useRouter();
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
@@ -286,6 +288,58 @@ const VictoryModal = ({
     onNewBot();
   };
 
+  // Function to find the next harder bot
+  const findNextHarderBot = useCallback(() => {
+    if (!selectedBot) return null;
+
+    const difficulties = [
+      "beginner",
+      "easy",
+      "intermediate",
+      "advanced",
+      "hard",
+      "expert",
+      "master",
+      "grandmaster",
+    ];
+
+    // Find current difficulty index
+    const currentDifficultyIndex = difficulties.indexOf(difficulty);
+
+    // Get all bots in the current difficulty
+    const botsInCurrentDifficulty = BOTS_BY_DIFFICULTY[difficulty];
+
+    // Find the current bot's index
+    const currentBotIndex = botsInCurrentDifficulty.findIndex(
+      (bot) => bot.id === selectedBot.id
+    );
+
+    // If there's a next bot in the same difficulty
+    if (currentBotIndex < botsInCurrentDifficulty.length - 1) {
+      const nextBot = botsInCurrentDifficulty[currentBotIndex + 1];
+      return { bot: nextBot, difficulty };
+    }
+
+    // If we need to move to the next difficulty
+    if (currentDifficultyIndex < difficulties.length - 1) {
+      const nextDifficulty = difficulties[currentDifficultyIndex + 1];
+      const nextDifficultyBots = BOTS_BY_DIFFICULTY[nextDifficulty];
+      if (nextDifficultyBots && nextDifficultyBots.length > 0) {
+        return { bot: nextDifficultyBots[0], difficulty: nextDifficulty };
+      }
+    }
+
+    return null;
+  }, [selectedBot, difficulty]);
+
+  // Handle navigation to the next harder bot
+  const handlePlayNextBot = () => {
+    const nextBotInfo = findNextHarderBot();
+    if (nextBotInfo) {
+      router.push(`/play/${nextBotInfo.difficulty}/${nextBotInfo.bot.id}`);
+    }
+  };
+
   return (
     <>
       {showConfetti && (
@@ -374,7 +428,7 @@ const VictoryModal = ({
             )}
           </DialogHeader>
 
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-6">
             {isResignation ? (
               <>
                 <Button
@@ -399,15 +453,28 @@ const VictoryModal = ({
                   variant="default"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
-                  <HandshakeIcon className="h-5 w-5" />
+                  <HandshakeIcon className="h-5 w-5 mr-2" />
                   Rematch
                 </Button>
+
+                {/* Show "Play Next Bot" button only when player wins */}
+                {isPlayerWinner() && !game.isDraw() && (
+                  <Button
+                    onClick={handlePlayNextBot}
+                    variant="default"
+                    className="flex-1 text-sm sm:text-base py-2 h-auto bg-green-600 hover:bg-green-700"
+                  >
+                    <ArrowRight className="h-5 w-5 mr-2" />
+                    Next Bot
+                  </Button>
+                )}
+
                 <Button
                   onClick={handleNewBot}
                   variant="outline"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
                 >
-                  <UserPlus className="h-5 w-5" />
+                  <UserPlus className="h-5 w-5 mr-2" />
                   New Bot
                 </Button>
               </>

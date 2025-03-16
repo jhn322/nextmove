@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Piece from "@/components/game/board/Piece";
@@ -14,8 +14,11 @@ import {
   Lightbulb,
   PlayCircle,
   Swords,
+  ArrowRight,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
+import { useRouter } from "next/navigation";
 
 interface GameControlsProps {
   difficulty: string;
@@ -38,6 +41,7 @@ interface GameControlsProps {
   handleNewBotDialog: () => void;
   onHintRequested: () => void;
   isCalculatingHint: boolean;
+  selectedBot?: any;
 }
 
 interface GameStatusIndicatorProps {
@@ -142,9 +146,71 @@ const GameControls = ({
   handleNewBotDialog,
   onHintRequested,
   isCalculatingHint,
+  difficulty,
+  selectedBot,
 }: GameControlsProps) => {
+  const router = useRouter();
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
   const isGameOver = game.isGameOver() || game.isResigned;
+  const isPlayerWinner = useCallback(() => {
+    if (game.isCheckmate()) {
+      const losingColor = game.turn();
+      return losingColor !== playerColor;
+    }
+    return false;
+  }, [game, playerColor]);
+
+  // Function to find the next harder bot
+  const findNextHarderBot = useCallback(() => {
+    if (!selectedBot) return null;
+
+    const difficulties = [
+      "beginner",
+      "easy",
+      "intermediate",
+      "advanced",
+      "hard",
+      "expert",
+      "master",
+      "grandmaster",
+    ];
+
+    // Find current difficulty index
+    const currentDifficultyIndex = difficulties.indexOf(difficulty);
+
+    // Get all bots in the current difficulty
+    const botsInCurrentDifficulty = BOTS_BY_DIFFICULTY[difficulty];
+
+    // Find the current bot's index
+    const currentBotIndex = botsInCurrentDifficulty.findIndex(
+      (bot) => bot.id === selectedBot.id
+    );
+
+    // If there's a next bot in the same difficulty
+    if (currentBotIndex < botsInCurrentDifficulty.length - 1) {
+      const nextBot = botsInCurrentDifficulty[currentBotIndex + 1];
+      return { bot: nextBot, difficulty };
+    }
+
+    // If we need to move to the next difficulty
+    if (currentDifficultyIndex < difficulties.length - 1) {
+      const nextDifficulty = difficulties[currentDifficultyIndex + 1];
+      const nextDifficultyBots = BOTS_BY_DIFFICULTY[nextDifficulty];
+      if (nextDifficultyBots && nextDifficultyBots.length > 0) {
+        return { bot: nextDifficultyBots[0], difficulty: nextDifficulty };
+      }
+    }
+
+    return null;
+  }, [selectedBot, difficulty]);
+
+  // Handle navigation to the next harder bot
+  const handlePlayNextBot = () => {
+    const nextBotInfo = findNextHarderBot();
+    if (nextBotInfo) {
+      router.push(`/play/${nextBotInfo.difficulty}/${nextBotInfo.bot.id}`);
+    }
+  };
 
   useEffect(() => {
     const scrollArea = document.querySelector(
@@ -371,7 +437,7 @@ const GameControls = ({
             </div>
 
             {/* Primary Action Buttons */}
-            <div className="grid grid-cols-1 gap-3 laptop-screen:gap-2 pt-2 laptop-screen:pt-1">
+            <div className="space-y-2 laptop-screen:space-y-1">
               {/* Gameplay Buttons Row */}
               <div className="flex gap-3 laptop-screen:gap-2">
                 {/* Hint Button */}
@@ -408,7 +474,6 @@ const GameControls = ({
                     onClick={onResign}
                     variant="destructive"
                     className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
-                    disabled={game.isGameOver()}
                   >
                     <Flag className="h-4 w-4 sm:h-5 sm:w-5" />
                     Resign
@@ -416,10 +481,22 @@ const GameControls = ({
                 )}
               </div>
 
-              {/* New Bot Button - Always visible */}
+              {/* Show "Play Next Bot" button only when player wins */}
+              {isGameOver && isPlayerWinner() && selectedBot && (
+                <Button
+                  onClick={handlePlayNextBot}
+                  variant="default"
+                  className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700"
+                >
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Play Next Bot
+                </Button>
+              )}
+
+              {/* New Bot Button */}
               <Button
                 onClick={handleNewBotDialog}
-                variant="secondary"
+                variant="outline"
                 className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
               >
                 <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />

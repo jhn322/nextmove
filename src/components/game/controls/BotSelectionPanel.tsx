@@ -29,6 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Bot } from "@/components/game/data/bots";
+import { useRouter } from "next/navigation";
 
 interface BotSelectionPanelProps {
   bots: Bot[];
@@ -38,6 +39,7 @@ interface BotSelectionPanelProps {
   selectedBot: Bot | null;
   playerColor: "w" | "b";
   onColorChange: (color: "w" | "b") => void;
+  useDirectNavigation?: boolean;
 }
 
 const BotSelectionPanel = ({
@@ -48,7 +50,9 @@ const BotSelectionPanel = ({
   selectedBot,
   playerColor,
   onColorChange,
+  useDirectNavigation = false,
 }: BotSelectionPanelProps) => {
+  const router = useRouter();
   const difficulties = [
     "beginner",
     "easy",
@@ -86,6 +90,17 @@ const BotSelectionPanel = ({
     onColorChange(randomColor);
   };
 
+  // Handle bot selection with optional direct navigation
+  const handleBotSelect = (bot: Bot) => {
+    if (useDirectNavigation) {
+      // Navigate directly to the bot's page
+      router.push(`/play/${difficulty}/${bot.id}`);
+    } else {
+      // Use the traditional selection method
+      onSelectBot(bot);
+    }
+  };
+
   return (
     <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:p-4">
       <Card className="border-0 shadow-none">
@@ -121,7 +136,7 @@ const BotSelectionPanel = ({
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => onSelectBot(bot)}
+                  onClick={() => handleBotSelect(bot)}
                   variant={
                     selectedBot?.name === bot.name ? "default" : "outline"
                   }
@@ -133,7 +148,7 @@ const BotSelectionPanel = ({
           </div>
 
           {/* Desktop Layout (≥ 1024px) */}
-          <div className="hidden lg:block space-y-4">
+          <div className="hidden lg:flex flex-col space-y-3">
             {bots.map((bot) => (
               <div key={bot.name} className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 flex-shrink-0">
@@ -159,7 +174,7 @@ const BotSelectionPanel = ({
                 </div>
                 <Button
                   className="flex-shrink-0 ml-auto"
-                  onClick={() => onSelectBot(bot)}
+                  onClick={() => handleBotSelect(bot)}
                   variant={
                     selectedBot?.name === bot.name ? "default" : "outline"
                   }
@@ -276,4 +291,5 @@ const BotSelectionPanel = ({
     </div>
   );
 };
+
 export default BotSelectionPanel;

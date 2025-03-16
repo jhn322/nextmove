@@ -963,6 +963,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     selectedBot={selectedBot}
                     playerColor={playerColor}
                     onColorChange={handleColorChange}
+                    useDirectNavigation={true}
                   />
                 </div>
               ) : (
@@ -988,6 +989,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     handleNewBotDialog={handleNewBotDialog}
                     onHintRequested={handleHintRequest}
                     isCalculatingHint={isCalculating}
+                    selectedBot={selectedBot}
                   />
                 </div>
               )}
