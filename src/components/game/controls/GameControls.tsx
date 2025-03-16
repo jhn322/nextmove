@@ -440,34 +440,50 @@ const GameControls = ({
               </Button>
             </div>
 
+            <div className="h-px bg-border/50 my-1"></div>
+
             {/* Primary Action Buttons */}
             <div className="space-y-2 laptop-screen:space-y-1">
-              {/* Gameplay Buttons Row */}
+              {/* "Next Bot" button only when player wins */}
+              {isGameOver && isPlayerWinner() && selectedBot && (
+                <Button
+                  onClick={handlePlayNextBot}
+                  variant="default"
+                  className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white"
+                >
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Play Next Bot
+                </Button>
+              )}
+
+              {/* Game Action Buttons */}
               <div className="flex gap-3 laptop-screen:gap-2">
                 {/* Hint Button */}
-                <Button
-                  onClick={onHintRequested}
-                  variant="outline"
-                  disabled={
-                    game.isGameOver() ||
-                    game.turn() !== playerColor ||
-                    isCalculatingHint
-                  }
-                  className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
-                >
-                  <Lightbulb
-                    className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                      isCalculatingHint ? "animate-pulse" : ""
-                    }`}
-                  />
-                  {isCalculatingHint ? "Thinking..." : "Hint"}
-                </Button>
+                {!isGameOver && (
+                  <Button
+                    onClick={onHintRequested}
+                    variant="outline"
+                    disabled={
+                      game.isGameOver() ||
+                      game.turn() !== playerColor ||
+                      isCalculatingHint
+                    }
+                    className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
+                  >
+                    <Lightbulb
+                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                        isCalculatingHint ? "animate-pulse" : ""
+                      }`}
+                    />
+                    {isCalculatingHint ? "Thinking..." : "Hint"}
+                  </Button>
+                )}
 
                 {/* Rematch Button - Only show when game is over */}
                 {isGameOver ? (
                   <Button
                     onClick={onRematch}
-                    variant="default"
+                    variant="secondary"
                     className="flex-1 py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
                   >
                     <HandshakeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -484,18 +500,6 @@ const GameControls = ({
                   </Button>
                 )}
               </div>
-
-              {/* Show "Play Next Bot" button only when player wins */}
-              {isGameOver && isPlayerWinner() && selectedBot && (
-                <Button
-                  onClick={handlePlayNextBot}
-                  variant="default"
-                  className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700"
-                >
-                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Play Next Bot
-                </Button>
-              )}
 
               {/* New Bot Button */}
               <Button

@@ -433,7 +433,7 @@ const VictoryModal = ({
             )}
           </DialogHeader>
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-6">
+          <div className="flex flex-col gap-3 mt-4 sm:mt-6">
             {isResignation ? (
               <>
                 <Button
@@ -453,35 +453,37 @@ const VictoryModal = ({
               </>
             ) : (
               <>
-                <Button
-                  onClick={handleRematch}
-                  variant="default"
-                  className="flex-1 text-sm sm:text-base py-2 h-auto"
-                >
-                  <HandshakeIcon className="h-5 w-5 mr-2" />
-                  Rematch
-                </Button>
-
-                {/* Show "Play Next Bot" button only when player wins */}
+                {/* "Next Bot" button only when player wins */}
                 {isPlayerWinner() && !game.isDraw() && (
                   <Button
                     onClick={handlePlayNextBot}
                     variant="default"
-                    className="flex-1 text-sm sm:text-base py-2 h-auto bg-green-600 hover:bg-green-700"
+                    className="w-full text-sm sm:text-base py-2 h-auto bg-green-500 hover:bg-green-600 text-white font-medium"
                   >
                     <ArrowRight className="h-5 w-5 mr-2" />
-                    Next Bot
+                    Play Next Bot
                   </Button>
                 )}
 
-                <Button
-                  onClick={handleNewBot}
-                  variant="outline"
-                  className="flex-1 text-sm sm:text-base py-2 h-auto"
-                >
-                  <UserPlus className="h-5 w-5 mr-2" />
-                  New Bot
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleRematch}
+                    variant="secondary"
+                    className="flex-1 text-sm sm:text-base py-2 h-auto"
+                  >
+                    <HandshakeIcon className="h-5 w-5 mr-2" />
+                    Rematch
+                  </Button>
+
+                  <Button
+                    onClick={handleNewBot}
+                    variant="outline"
+                    className="flex-1 text-sm sm:text-base py-2 h-auto"
+                  >
+                    <UserPlus className="h-5 w-5 mr-2" />
+                    New Bot
+                  </Button>
+                </div>
               </>
             )}
           </div>
