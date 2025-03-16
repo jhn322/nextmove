@@ -336,7 +336,7 @@ const BotSelectionPanel = ({
         disabled={!selectedBot}
       >
         <Play className="h-4 w-4" />
-        Play Game
+        Play
       </Button>
     </div>
   );
