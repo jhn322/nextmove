@@ -11,7 +11,9 @@ export const usePreMadeMove = (
     to: string,
     promotion?: "q" | "r" | "n" | "b"
   ) => boolean,
-  getBotMove: () => void
+  getBotMove: () => void,
+  setSelectedPiece?: (piece: { row: number; col: number } | null) => void,
+  setPossibleMoves?: (moves: string[]) => void
 ) => {
   const [preMadeMove, setPreMadeMove] = useState<{
     from: string;
@@ -181,10 +183,42 @@ export const usePreMadeMove = (
     setPreMadePossibleMoves([]);
   }, []);
 
-  // Clear pre-made move when the turn changes
+  // Transfer pre-made move to normal move when turn changes
   useEffect(() => {
-    if (game.turn() === playerColor && preMadeMove && !executePreMadeMove()) {
-      cancelPreMadeMove();
+    // If it's the player's turn and we have a pre-made move with a destination, execute it
+    if (game.turn() === playerColor && preMadeMove && preMadeMove.to) {
+      if (!executePreMadeMove()) {
+        cancelPreMadeMove();
+      }
+    }
+    // If it's the player's turn and we have a pre-made move with only a source selected,
+    // transfer it to a normal move selection
+    else if (
+      game.turn() === playerColor &&
+      preMadeMove &&
+      preMadeMove.to === "" &&
+      setSelectedPiece &&
+      setPossibleMoves
+    ) {
+      // Transfer the pre-selected piece to the normal move selection
+      setSelectedPiece({
+        row: preMadeMove.fromRow,
+        col: preMadeMove.fromCol,
+      });
+
+      // Calculate possible moves for this piece in the current game state
+      try {
+        const square = preMadeMove.from as Square;
+        const moves = game.moves({ square, verbose: true });
+        setPossibleMoves(moves.map((move) => move.to));
+      } catch (error) {
+        console.error("Error calculating moves for transferred piece:", error);
+        setPossibleMoves([]);
+      }
+
+      // Clear the pre-made move since it's now a normal move
+      setPreMadeMove(null);
+      setPreMadePossibleMoves([]);
     }
   }, [
     game.turn(),
@@ -192,14 +226,10 @@ export const usePreMadeMove = (
     preMadeMove,
     executePreMadeMove,
     cancelPreMadeMove,
+    setSelectedPiece,
+    setPossibleMoves,
+    game,
   ]);
-
-  useEffect(() => {
-    if (game.turn() === playerColor && preMadeMove && preMadeMove.to === "") {
-      // If player only selected a piece but didn't complete the move, clear it
-      cancelPreMadeMove();
-    }
-  }, [game.turn(), playerColor, preMadeMove, cancelPreMadeMove]);
 
   return {
     preMadeMove,

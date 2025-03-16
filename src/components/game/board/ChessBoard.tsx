@@ -738,6 +738,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           onPreMadeMoveChange={handlePreMadeMoveChange}
           onHandleSquareClick={handlePreMadeMoveSquareClick}
           onPossibleMovesChange={handlePreMadePossibleMovesChange}
+          setSelectedPiece={setSelectedPiece}
+          setPossibleMoves={setPossibleMoves}
         />
 
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4 lg:max-h-[calc(100vh-40px)]">

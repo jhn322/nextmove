@@ -16,6 +16,8 @@ interface PreMadeMoveProps {
   onPreMadeMoveChange: (isPreMadeMove: (square: string) => boolean) => void;
   onHandleSquareClick: (handler: (row: number, col: number) => boolean) => void;
   onPossibleMovesChange: (isPossibleMove: (square: string) => boolean) => void;
+  setSelectedPiece: (piece: { row: number; col: number } | null) => void;
+  setPossibleMoves: (moves: string[]) => void;
 }
 
 const PreMadeMove = ({
@@ -27,6 +29,8 @@ const PreMadeMove = ({
   onPreMadeMoveChange,
   onHandleSquareClick,
   onPossibleMovesChange,
+  setSelectedPiece,
+  setPossibleMoves,
 }: PreMadeMoveProps) => {
   const {
     isPreMadeMove,
@@ -35,7 +39,15 @@ const PreMadeMove = ({
     preMadeMove,
     isPreMadePossibleMove,
     cancelPreMadeMove,
-  } = usePreMadeMove(game, board, playerColor, makeMove, getBotMove);
+  } = usePreMadeMove(
+    game,
+    board,
+    playerColor,
+    makeMove,
+    getBotMove,
+    setSelectedPiece,
+    setPossibleMoves
+  );
 
   // Use a ref to track the previous turn
   const prevTurnRef = useRef(game.turn());
