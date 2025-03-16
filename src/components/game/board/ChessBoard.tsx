@@ -819,6 +819,13 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                         hintMove &&
                         (square === hintMove.from || square === hintMove.to);
 
+                      // Check if this piece can be taken by the current player
+                      const canBeTaken = !!(
+                        piece &&
+                        piece.color !== playerColor &&
+                        possibleMoves.includes(square)
+                      );
+
                       // Always show coordinates in the same position regardless of board orientation
                       const showRank = showCoordinates && colIndex === 0;
                       const showFile = showCoordinates && rowIndex === 7;
@@ -867,6 +874,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                                   : piece.type.toLowerCase()
                               }
                               pieceSet={pieceSet}
+                              canBeTaken={canBeTaken}
                             />
                           )}
                         </SquareComponent>
