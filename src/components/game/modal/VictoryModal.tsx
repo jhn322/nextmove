@@ -334,6 +334,11 @@ const VictoryModal = ({
 
   // Handle navigation to the next harder bot
   const handlePlayNextBot = () => {
+    game.reset();
+    game.isResigned = false;
+
+    onClose();
+
     const nextBotInfo = findNextHarderBot();
     if (nextBotInfo) {
       router.push(`/play/${nextBotInfo.difficulty}/${nextBotInfo.bot.id}`);

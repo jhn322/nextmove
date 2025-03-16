@@ -206,6 +206,9 @@ const GameControls = ({
 
   // Handle navigation to the next harder bot
   const handlePlayNextBot = () => {
+    game.reset();
+    game.isResigned = false;
+
     const nextBotInfo = findNextHarderBot();
     if (nextBotInfo) {
       router.push(`/play/${nextBotInfo.difficulty}/${nextBotInfo.bot.id}`);

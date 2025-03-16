@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Bot } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface BotSelectionPanelProps {
   bots: Bot[];
@@ -100,6 +101,27 @@ const BotSelectionPanel = ({
       onSelectBot(bot);
     }
   };
+
+  // If useDirectNavigation is true and a bot is already selected,
+  // ensure we have its ID for navigation
+  useEffect(() => {
+    if (
+      useDirectNavigation &&
+      selectedBot &&
+      !selectedBot.id &&
+      bots.length > 0
+    ) {
+      const matchingBot = bots.find((bot) => bot.name === selectedBot.name);
+      if (matchingBot) {
+        onSelectBot({
+          ...selectedBot,
+          id: matchingBot.id,
+        });
+      } else {
+        onSelectBot(bots[0]);
+      }
+    }
+  }, [useDirectNavigation, selectedBot, bots, onSelectBot]);
 
   return (
     <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:p-4">

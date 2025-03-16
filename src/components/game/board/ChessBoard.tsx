@@ -202,7 +202,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       );
     } else {
       // If there's no saved bot, use the first bot from the difficulty category
-      setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
+      const firstBot = BOTS_BY_DIFFICULTY[difficulty][0];
+      setSelectedBot(firstBot);
     }
 
     // Check if there's a saved game state
