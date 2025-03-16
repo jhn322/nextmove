@@ -5,6 +5,7 @@ interface PieceProps {
   variant?: "board" | "symbol";
   pieceSet?: string;
   forceColor?: "light" | "dark";
+  canBeTaken?: boolean;
 }
 
 const Piece = ({
@@ -12,6 +13,7 @@ const Piece = ({
   variant = "board",
   pieceSet = "staunty",
   forceColor,
+  canBeTaken = false,
 }: PieceProps) => {
   // Convert piece type to Unicode chess symbol
   const getPieceSymbol = (type: string) => {
@@ -58,7 +60,10 @@ const Piece = ({
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center relative">
+      {canBeTaken && (
+        <div className="absolute inset-0 rounded-full border-[14px] border-red-500/40 z-10"></div>
+      )}
       <Image
         src={getPieceSVG(type)}
         alt={`${type} chess piece`}

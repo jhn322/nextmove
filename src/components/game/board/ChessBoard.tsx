@@ -627,7 +627,9 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           // If the pre-made move was handled, don't proceed with normal move handling
           return;
         }
-      } catch {}
+      } catch (error) {
+        console.error("Error handling pre-made move:", error);
+      }
     }
 
     handleLeftClick(); // Clear highlights on left click
@@ -736,6 +738,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
           onPreMadeMoveChange={handlePreMadeMoveChange}
           onHandleSquareClick={handlePreMadeMoveSquareClick}
           onPossibleMovesChange={handlePreMadePossibleMovesChange}
+          setSelectedPiece={setSelectedPiece}
+          setPossibleMoves={setPossibleMoves}
         />
 
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
@@ -815,6 +819,13 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                         hintMove &&
                         (square === hintMove.from || square === hintMove.to);
 
+                      // Check if this piece can be taken by the current player
+                      const canBeTaken = !!(
+                        piece &&
+                        piece.color !== playerColor &&
+                        possibleMoves.includes(square)
+                      );
+
                       // Always show coordinates in the same position regardless of board orientation
                       const showRank = showCoordinates && colIndex === 0;
                       const showFile = showCoordinates && rowIndex === 7;
@@ -863,6 +874,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                                   : piece.type.toLowerCase()
                               }
                               pieceSet={pieceSet}
+                              canBeTaken={canBeTaken}
                             />
                           )}
                         </SquareComponent>

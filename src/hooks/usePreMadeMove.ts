@@ -11,7 +11,9 @@ export const usePreMadeMove = (
     to: string,
     promotion?: "q" | "r" | "n" | "b"
   ) => boolean,
-  getBotMove: () => void
+  getBotMove: () => void,
+  setSelectedPiece?: (piece: { row: number; col: number } | null) => void,
+  setPossibleMoves?: (moves: string[]) => void
 ) => {
   const [preMadeMove, setPreMadeMove] = useState<{
     from: string;
@@ -102,7 +104,6 @@ export const usePreMadeMove = (
 
               return true;
             }
-          } else {
           }
         }
         // Second click - select destination or cancel selection
@@ -176,10 +177,52 @@ export const usePreMadeMove = (
     return false;
   }, [preMadeMove, game, playerColor, makeMove, getBotMove]);
 
+  // Clear the pre-made move
   const cancelPreMadeMove = useCallback(() => {
     setPreMadeMove(null);
     setPreMadePossibleMoves([]);
   }, []);
+
+  // Transfer pre-made move to normal move when turn changes
+  useEffect(() => {
+    if (game.turn() === playerColor && preMadeMove && preMadeMove.to) {
+      if (!executePreMadeMove()) {
+        cancelPreMadeMove();
+      }
+    } else if (
+      game.turn() === playerColor &&
+      preMadeMove &&
+      preMadeMove.to === "" &&
+      setSelectedPiece &&
+      setPossibleMoves
+    ) {
+      setSelectedPiece({
+        row: preMadeMove.fromRow,
+        col: preMadeMove.fromCol,
+      });
+
+      try {
+        const square = preMadeMove.from as Square;
+        const moves = game.moves({ square, verbose: true });
+        setPossibleMoves(moves.map((move) => move.to));
+      } catch (error) {
+        console.error("Error calculating moves for transferred piece:", error);
+        setPossibleMoves([]);
+      }
+
+      setPreMadeMove(null);
+      setPreMadePossibleMoves([]);
+    }
+  }, [
+    game.turn(),
+    playerColor,
+    preMadeMove,
+    executePreMadeMove,
+    cancelPreMadeMove,
+    setSelectedPiece,
+    setPossibleMoves,
+    game,
+  ]);
 
   return {
     preMadeMove,
