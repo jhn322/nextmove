@@ -185,28 +185,22 @@ export const usePreMadeMove = (
 
   // Transfer pre-made move to normal move when turn changes
   useEffect(() => {
-    // If it's the player's turn and we have a pre-made move with a destination, execute it
     if (game.turn() === playerColor && preMadeMove && preMadeMove.to) {
       if (!executePreMadeMove()) {
         cancelPreMadeMove();
       }
-    }
-    // If it's the player's turn and we have a pre-made move with only a source selected,
-    // transfer it to a normal move selection
-    else if (
+    } else if (
       game.turn() === playerColor &&
       preMadeMove &&
       preMadeMove.to === "" &&
       setSelectedPiece &&
       setPossibleMoves
     ) {
-      // Transfer the pre-selected piece to the normal move selection
       setSelectedPiece({
         row: preMadeMove.fromRow,
         col: preMadeMove.fromCol,
       });
 
-      // Calculate possible moves for this piece in the current game state
       try {
         const square = preMadeMove.from as Square;
         const moves = game.moves({ square, verbose: true });
@@ -216,7 +210,6 @@ export const usePreMadeMove = (
         setPossibleMoves([]);
       }
 
-      // Clear the pre-made move since it's now a normal move
       setPreMadeMove(null);
       setPreMadePossibleMoves([]);
     }
