@@ -417,26 +417,6 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     };
 
     setSelectedBot(botWithoutDifficulty);
-    setShowBotSelection(false);
-
-    // Initialize the game based on player color
-    if (playerColor === "b") {
-      game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-      setBoard(game.board());
-      setHistory([{ fen: game.fen(), lastMove: null }]);
-    }
-
-    setGameStarted(true);
-
-    const currentState = {
-      ...DEFAULT_STATE,
-      playerColor,
-      difficulty,
-      selectedBot: botWithoutDifficulty,
-      gameStarted: true,
-      fen: game.fen(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -726,17 +706,6 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const handlePromotionCancel = () => {
     setPendingPromotion(null);
   };
-
-  /* Bot Selection Panel */
-  <BotSelectionPanel
-    bots={BOTS_BY_DIFFICULTY[difficulty]}
-    onSelectBot={handleSelectBot}
-    difficulty={difficulty}
-    onDifficultyChange={handleDifficultyChange}
-    selectedBot={selectedBot}
-    playerColor={playerColor}
-    onColorChange={handleColorChange}
-  />;
 
   // Add a specific effect to handle navigation back to the game
   useEffect(() => {

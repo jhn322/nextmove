@@ -112,9 +112,16 @@ const BotSelectionPanel = ({
     onColorChange(color);
   };
 
-  // Handle bot selection without direct navigation
   const handleBotSelect = (bot: Bot) => {
-    onSelectBot(bot);
+    // Preserve the bot's ID
+    if (!bot.id) {
+      console.error("Bot is missing ID:", bot);
+    }
+
+    onSelectBot({
+      ...bot,
+      id: bot.id,
+    });
   };
 
   const handlePlayGame = () => {
@@ -128,21 +135,55 @@ const BotSelectionPanel = ({
       onColorChange(randomColor);
     }
 
-    if (selectedBot && onPlayGame) {
+    if (!selectedBot || !selectedBot.id) {
+      console.error("No bot selected or bot missing ID:", selectedBot);
+      if (bots.length > 0) {
+        const firstBot = bots[0];
+        onSelectBot({
+          ...firstBot,
+          id: firstBot.id,
+        });
+
+        if (useDirectNavigation) {
+          const url = `/play/${difficulty}/${firstBot.id}`;
+          router.push(url);
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+
+    if (useDirectNavigation && selectedBot && selectedBot.id) {
+      // Navigate to the specific bot ID
+      const url = `/play/${difficulty}/${selectedBot.id}`;
+      console.log("Navigating to:", url);
+      router.push(url);
+    } else if (onPlayGame) {
       onPlayGame();
-    } else if (selectedBot && useDirectNavigation) {
-      router.push(`/play/${difficulty}/${selectedBot.id}`);
     }
   };
 
   // Ensure the first bot is selected by default and has an ID
   useEffect(() => {
     if (bots.length > 0 && !selectedBot) {
-      onSelectBot(bots[0]);
+      const firstBot = bots[0];
+      if (!firstBot.id) {
+        console.error("First bot is missing ID:", firstBot);
+      }
+
+      onSelectBot({
+        ...firstBot,
+        id: firstBot.id,
+      });
     } else if (selectedBot && !selectedBot.id && bots.length > 0) {
       // Find the matching bot to get its ID
       const matchingBot = bots.find((bot) => bot.name === selectedBot.name);
       if (matchingBot) {
+        if (!matchingBot.id) {
+          console.error("Matching bot is missing ID:", matchingBot);
+        }
+
         onSelectBot({
           ...selectedBot,
           id: matchingBot.id,
@@ -187,11 +228,9 @@ const BotSelectionPanel = ({
                 <Button
                   size="sm"
                   onClick={() => handleBotSelect(bot)}
-                  variant={
-                    selectedBot?.name === bot.name ? "default" : "outline"
-                  }
+                  variant={selectedBot?.id === bot.id ? "default" : "outline"}
                 >
-                  {selectedBot?.name === bot.name ? "Selected" : "Select"}
+                  {selectedBot?.id === bot.id ? "Selected" : "Select"}
                 </Button>
               </div>
             ))}
@@ -225,11 +264,9 @@ const BotSelectionPanel = ({
                 <Button
                   className="flex-shrink-0 ml-auto"
                   onClick={() => handleBotSelect(bot)}
-                  variant={
-                    selectedBot?.name === bot.name ? "default" : "outline"
-                  }
+                  variant={selectedBot?.id === bot.id ? "default" : "outline"}
                 >
-                  {selectedBot?.name === bot.name ? "Selected" : "Select"}
+                  {selectedBot?.id === bot.id ? "Selected" : "Select"}
                 </Button>
               </div>
             ))}
