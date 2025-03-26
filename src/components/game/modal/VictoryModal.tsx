@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Bot } from "@/components/game/data/bots";
+import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
-import { HandshakeIcon, UserPlus } from "lucide-react";
+import { HandshakeIcon, UserPlus, TrendingUp } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -16,6 +16,13 @@ import Confetti from "react-confetti";
 import { saveGameResult } from "@/lib/game-service";
 import { useAuth } from "@/context/auth-context";
 import { getConfettiEnabled } from "@/lib/settings";
+import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -65,6 +72,7 @@ const VictoryModal = ({
   gameTime,
   movesCount,
 }: VictoryModalProps) => {
+  const router = useRouter();
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
@@ -76,15 +84,29 @@ const VictoryModal = ({
   const [resultSaved, setResultSaved] = useState(false);
   const { session } = useAuth();
 
+  const isPlayerWinner = useCallback(() => {
+    if (game.isCheckmate()) {
+      const losingColor = game.turn() === "w" ? "w" : "b";
+      const winningColor = losingColor === "w" ? "b" : "w";
+      return winningColor === playerColor;
+    }
+    if (isResignation || game.isResigned) {
+      return false;
+    }
+    return false;
+  }, [game, playerColor, isResignation]);
+
   // Generate a unique game ID based on current state to prevent duplicate saves
   const gameStateId = useMemo(() => {
     if (!game || !selectedBot) return "";
 
     // Create a stable ID that doesn't change on refresh
-    // Use the game FEN, bot name, player color, and difficulty
-    // This is stable across refreshes for the same game state
-    return `${game.fen()}_${selectedBot.name}_${playerColor}_${difficulty}`;
-  }, [game, selectedBot, playerColor, difficulty]);
+    // Include the result (win/loss/draw) in the ID to distinguish between different outcomes with the same board position
+    const result = isPlayerWinner() ? "win" : game.isDraw() ? "draw" : "loss";
+    return `${game.fen()}_${
+      selectedBot.name
+    }_${playerColor}_${difficulty}_${result}`;
+  }, [game, selectedBot, playerColor, difficulty, isPlayerWinner]);
 
   // Load player data from localStorage and check if this game has already been saved
   useEffect(() => {
@@ -101,27 +123,20 @@ const VictoryModal = ({
       }
 
       // Check if this exact game result has already been saved
-      // We use the game FEN as the primary key for detecting duplicates
+      // Use both FEN and the gameStateId which includes the result
+      const savedGameId = localStorage.getItem("last-saved-game-id");
       const savedGameFen = localStorage.getItem("last-saved-game-fen");
 
-      if (savedGameFen === game.fen()) {
+      // Only consider a game saved if both FEN and game ID match
+      if (savedGameId === gameStateId && savedGameFen === game.fen()) {
         console.log("Game result already saved, preventing duplicate save");
         setResultSaved(true);
+      } else {
+        // Reset resultSaved when viewing a new game state
+        setResultSaved(false);
       }
     }
-  }, [game]);
-
-  const isPlayerWinner = useCallback(() => {
-    if (game.isCheckmate()) {
-      const losingColor = game.turn() === "w" ? "w" : "b";
-      const winningColor = losingColor === "w" ? "b" : "w";
-      return winningColor === playerColor;
-    }
-    if (isResignation || game.isResigned) {
-      return false;
-    }
-    return false;
-  }, [game, playerColor, isResignation]);
+  }, [game, gameStateId]);
 
   const renderWinnerText = useCallback(() => {
     if (isResignation) {
@@ -181,14 +196,14 @@ const VictoryModal = ({
       ) {
         try {
           // Check one more time if this game has already been saved
+          const savedGameId = localStorage.getItem("last-saved-game-id");
           const savedGameFen = localStorage.getItem("last-saved-game-fen");
-          if (savedGameFen === game.fen()) {
-            console.log("Game already saved (double-check), skipping save");
+
+          if (savedGameId === gameStateId && savedGameFen === game.fen()) {
             setResultSaved(true);
             return;
           }
 
-          console.log("Saving game result:", gameStateId);
           await saveGameResult({
             userId: session.user.id,
             game,
@@ -200,13 +215,22 @@ const VictoryModal = ({
             isResignation: isResignation || game.isResigned,
             session,
           });
+
           setResultSaved(true);
 
+          // Store both the state ID and FEN to prevent duplicate saves
           localStorage.setItem("last-saved-game-id", gameStateId);
           localStorage.setItem("last-saved-game-fen", game.fen());
+
+          // Store the specific result too for additional verification
+          localStorage.setItem(
+            "last-saved-game-result",
+            isPlayerWinner() ? "win" : game.isDraw() ? "draw" : "loss"
+          );
         } catch (error) {
           console.error("Error saving game result:", error);
         }
+      } else {
       }
     };
 
@@ -223,6 +247,7 @@ const VictoryModal = ({
     gameTime,
     movesCount,
     gameStateId,
+    isPlayerWinner,
   ]);
 
   useEffect(() => {
@@ -284,6 +309,63 @@ const VictoryModal = ({
     game.reset();
     game.isResigned = false;
     onNewBot();
+  };
+
+  // Function to find the next harder bot
+  const findNextHarderBot = useCallback(() => {
+    if (!selectedBot) return null;
+
+    const difficulties = [
+      "beginner",
+      "easy",
+      "intermediate",
+      "advanced",
+      "hard",
+      "expert",
+      "master",
+      "grandmaster",
+    ];
+
+    // Find current difficulty index
+    const currentDifficultyIndex = difficulties.indexOf(difficulty);
+
+    // Get all bots in the current difficulty
+    const botsInCurrentDifficulty = BOTS_BY_DIFFICULTY[difficulty];
+
+    // Find the current bot's index
+    const currentBotIndex = botsInCurrentDifficulty.findIndex(
+      (bot) => bot.id === selectedBot.id
+    );
+
+    // If there's a next bot in the same difficulty
+    if (currentBotIndex < botsInCurrentDifficulty.length - 1) {
+      const nextBot = botsInCurrentDifficulty[currentBotIndex + 1];
+      return { bot: nextBot, difficulty };
+    }
+
+    // If we need to move to the next difficulty
+    if (currentDifficultyIndex < difficulties.length - 1) {
+      const nextDifficulty = difficulties[currentDifficultyIndex + 1];
+      const nextDifficultyBots = BOTS_BY_DIFFICULTY[nextDifficulty];
+      if (nextDifficultyBots && nextDifficultyBots.length > 0) {
+        return { bot: nextDifficultyBots[0], difficulty: nextDifficulty };
+      }
+    }
+
+    return null;
+  }, [selectedBot, difficulty]);
+
+  // Handle navigation to the next harder bot
+  const handlePlayNextBot = () => {
+    game.reset();
+    game.isResigned = false;
+
+    onClose();
+
+    const nextBotInfo = findNextHarderBot();
+    if (nextBotInfo) {
+      router.push(`/play/${nextBotInfo.difficulty}/${nextBotInfo.bot.id}`);
+    }
   };
 
   return (
@@ -374,7 +456,7 @@ const VictoryModal = ({
             )}
           </DialogHeader>
 
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-col gap-3 mt-4 sm:mt-6">
             {isResignation ? (
               <>
                 <Button
@@ -394,22 +476,100 @@ const VictoryModal = ({
               </>
             ) : (
               <>
-                <Button
-                  onClick={handleRematch}
-                  variant="default"
-                  className="flex-1 text-sm sm:text-base py-2 h-auto"
-                >
-                  <HandshakeIcon className="h-5 w-5" />
-                  Rematch
-                </Button>
-                <Button
-                  onClick={handleNewBot}
-                  variant="outline"
-                  className="flex-1 text-sm sm:text-base py-2 h-auto"
-                >
-                  <UserPlus className="h-5 w-5" />
-                  New Bot
-                </Button>
+                {/* "Next Bot" button only when player wins */}
+                {isPlayerWinner() && !game.isDraw() && (
+                  <>
+                    <div className="mb-2 text-center">
+                      <span className="text-sm text-muted-foreground">
+                        Ready for a tougher challenge?
+                      </span>
+                      {(() => {
+                        const nextBotInfo = findNextHarderBot();
+                        if (nextBotInfo) {
+                          return (
+                            <div className="flex items-center justify-center gap-2 mt-1">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage
+                                  src={nextBotInfo.bot.image}
+                                  alt={nextBotInfo.bot.name}
+                                />
+                                <AvatarFallback>B</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">
+                                {nextBotInfo.bot.name}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-full capitalize">
+                                {nextBotInfo.difficulty}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded-full">
+                                {nextBotInfo.bot.rating} ELO
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={handlePlayNextBot}
+                            variant="default"
+                            className="w-full text-sm sm:text-base py-2 h-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-medium"
+                          >
+                            <TrendingUp className="h-5 w-5 mr-2" />
+                            Next Challenge
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Face the next stronger opponent with higher ELO
+                            rating and skill level
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </>
+                )}
+
+                <div className="flex gap-3">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleRematch}
+                          variant="secondary"
+                          className="flex-1 text-sm sm:text-base py-2 h-auto"
+                        >
+                          <HandshakeIcon className="h-5 w-5 mr-2" />
+                          Rematch
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Play again versus the same bot and settings</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleNewBot}
+                          variant="outline"
+                          className="flex-1 text-sm sm:text-base py-2 h-auto"
+                        >
+                          <UserPlus className="h-5 w-5 mr-2" />
+                          New Bot
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Choose a different bot to play against</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </>
             )}
           </div>

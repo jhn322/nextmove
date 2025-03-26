@@ -185,12 +185,14 @@ export const usePreMadeMove = (
 
   // Transfer pre-made move to normal move when turn changes
   useEffect(() => {
-    if (game.turn() === playerColor && preMadeMove && preMadeMove.to) {
+    const currentTurn = game.turn();
+
+    if (currentTurn === playerColor && preMadeMove && preMadeMove.to) {
       if (!executePreMadeMove()) {
         cancelPreMadeMove();
       }
     } else if (
-      game.turn() === playerColor &&
+      currentTurn === playerColor &&
       preMadeMove &&
       preMadeMove.to === "" &&
       setSelectedPiece &&
@@ -214,14 +216,13 @@ export const usePreMadeMove = (
       setPreMadePossibleMoves([]);
     }
   }, [
-    game.turn(),
+    game,
     playerColor,
     preMadeMove,
     executePreMadeMove,
     cancelPreMadeMove,
     setSelectedPiece,
     setPossibleMoves,
-    game,
   ]);
 
   return {

@@ -14,8 +14,6 @@ import { useHintEngine } from "@/hooks/useHintEngine";
 import useHighlightedSquares from "./HighlightedSquares";
 import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
-import SquareComponent from "@/components/game/board/Square";
-import Piece from "@/components/game/board/Piece";
 import VictoryModal from "../modal/VictoryModal";
 import PlayerProfile from "./PlayerProfile";
 import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
@@ -23,8 +21,15 @@ import PawnPromotionModal from "./PawnPromotionModal";
 import PreMadeMove from "./PreMadeMove";
 import { useAuth } from "@/context/auth-context";
 import { getUserSettings } from "@/lib/mongodb-service";
+import DraggablePiece from "./DraggablePiece";
+import DroppableSquare from "./DroppableSquare";
 
-const ChessBoard = ({ difficulty }: { difficulty: string }) => {
+interface ChessBoardProps {
+  difficulty: string;
+  initialBot?: (Bot & { difficulty: string }) | null;
+}
+
+const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const [shouldPulse, setShouldPulse] = useState(false);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
   const [showBotSelection, setShowBotSelection] = useState(true);
@@ -146,6 +151,35 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   }, [status, session]);
 
   useEffect(() => {
+    if (initialBot) {
+      // Extract just the Bot properties if a bot with difficulty is passed
+      const botWithoutDifficulty: Bot = {
+        id: initialBot.id,
+        name: initialBot.name,
+        image: initialBot.image,
+        rating: initialBot.rating,
+        description: initialBot.description,
+        skillLevel: initialBot.skillLevel,
+        depth: initialBot.depth,
+        moveTime: initialBot.moveTime,
+        flag: initialBot.flag,
+      };
+
+      setSelectedBot(botWithoutDifficulty);
+      setShowBotSelection(false);
+      setGameStarted(true);
+
+      if (playerColor === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        setBoard(game.board());
+        setHistory([{ fen: game.fen(), lastMove: null }]);
+      }
+
+      localStorage.setItem("selectedBot", JSON.stringify(botWithoutDifficulty));
+    }
+  }, [initialBot, difficulty, game, playerColor]);
+
+  useEffect(() => {
     // Load selected bot
     const savedBot = localStorage.getItem("selectedBot");
     if (savedBot) {
@@ -160,7 +194,8 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       );
     } else {
       // If there's no saved bot, use the first bot from the difficulty category
-      setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
+      const firstBot = BOTS_BY_DIFFICULTY[difficulty][0];
+      setSelectedBot(firstBot);
     }
 
     // Check if there's a saved game state
@@ -270,21 +305,26 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   // Save state
   useEffect(() => {
     if (typeof window !== "undefined" && gameStarted) {
-      const gameState = {
-        fen: game.fen(),
-        playerColor,
-        gameTime,
-        whiteTime,
-        blackTime,
-        difficulty,
-        gameStarted,
-        history,
-        currentMove,
-        lastMove,
-        pieceSet,
-        capturedPieces,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+      const hasMovesBeenMade =
+        lastMove !== null || (history && history.length > 1);
+
+      if (hasMovesBeenMade) {
+        const gameState = {
+          fen: game.fen(),
+          playerColor,
+          gameTime,
+          whiteTime,
+          blackTime,
+          difficulty,
+          gameStarted,
+          history,
+          currentMove,
+          lastMove,
+          pieceSet,
+          capturedPieces,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+      }
     }
   }, [
     game,
@@ -306,23 +346,30 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     return () => {
       if (typeof window !== "undefined") {
         if (gameStarted) {
-          const gameState = {
-            fen: game.fen(),
-            playerColor,
-            gameTime,
-            whiteTime,
-            blackTime,
-            difficulty,
-            gameStarted,
-            history,
-            currentMove,
-            lastMove,
-            pieceSet,
-            capturedPieces,
-          };
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+          const hasMovesBeenMade =
+            lastMove !== null || (history && history.length > 1);
+
+          if (hasMovesBeenMade) {
+            const gameState = {
+              fen: game.fen(),
+              playerColor,
+              gameTime,
+              whiteTime,
+              blackTime,
+              difficulty,
+              gameStarted,
+              history,
+              currentMove,
+              lastMove,
+              pieceSet,
+              capturedPieces,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+          } else {
+            // If no moves made, remove any saved state
+            localStorage.removeItem(STORAGE_KEY);
+          }
         } else {
-          // If no moves made, remove any saved state
           localStorage.removeItem(STORAGE_KEY);
         }
       }
@@ -360,28 +407,20 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     }
   }, [lastMove, clearHighlights]);
 
-  const handleSelectBot = (bot: Bot) => {
-    setSelectedBot(bot);
-    setShowBotSelection(false);
-
-    // Initialize the game based on player color
-    if (playerColor === "b") {
-      game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-      setBoard(game.board());
-      setHistory([{ fen: game.fen(), lastMove: null }]);
-    }
-
-    setGameStarted(true);
-
-    const currentState = {
-      ...DEFAULT_STATE,
-      playerColor,
-      difficulty,
-      lastMove: null,
-      gameStarted: true,
-      fen: game.fen(),
+  const handleSelectBot = (bot: Bot | (Bot & { difficulty: string })) => {
+    const botWithoutDifficulty: Bot = {
+      id: bot.id,
+      name: bot.name,
+      image: bot.image,
+      rating: bot.rating,
+      description: bot.description,
+      skillLevel: bot.skillLevel,
+      depth: bot.depth,
+      moveTime: bot.moveTime,
+      flag: bot.flag,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
+
+    setSelectedBot(botWithoutDifficulty);
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
@@ -636,6 +675,20 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
     originalHandleSquareClick(row, col);
   };
 
+  // Handle drag start - similar to clicking on a piece
+  const handleDragStart = (position: string) => {
+    // When drag starts, simulate the same behavior as clicking on a piece
+    const [file, rank] = position.split("");
+    const colIndex = "abcdefgh".indexOf(file);
+    const rowIndex = 8 - parseInt(rank);
+
+    // Clear any existing highlights
+    handleLeftClick();
+
+    // Select the piece and show possible moves
+    originalHandleSquareClick(rowIndex, colIndex);
+  };
+
   // Handle pawn promotion piece selection
   const handlePromotionSelect = (pieceType: "q" | "r" | "n" | "b") => {
     if (pendingPromotion) {
@@ -671,17 +724,6 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
   const handlePromotionCancel = () => {
     setPendingPromotion(null);
   };
-
-  /* Bot Selection Panel */
-  <BotSelectionPanel
-    bots={BOTS_BY_DIFFICULTY[difficulty]}
-    onSelectBot={handleSelectBot}
-    difficulty={difficulty}
-    onDifficultyChange={handleDifficultyChange}
-    selectedBot={selectedBot}
-    playerColor={playerColor}
-    onColorChange={handleColorChange}
-  />;
 
   // Add a specific effect to handle navigation back to the game
   useEffect(() => {
@@ -725,6 +767,56 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
       }
     }
   }, [game]);
+
+  const handleDragMove = (
+    item: { type: string; position: string },
+    targetPosition: string
+  ) => {
+    if (game.turn() !== playerColor) return;
+    if (game.isGameOver() || game.isResigned) return;
+
+    // Convert the positions to the format that makeMove expects
+    const fromPosition = item.position;
+    const toPosition = targetPosition;
+
+    if (fromPosition === toPosition) return;
+
+    // Call makeMove with the from and to positions
+    const moveSuccessful = makeMove(fromPosition, toPosition);
+
+    if (moveSuccessful) {
+      // Clear possible moves and selected piece after successful move
+      setPossibleMoves([]);
+      setSelectedPiece(null);
+
+      // Hide bot selection panel when first move is made
+      if (showBotSelection) {
+        setShowBotSelection(false);
+      }
+
+      setBoard(game.board());
+
+      if (!game.isGameOver()) {
+        setTimeout(getBotMove, 1000);
+      }
+
+      if (!game.isGameOver()) {
+        setGameStarted(true);
+        // Ensure the game state is saved with gameStarted=true
+        const STORAGE_KEY = "chess-game-state";
+        const currentState = JSON.parse(
+          localStorage.getItem(STORAGE_KEY) || "{}"
+        );
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            ...currentState,
+            gameStarted: true,
+          })
+        );
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -819,65 +911,70 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                         hintMove &&
                         (square === hintMove.from || square === hintMove.to);
 
-                      // Check if this piece can be taken by the current player
-                      const canBeTaken = !!(
-                        piece &&
-                        piece.color !== playerColor &&
-                        possibleMoves.includes(square)
-                      );
+                      // Calculate the square color
+                      const isLight =
+                        (actualRowIndex + actualColIndex) % 2 === 1;
 
-                      // Always show coordinates in the same position regardless of board orientation
-                      const showRank = showCoordinates && colIndex === 0;
-                      const showFile = showCoordinates && rowIndex === 7;
+                      const isSelected =
+                        selectedPiece &&
+                        selectedPiece.row === actualRowIndex &&
+                        selectedPiece.col === actualColIndex;
 
-                      // But the coordinate values need to account for the board orientation
-                      const rankValue = 8 - actualRowIndex;
-                      const fileValue = "abcdefgh"[actualColIndex];
+                      // Get the coordinates
+                      const shouldShowRank =
+                        showCoordinates && actualColIndex === 0;
+                      const shouldShowFile =
+                        showCoordinates && actualRowIndex === 7;
+                      const coordinate = shouldShowRank
+                        ? `${8 - actualRowIndex}`
+                        : shouldShowFile
+                        ? `${"abcdefgh"[actualColIndex]}`
+                        : undefined;
 
-                      const coordinate = showCoordinates
-                        ? showRank
-                          ? `${rankValue}`
-                          : showFile
-                          ? fileValue
-                          : ""
-                        : "";
+                      // Determine if the piece can be dragged
+                      const canDragPiece =
+                        piece?.color === playerColor &&
+                        game.turn() === playerColor &&
+                        !game.isGameOver();
 
                       return (
-                        <SquareComponent
-                          key={`${rowIndex}-${colIndex}`}
-                          isLight={(actualRowIndex + actualColIndex) % 2 === 0}
-                          isSelected={
-                            selectedPiece?.row === actualRowIndex &&
-                            selectedPiece?.col === actualColIndex
-                          }
-                          isPossibleMove={possibleMoves.includes(square)}
-                          onClick={() =>
-                            handleSquareClick(actualRowIndex, actualColIndex)
-                          }
-                          onContextMenu={(e) => handleRightClick(square, e)}
-                          difficulty={difficulty}
+                        <DroppableSquare
+                          key={`${actualRowIndex}-${actualColIndex}`}
+                          row={actualRowIndex}
+                          col={actualColIndex}
+                          isLight={isLight}
+                          isSelected={!!isSelected}
                           isCheck={isKingInCheck}
-                          isLastMove={isLastMove ?? false}
-                          isHintMove={isHintMove ?? false}
+                          isLastMove={!!isLastMove}
+                          isPossibleMove={possibleMoves.includes(square)}
+                          isHintMove={!!isHintMove}
                           isRedHighlighted={isHighlighted(square)}
                           isPreMadeMove={isPreMadeMove(square)}
                           isPreMadePossibleMove={isPreMadePossibleMove(square)}
-                          showRank={showRank}
-                          showFile={showFile}
                           coordinate={coordinate}
+                          showRank={shouldShowRank}
+                          showFile={shouldShowFile}
+                          difficulty={difficulty}
+                          onDrop={handleDragMove}
+                          onClick={() =>
+                            handleSquareClick(actualRowIndex, actualColIndex)
+                          }
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            handleRightClick(square, e);
+                          }}
                         >
                           {piece && (
-                            <Piece
-                              type={
-                                piece.color === "w"
-                                  ? piece.type.toUpperCase()
-                                  : piece.type.toLowerCase()
-                              }
+                            <DraggablePiece
+                              type={piece.type}
+                              color={piece.color}
+                              position={square}
                               pieceSet={pieceSet}
-                              canBeTaken={canBeTaken}
+                              canDrag={canDragPiece}
+                              onDragStart={handleDragStart}
                             />
                           )}
-                        </SquareComponent>
+                        </DroppableSquare>
                       );
                     })
                   )}
@@ -909,6 +1006,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     selectedBot={selectedBot}
                     playerColor={playerColor}
                     onColorChange={handleColorChange}
+                    useDirectNavigation={true}
                   />
                 </div>
               ) : (
@@ -934,6 +1032,7 @@ const ChessBoard = ({ difficulty }: { difficulty: string }) => {
                     handleNewBotDialog={handleNewBotDialog}
                     onHintRequested={handleHintRequest}
                     isCalculatingHint={isCalculating}
+                    selectedBot={selectedBot || undefined}
                   />
                 </div>
               )}

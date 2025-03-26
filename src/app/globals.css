@@ -60,6 +60,459 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  .amethyst {
+    --background: 270 30% 5.9%;
+    --foreground: 270 10% 98%;
+    --card: 270 30% 5.9%;
+    --card-foreground: 270 10% 98%;
+    --popover: 270 30% 5.9%;
+    --popover-foreground: 270 10% 98%;
+    --primary: 270 100% 70%;
+    --primary-foreground: 270 10% 9%;
+    --secondary: 270 30% 14.9%;
+    --secondary-foreground: 270 10% 98%;
+    --muted: 270 30% 14.9%;
+    --muted-foreground: 270 10% 63.9%;
+    --accent: 270 30% 14.9%;
+    --accent-foreground: 270 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 270 30% 14.9%;
+    --input: 270 30% 14.9%;
+    --ring: 270 30% 83.1%;
+    --chart-1: 290 70% 60%;
+    --chart-2: 230 60% 55%;
+    --chart-3: 320 80% 65%;
+    --chart-4: 180 65% 50%;
+    --chart-5: 40 75% 65%;
+  }
+
+  .crimson {
+    --background: 350 30% 5.9%;
+    --foreground: 350 10% 98%;
+    --card: 350 30% 5.9%;
+    --card-foreground: 350 10% 98%;
+    --popover: 350 30% 5.9%;
+    --popover-foreground: 350 10% 98%;
+    --primary: 350 100% 65%;
+    --primary-foreground: 350 10% 9%;
+    --secondary: 350 30% 14.9%;
+    --secondary-foreground: 350 10% 98%;
+    --muted: 350 30% 14.9%;
+    --muted-foreground: 350 10% 63.9%;
+    --accent: 350 30% 14.9%;
+    --accent-foreground: 350 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 350 30% 14.9%;
+    --input: 350 30% 14.9%;
+    --ring: 350 30% 83.1%;
+    --chart-1: 10 70% 60%;
+    --chart-2: 40 60% 55%;
+    --chart-3: 280 80% 65%;
+    --chart-4: 200 65% 50%;
+    --chart-5: 160 75% 45%;
+  }
+
+  .jade {
+    --background: 150 30% 5.9%;
+    --foreground: 150 10% 98%;
+    --card: 150 30% 5.9%;
+    --card-foreground: 150 10% 98%;
+    --popover: 150 30% 5.9%;
+    --popover-foreground: 150 10% 98%;
+    --primary: 150 100% 60%;
+    --primary-foreground: 150 10% 9%;
+    --secondary: 150 30% 14.9%;
+    --secondary-foreground: 150 10% 98%;
+    --muted: 150 30% 14.9%;
+    --muted-foreground: 150 10% 63.9%;
+    --accent: 150 30% 14.9%;
+    --accent-foreground: 150 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 30% 14.9%;
+    --input: 150 30% 14.9%;
+    --ring: 150 30% 83.1%;
+    --chart-1: 130 70% 50%;
+    --chart-2: 180 60% 45%;
+    --chart-3: 90 80% 45%;
+    --chart-4: 220 65% 55%;
+    --chart-5: 30 75% 60%;
+  }
+
+  .amber {
+    --background: 40 30% 5.9%;
+    --foreground: 40 10% 98%;
+    --card: 40 30% 5.9%;
+    --card-foreground: 40 10% 98%;
+    --popover: 40 30% 5.9%;
+    --popover-foreground: 40 10% 98%;
+    --primary: 40 100% 60%;
+    --primary-foreground: 40 10% 9%;
+    --secondary: 40 30% 14.9%;
+    --secondary-foreground: 40 10% 98%;
+    --muted: 40 30% 14.9%;
+    --muted-foreground: 40 10% 63.9%;
+    --accent: 40 30% 14.9%;
+    --accent-foreground: 40 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 30% 14.9%;
+    --input: 40 30% 14.9%;
+    --ring: 40 30% 83.1%;
+    --chart-1: 40 85% 55%;
+    --chart-2: 30 80% 50%;
+    --chart-3: 50 75% 60%;
+    --chart-4: 20 70% 55%;
+    --chart-5: 10 65% 50%;
+  }
+
+  .rose {
+    --background: 335 30% 5.9%;
+    --foreground: 335 10% 98%;
+    --card: 335 30% 5.9%;
+    --card-foreground: 335 10% 98%;
+    --popover: 335 30% 5.9%;
+    --popover-foreground: 335 10% 98%;
+    --primary: 335 100% 65%;
+    --primary-foreground: 335 10% 9%;
+    --secondary: 335 30% 14.9%;
+    --secondary-foreground: 335 10% 98%;
+    --muted: 335 30% 14.9%;
+    --muted-foreground: 335 10% 63.9%;
+    --accent: 335 30% 14.9%;
+    --accent-foreground: 335 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 335 30% 14.9%;
+    --input: 335 30% 14.9%;
+    --ring: 335 30% 83.1%;
+    --chart-1: 335 80% 65%;
+    --chart-2: 350 75% 60%;
+    --chart-3: 320 70% 60%;
+    --chart-4: 305 65% 65%;
+    --chart-5: 290 75% 60%;
+  }
+
+  .cyberpunk {
+    --background: 240 20% 8%;
+    --foreground: 180 100% 80%;
+    --card: 240 20% 8%;
+    --card-foreground: 180 100% 80%;
+    --popover: 240 20% 8%;
+    --popover-foreground: 180 100% 80%;
+    --primary: 285 100% 65%;
+    --primary-foreground: 240 10% 9%;
+    --secondary: 325 100% 60%;
+    --secondary-foreground: 240 10% 98%;
+    --muted: 240 20% 20%;
+    --muted-foreground: 180 50% 70%;
+    --accent: 285 100% 25%;
+    --accent-foreground: 180 100% 80%;
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 20% 25%;
+    --input: 240 20% 20%;
+    --ring: 285 100% 65%;
+    --chart-1: 285 100% 65%;
+    --chart-2: 325 100% 60%;
+    --chart-3: 180 100% 60%;
+    --chart-4: 60 100% 60%;
+    --chart-5: 0 100% 60%;
+  }
+
+  .dracula {
+    --background: 231 15% 18%;
+    --foreground: 60 30% 96%;
+    --card: 231 15% 18%;
+    --card-foreground: 60 30% 96%;
+    --popover: 231 15% 18%;
+    --popover-foreground: 60 30% 96%;
+    --primary: 265 89% 78%;
+    --primary-foreground: 231 15% 18%;
+    --secondary: 225 27% 51%;
+    --secondary-foreground: 60 30% 96%;
+    --muted: 232 14% 31%;
+    --muted-foreground: 60 30% 70%;
+    --accent: 232 14% 31%;
+    --accent-foreground: 60 30% 96%;
+    --destructive: 0 100% 67%;
+    --destructive-foreground: 60 30% 96%;
+    --border: 232 14% 31%;
+    --input: 232 14% 31%;
+    --ring: 265 89% 78%;
+    --chart-1: 265 89% 78%; /* Purple */
+    --chart-2: 191 97% 77%; /* Cyan */
+    --chart-3: 135 94% 65%; /* Green */
+    --chart-4: 326 100% 74%; /* Pink */
+    --chart-5: 31 100% 71%; /* Orange */
+  }
+
+  .midnight {
+    --background: 230 50% 5%;
+    --foreground: 230 15% 95%;
+    --card: 230 50% 5%;
+    --card-foreground: 230 15% 95%;
+    --popover: 230 50% 5%;
+    --popover-foreground: 230 15% 95%;
+    --primary: 230 100% 70%;
+    --primary-foreground: 230 15% 5%;
+    --secondary: 260 80% 60%;
+    --secondary-foreground: 230 15% 5%;
+    --muted: 230 30% 15%;
+    --muted-foreground: 230 15% 70%;
+    --accent: 230 30% 15%;
+    --accent-foreground: 230 15% 95%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 230 30% 15%;
+    --input: 230 30% 15%;
+    --ring: 230 100% 70%;
+    --chart-1: 230 100% 70%;
+    --chart-2: 260 80% 60%;
+    --chart-3: 290 80% 60%;
+    --chart-4: 320 70% 55%;
+    --chart-5: 200 70% 50%;
+  }
+
+  .fantasy {
+    --background: 215 50% 5%;
+    --foreground: 40 80% 95%;
+    --card: 215 50% 7%;
+    --card-foreground: 40 80% 95%;
+    --popover: 215 50% 7%;
+    --popover-foreground: 40 80% 95%;
+    --primary: 45 95% 65%;
+    --primary-foreground: 215 50% 5%;
+    --secondary: 190 70% 50%;
+    --secondary-foreground: 215 50% 5%;
+    --muted: 215 40% 15%;
+    --muted-foreground: 40 60% 80%;
+    --accent: 300 80% 55%;
+    --accent-foreground: 215 10% 95%;
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 215 10% 95%;
+    --border: 215 50% 18%;
+    --input: 215 40% 15%;
+    --ring: 45 95% 65%;
+    --chart-1: 45 95% 65%;
+    --chart-2: 190 70% 50%;
+    --chart-3: 300 80% 55%;
+    --chart-4: 130 70% 50%;
+    --chart-5: 0 70% 60%;
+  }
+
+  .fantasy [class*="Card"],
+  .fantasy [class*="sheet"] {
+    border: 1px solid rgba(200, 150, 255, 0.2) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 15px rgba(180, 120, 255, 0.15) !important;
+    border-radius: 0.5rem !important;
+    background-image: radial-gradient(
+        circle at 120% -20%,
+        rgba(180, 120, 255, 0.15),
+        rgba(30, 20, 60, 0) 30%
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(180, 120, 255, 0.05),
+        rgba(30, 20, 60, 0.05)
+      ) !important;
+    backdrop-filter: blur(5px) !important;
+  }
+
+  .fantasy [class*="Card"]:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(200, 150, 255, 0.5),
+      transparent
+    );
+    opacity: 0.5;
+  }
+
+  .fantasy button,
+  .fantasy a {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--accent)),
+      hsl(calc(var(--accent-h) - 10) var(--accent-s) calc(var(--accent-l) - 5%))
+    ) !important;
+    color: hsl(var(--accent-foreground)) !important;
+    border: 1px solid rgba(200, 150, 255, 0.3) !important;
+    border-radius: 0.4rem !important;
+    font-family: "Avenir Next", "Quicksand", "Segoe UI", sans-serif !important;
+    font-weight: 500 !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 0.02em !important;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 10px rgba(180, 120, 255, 0.1) !important;
+  }
+
+  .fantasy button:before,
+  .fantasy a:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: all 0.5s ease;
+  }
+
+  .fantasy button:hover:before,
+  .fantasy a:hover:before {
+    left: 100%;
+  }
+
+  .fantasy button:hover,
+  .fantasy a:hover {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--accent)),
+      hsl(calc(var(--accent-h) + 10) var(--accent-s) calc(var(--accent-l) - 5%))
+    ) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 15px rgba(180, 120, 255, 0.2) !important;
+  }
+
+  .fantasy [class*="dropdown"] {
+    background-color: hsl(var(--card)) !important;
+    border: 1px solid rgba(200, 150, 255, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
+      0 0 15px rgba(180, 120, 255, 0.2) !important;
+    backdrop-filter: blur(12px) !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .fantasy .dropdown-menu-item {
+    font-size: 0.85rem !important;
+    border-radius: 0.3rem !important;
+    transition: all 0.2s ease !important;
+    margin: 2px !important;
+  }
+
+  .fantasy .dropdown-menu-item:hover {
+    background-color: rgba(180, 120, 255, 0.15) !important;
+    box-shadow: 0 0 8px rgba(180, 120, 255, 0.2) inset !important;
+  }
+
+  /* Subtle magical sparkle effect to Fantasy theme buttons */
+  @keyframes fantasy-sparkle {
+    0%,
+    100% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+  }
+
+  .fantasy button::after,
+  .fantasy a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 255, 255, 0.8) 0%,
+        transparent 12%
+      ),
+      radial-gradient(
+        circle at 20% 30%,
+        rgba(255, 255, 255, 0.6) 0%,
+        transparent 8%
+      ),
+      radial-gradient(
+        circle at 80% 70%,
+        rgba(255, 255, 255, 0.7) 0%,
+        transparent 10%
+      );
+    background-size: 300% 300%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    animation: fantasy-sparkle 5s infinite;
+  }
+
+  .fantasy button:hover::after,
+  .fantasy a:hover::after {
+    opacity: 0.7;
+  }
+
+  .pokemon {
+    --background: 220 50% 98%;
+    --foreground: 220 50% 15%;
+    --card: 220 50% 95%;
+    --card-foreground: 220 50% 15%;
+    --popover: 220 50% 95%;
+    --popover-foreground: 220 50% 15%;
+    --primary: 0 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 70% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 20% 90%;
+    --muted-foreground: 220 50% 40%;
+    --accent: 40 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 50% 80%;
+    --input: 220 20% 90%;
+    --ring: 0 100% 50%;
+    --chart-1: 0 100% 50%;
+    --chart-2: 220 70% 50%;
+    --chart-3: 120 60% 50%;
+    --chart-4: 40 100% 50%;
+    --chart-5: 270 70% 60%;
+  }
+
+  .classic {
+    --background: 0 0% 92%;
+    --foreground: 212 85% 20%;
+    --card: 0 0% 96%;
+    --card-foreground: 212 85% 20%;
+    --popover: 0 0% 96%;
+    --popover-foreground: 212 85% 20%;
+    --primary: 212 85% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 88%;
+    --secondary-foreground: 212 85% 20%;
+    --muted: 0 0% 80%;
+    --muted-foreground: 212 85% 40%;
+    --accent: 212 85% 70%;
+    --accent-foreground: 0 0% 20%;
+    --destructive: 0 85% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 76%;
+    --input: 0 0% 88%;
+    --ring: 212 85% 45%;
+    --chart-1: 212 85% 45%;
+    --chart-2: 190 80% 50%;
+    --chart-3: 130 50% 50%;
+    --chart-4: 30 80% 50%;
+    --chart-5: 350 70% 55%;
+  }
 }
 
 @keyframes pulsateSection {
@@ -119,4 +572,351 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Comic book specific styles */
+.comic .dropdown-theme-icon {
+  transition: color 0.3s ease;
+}
+
+.comic .dropdown-theme-icon:hover svg {
+  color: #f9f6e9 !important; /* Match comic background color to make icon disappear */
+}
+
+.comic * {
+  font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+}
+
+/* Adjust rounded elements but exclude dropdown items */
+.comic [class*="rounded"]:not([class*="dropdown-menu"] *) {
+  border: 2px solid #000 !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Special handling for dropdown items in comic theme */
+.comic .dropdown-menu-content {
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.comic .dropdown-menu-item {
+  margin: 1px !important;
+  padding: 0.5rem 0.75rem !important;
+  border: 1px solid #000 !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Adjust theme menu specifically in comic theme */
+.comic [class*="DropdownMenuContent"] {
+  padding: 0.75rem !important;
+  overflow: visible !important;
+}
+
+.comic [class*="DropdownMenuItem"] {
+  margin: 1px !important;
+  padding: 0.5rem !important;
+  height: auto !important;
+  min-height: 3rem !important;
+  border: 1px solid #000 !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+.comic [class*="DropdownMenuItem"] span {
+  padding: 0.25rem 0.5rem !important;
+  margin-top: 0.25rem !important;
+}
+
+.comic button,
+.comic a {
+  position: relative;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.comic button:active,
+.comic a:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8) !important;
+}
+
+.fantasy * {
+  font-family: "Avenir Next", "Quicksand", "Segoe UI", sans-serif !important;
+  font-size: 0.92rem !important;
+}
+
+.fantasy h1,
+.fantasy h2,
+.fantasy h3 {
+  font-family: "Avenir Next", "Quicksand", "Segoe UI", sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  color: hsl(var(--primary)) !important;
+  margin-bottom: 0.75rem !important;
+  position: relative;
+}
+
+.fantasy p {
+  font-size: 0.88rem !important;
+  line-height: 1.6 !important;
+}
+
+.fantasy [class*="Card"],
+.fantasy [class*="sheet"] {
+  border: 1px solid rgba(200, 150, 255, 0.2) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 15px rgba(180, 120, 255, 0.15) !important;
+  border-radius: 0.5rem !important;
+  background-image: radial-gradient(
+      circle at 120% -20%,
+      rgba(180, 120, 255, 0.15),
+      rgba(30, 20, 60, 0) 30%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(180, 120, 255, 0.05),
+      rgba(30, 20, 60, 0.05)
+    ) !important;
+  backdrop-filter: blur(5px) !important;
+}
+
+.fantasy [class*="Card"]:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(200, 150, 255, 0.5),
+    transparent
+  );
+  opacity: 0.5;
+}
+
+.fantasy button,
+.fantasy a {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--accent)),
+    hsl(calc(var(--accent-h) - 10) var(--accent-s) calc(var(--accent-l) - 5%))
+  ) !important;
+  color: hsl(var(--accent-foreground)) !important;
+  border: 1px solid rgba(200, 150, 255, 0.3) !important;
+  border-radius: 0.4rem !important;
+  font-family: "Avenir Next", "Quicksand", "Segoe UI", sans-serif !important;
+  font-weight: 500 !important;
+  padding: 0.35rem 0.85rem !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.02em !important;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 10px rgba(180, 120, 255, 0.1) !important;
+}
+
+.fantasy button:before,
+.fantasy a:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: all 0.5s ease;
+}
+
+.fantasy button:hover:before,
+.fantasy a:hover:before {
+  left: 100%;
+}
+
+.fantasy button:hover,
+.fantasy a:hover {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--accent)),
+    hsl(calc(var(--accent-h) + 10) var(--accent-s) calc(var(--accent-l) - 5%))
+  ) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 15px rgba(180, 120, 255, 0.2) !important;
+}
+
+.fantasy [class*="dropdown"] {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid rgba(200, 150, 255, 0.3) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(180, 120, 255, 0.2) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 0.5rem !important;
+}
+
+.fantasy .dropdown-menu-item {
+  font-size: 0.85rem !important;
+  border-radius: 0.3rem !important;
+  transition: all 0.2s ease !important;
+  margin: 2px !important;
+}
+
+.fantasy .dropdown-menu-item:hover {
+  background-color: rgba(180, 120, 255, 0.15) !important;
+  box-shadow: 0 0 8px rgba(180, 120, 255, 0.2) inset !important;
+}
+
+/* New OS Classic theme styles (replacing steampunk) */
+.classic * {
+  font-family: "MS Sans Serif", "Chicago", "Monaco", "Arial", sans-serif !important;
+  font-size: 0.9rem !important;
+}
+
+.classic h1,
+.classic h2,
+.classic h3,
+.classic h4 {
+  font-weight: bold !important;
+  letter-spacing: 0 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.classic [class*="rounded"] {
+  border-radius: 0 !important;
+}
+
+.classic [class*="Card"],
+.classic [class*="sheet"],
+.classic [class*="dropdown"] {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #848484,
+    inset 2px 2px 0 #dfdfdf, inset -2px -2px 0 #5a5a5a !important;
+  border-radius: 0 !important;
+  padding: 2px !important;
+}
+
+.classic [class*="Card"]:before,
+.classic [class*="sheet"]:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background-color: hsl(var(--primary)) !important;
+  z-index: 1;
+}
+
+.classic button,
+.classic a {
+  background-color: hsl(var(--secondary)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  font-family: "MS Sans Serif", "Chicago", "Monaco", "Arial", sans-serif !important;
+  font-weight: normal !important;
+  padding: 4px 12px !important;
+  font-size: 0.85rem !important;
+  position: relative;
+  transition: none !important;
+  box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #848484,
+    inset 2px 2px 0 #dfdfdf, inset -2px -2px 0 #5a5a5a !important;
+}
+
+.classic button:active,
+.classic a:active {
+  background-color: hsl(var(--secondary)) !important;
+  box-shadow: inset -1px -1px 0 #ffffff, inset 1px 1px 0 #848484,
+    inset -2px -2px 0 #dfdfdf, inset 2px 2px 0 #5a5a5a !important;
+  top: 1px;
+  left: 1px;
+}
+
+.classic .dropdown-menu-content {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2) !important;
+  padding: 2px !important;
+}
+
+.classic .dropdown-menu-item {
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 3px 6px !important;
+  min-height: 4rem !important;
+}
+
+.classic .dropdown-menu-item span {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  padding-bottom: 3px !important;
+}
+
+.classic .dropdown-theme-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.comic {
+  --background: 47 30% 95%;
+  --foreground: 240 20% 15%;
+  --card: 47 30% 95%;
+  --card-foreground: 240 20% 15%;
+  --popover: 47 30% 95%;
+  --popover-foreground: 240 20% 15%;
+  --primary: 230 70% 50%;
+  --primary-foreground: 45 30% 95%;
+  --secondary: 30 90% 55%;
+  --secondary-foreground: 45 30% 95%;
+  --muted: 45 20% 90%;
+  --muted-foreground: 240 20% 45%;
+  --accent: 340 90% 50%;
+  --accent-foreground: 45 30% 95%;
+  --destructive: 0 80% 50%;
+  --destructive-foreground: 45 30% 95%;
+  --border: 240 20% 85%;
+  --input: 45 20% 90%;
+  --ring: 230 70% 50%;
+  --chart-1: 230 70% 50%;
+  --chart-2: 30 90% 55%;
+  --chart-3: 340 90% 50%;
+  --chart-4: 180 70% 50%;
+  --chart-5: 45 80% 60%;
+}
+
+.classic .dropdown-theme-icon:hover svg,
+.classic .dropdown-menu-item:hover .dropdown-theme-icon svg {
+  color: hsl(var(--primary)) !important;
+}
+
+/* Text truncation for Classic theme dropdown items */
+.classic .dropdown-menu-item span {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Text truncation for Fantasy theme dropdown items */
+.fantasy .dropdown-menu-item span {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.classic .dropdown-menu-item:hover {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
 }

@@ -41,6 +41,18 @@ import {
   Play,
   Github,
   Save,
+  Flower2,
+  Flame,
+  Leaf,
+  Zap,
+  Sparkles,
+  Brush,
+  Ghost,
+  CircleDot,
+  Heart,
+  Wand2,
+  Trophy as TrophyIcon,
+  Monitor,
 } from "lucide-react";
 import {
   Collapsible,
@@ -246,6 +258,39 @@ const Navbar = () => {
     setPendingNavigation(null);
   };
 
+  const themeCategories = [
+    {
+      category: "System",
+      themes: [
+        { value: "light", label: "Light", icon: Sun },
+        { value: "dark", label: "Dark", icon: Moon },
+        { value: "system", label: "System", icon: Laptop },
+      ],
+    },
+    {
+      category: "Colors",
+      themes: [
+        { value: "amber", label: "Amber", icon: CircleDot },
+        { value: "amethyst", label: "Amethyst", icon: Flower2 },
+        { value: "crimson", label: "Crimson", icon: Flame },
+        { value: "jade", label: "Jade", icon: Leaf },
+        { value: "midnight", label: "Midnight", icon: Sparkles },
+        { value: "rose", label: "Rose", icon: Heart },
+      ],
+    },
+    {
+      category: "Special",
+      themes: [
+        { value: "cyberpunk", label: "Cyberpunk", icon: Zap },
+        { value: "classic", label: "Classic", icon: Monitor },
+        { value: "comic", label: "Comic", icon: Brush },
+        { value: "dracula", label: "Dracula", icon: Ghost },
+        { value: "fantasy", label: "Fantasy", icon: Wand2 },
+        { value: "pokemon", label: "Pokemon", icon: TrophyIcon },
+      ],
+    },
+  ];
+
   return (
     <nav
       className={cn(
@@ -270,6 +315,7 @@ const Navbar = () => {
                   style={{ objectFit: "contain" }}
                   width={40}
                   height={40}
+                  priority
                   className="drop-shadow-md"
                 />
               </div>
@@ -415,84 +461,95 @@ const Navbar = () => {
             <div className="hidden lg:block">
               <Clock />
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm hover:bg-accent/50 transition-colors"
+            <div className="hidden lg:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm hover:bg-accent/50 transition-colors"
+                  >
+                    <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 p-1.5 rounded-xl dropdown-menu-content"
                 >
-                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36 rounded-xl">
-                <DropdownMenuItem
-                  onClick={() => setTheme("light")}
-                  className={cn(
-                    "py-2 cursor-pointer",
-                    theme === "light" ? "bg-accent" : ""
-                  )}
-                >
-                  <Sun className="mr-2 h-4 w-4" />
-                  <span>Light</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setTheme("dark")}
-                  className={cn(
-                    "py-2 cursor-pointer",
-                    theme === "dark" ? "bg-accent" : ""
-                  )}
-                >
-                  <Moon className="mr-2 h-4 w-4" />
-                  <span>Dark</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setTheme("system")}
-                  className={cn(
-                    "py-2 cursor-pointer",
-                    theme === "system" ? "bg-accent" : ""
-                  )}
-                >
-                  <Laptop className="mr-2 h-4 w-4" />
-                  <span>System</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {themeCategories.map((category, index) => (
+                    <React.Fragment key={category.category}>
+                      {index > 0 && <div className="h-px bg-border my-0.5" />}
+                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                        {category.category}
+                      </div>
+                      <div className="grid grid-cols-3 gap-0.5">
+                        {category.themes.map((option) => (
+                          <DropdownMenuItem
+                            key={option.value}
+                            onClick={() => setTheme(option.value)}
+                            className={cn(
+                              "py-1 px-1.5 rounded-lg cursor-pointer flex flex-col items-center justify-center h-14 dropdown-menu-item",
+                              theme === option.value
+                                ? option.value === "cyberpunk"
+                                  ? "bg-[#ff00ff]/70"
+                                  : option.value === "comic"
+                                  ? "bg-[#ff6b9c]/70"
+                                  : "bg-accent/80"
+                                : "hover:bg-accent/40"
+                            )}
+                          >
+                            <div className="flex items-center justify-center mb-0.5 dropdown-theme-icon">
+                              <option.icon className="h-5 w-5" />
+                            </div>
+                            <span className="text-xs">{option.label}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
             {isAuthenticated ? (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all">
-                    <LogOut className="mr-2 h-4 w-4" /> Logout
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-xl">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Are you sure you want to logout?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      You will be signed out of your account and redirected to
-                      the home page.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-lg">
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction onClick={signOut} className="rounded-lg">
-                      Logout
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <div className="hidden lg:block">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all">
+                      <LogOut className="mr-2 h-4 w-4" /> Logout
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you sure you want to logout?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        You will be signed out of your account and redirected to
+                        the home page.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-lg">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={signOut}
+                        className="rounded-lg"
+                      >
+                        Logout
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             ) : (
               <>
                 <Button
                   onClick={() => signIn("google")}
-                  className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all"
+                  className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
                 >
                   <LogIn className="mr-2 h-4 w-4" /> Login
                 </Button>
@@ -527,6 +584,7 @@ const Navbar = () => {
                           style={{ objectFit: "contain" }}
                           width={40}
                           height={40}
+                          priority
                           className="drop-shadow-md"
                         />
                       </div>
@@ -689,37 +747,45 @@ const Navbar = () => {
                               <span className="sr-only">Toggle theme</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-36">
-                            <DropdownMenuItem
-                              onClick={() => setTheme("light")}
-                              className={cn(
-                                "cursor-pointer",
-                                theme === "light" ? "bg-accent" : ""
-                              )}
-                            >
-                              <Sun className="mr-2 h-4 w-4" />
-                              <span>Light</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => setTheme("dark")}
-                              className={cn(
-                                "cursor-pointer",
-                                theme === "dark" ? "bg-accent" : ""
-                              )}
-                            >
-                              <Moon className="mr-2 h-4 w-4" />
-                              <span>Dark</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => setTheme("system")}
-                              className={cn(
-                                "cursor-pointer",
-                                theme === "system" ? "bg-accent" : ""
-                              )}
-                            >
-                              <Laptop className="mr-2 h-4 w-4" />
-                              <span>System</span>
-                            </DropdownMenuItem>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-56 p-1.5 rounded-xl dropdown-menu-content"
+                          >
+                            {themeCategories.map((category, index) => (
+                              <React.Fragment key={category.category}>
+                                {index > 0 && (
+                                  <div className="h-px bg-border my-0.5" />
+                                )}
+                                <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                                  {category.category}
+                                </div>
+                                <div className="grid grid-cols-3 gap-0.5">
+                                  {category.themes.map((option) => (
+                                    <DropdownMenuItem
+                                      key={option.value}
+                                      onClick={() => setTheme(option.value)}
+                                      className={cn(
+                                        "py-1 px-1.5 rounded-lg cursor-pointer flex flex-col items-center justify-center h-14 dropdown-menu-item",
+                                        theme === option.value
+                                          ? option.value === "cyberpunk"
+                                            ? "bg-[#ff00ff]/70"
+                                            : option.value === "comic"
+                                            ? "bg-[#ff6b9c]/70"
+                                            : "bg-accent/80"
+                                          : "hover:bg-accent/40"
+                                      )}
+                                    >
+                                      <div className="flex items-center justify-center mb-0.5 dropdown-theme-icon">
+                                        <option.icon className="h-5 w-5" />
+                                      </div>
+                                      <span className="text-xs">
+                                        {option.label}
+                                      </span>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </div>
+                              </React.Fragment>
+                            ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
 

@@ -8,6 +8,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { NextAuthProvider } from "@/providers/next-auth-provider";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { DndProvider } from "@/components/dnd-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,9 +51,11 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <Navbar />
-              <main className="flex-grow pb-20">{children}</main>
-              <Footer />
+              <DndProvider>
+                <Navbar />
+                <main className="flex-grow pb-20">{children}</main>
+                <Footer />
+              </DndProvider>
             </ThemeProvider>
           </AuthProvider>
         </NextAuthProvider>

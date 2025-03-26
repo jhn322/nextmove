@@ -1,5 +1,5 @@
 import { Chess } from "chess.js";
-import { Bot } from "@/components/game/data/bots";
+import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { Session } from "next-auth";
 import { DIFFICULTY_LEVELS } from "@/config/game";
 import {
@@ -40,7 +40,8 @@ export const determineGameResult = (
   if (game.isCheckmate()) {
     const losingColor = game.turn();
     const winningColor = losingColor === "w" ? "b" : "w";
-    return winningColor === playerColor ? "win" : "loss";
+    const result = winningColor === playerColor ? "win" : "loss";
+    return result;
   }
 
   // Default case (should not happen)
@@ -89,6 +90,11 @@ export const saveGameResult = async ({
 
     const result = determineGameResult(game, playerColor, isResignation);
     const normalizedDifficulty = normalizeDifficulty(difficulty);
+
+    // Simplified logging that's still informative
+    console.log(
+      `Saving game: ${result} against ${selectedBot.name} (${normalizedDifficulty})`
+    );
 
     const gameData: Omit<GameHistory, "id"> = {
       user_id: userId,
@@ -159,7 +165,11 @@ export const getUserGameStats = async (
         winRate: 0,
         averageMovesPerGame: 0,
         averageGameTime: 0,
-        beatenBots: [],
+        beatenBots: [] as Array<{
+          name: string;
+          difficulty: string;
+          id: number;
+        }>,
       };
     }
 
@@ -190,10 +200,19 @@ export const getUserGameStats = async (
       new Set(
         gameHistory
           .filter((game) => game.result === "win")
-          .map((game) => ({
-            name: game.opponent,
-            difficulty: normalizeDifficulty(game.difficulty),
-          }))
+          .map((game) => {
+            // Find the bot in BOTS_BY_DIFFICULTY to get its ID
+            const difficulty = normalizeDifficulty(game.difficulty);
+            const botInDifficulty = BOTS_BY_DIFFICULTY[
+              difficulty as keyof typeof BOTS_BY_DIFFICULTY
+            ]?.find((bot) => bot.name === game.opponent);
+
+            return {
+              name: game.opponent,
+              difficulty: normalizeDifficulty(game.difficulty),
+              id: botInDifficulty?.id || 0,
+            };
+          })
       )
     );
 
