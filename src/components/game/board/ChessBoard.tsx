@@ -14,8 +14,6 @@ import { useHintEngine } from "@/hooks/useHintEngine";
 import useHighlightedSquares from "./HighlightedSquares";
 import GameDialogs from "../dialogs/GameDialogs";
 import GameControls from "@/components/game/controls/GameControls";
-import SquareComponent from "@/components/game/board/Square";
-import Piece from "@/components/game/board/Piece";
 import VictoryModal from "../modal/VictoryModal";
 import PlayerProfile from "./PlayerProfile";
 import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
@@ -23,6 +21,8 @@ import PawnPromotionModal from "./PawnPromotionModal";
 import PreMadeMove from "./PreMadeMove";
 import { useAuth } from "@/context/auth-context";
 import { getUserSettings } from "@/lib/mongodb-service";
+import DraggablePiece from "./DraggablePiece";
+import DroppableSquare from "./DroppableSquare";
 
 interface ChessBoardProps {
   difficulty: string;
@@ -675,6 +675,20 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     originalHandleSquareClick(row, col);
   };
 
+  // Handle drag start - similar to clicking on a piece
+  const handleDragStart = (position: string) => {
+    // When drag starts, simulate the same behavior as clicking on a piece
+    const [file, rank] = position.split("");
+    const colIndex = "abcdefgh".indexOf(file);
+    const rowIndex = 8 - parseInt(rank);
+
+    // Clear any existing highlights
+    handleLeftClick();
+
+    // Select the piece and show possible moves
+    originalHandleSquareClick(rowIndex, colIndex);
+  };
+
   // Handle pawn promotion piece selection
   const handlePromotionSelect = (pieceType: "q" | "r" | "n" | "b") => {
     if (pendingPromotion) {
@@ -753,6 +767,52 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       }
     }
   }, [game]);
+
+  const handleDragMove = (
+    item: { type: string; position: string },
+    targetPosition: string
+  ) => {
+    if (game.turn() !== playerColor) return;
+    if (game.isGameOver() || game.isResigned) return;
+
+    // Convert the positions to the format that makeMove expects
+    const fromPosition = item.position;
+    const toPosition = targetPosition;
+
+    if (fromPosition === toPosition) return;
+
+    // Call makeMove with the from and to positions
+    const moveSuccessful = makeMove(fromPosition, toPosition);
+
+    if (moveSuccessful) {
+      // Hide bot selection panel when first move is made
+      if (showBotSelection) {
+        setShowBotSelection(false);
+      }
+
+      setBoard(game.board());
+
+      if (!game.isGameOver()) {
+        setTimeout(getBotMove, 1000);
+      }
+
+      if (!game.isGameOver()) {
+        setGameStarted(true);
+        // Ensure the game state is saved with gameStarted=true
+        const STORAGE_KEY = "chess-game-state";
+        const currentState = JSON.parse(
+          localStorage.getItem(STORAGE_KEY) || "{}"
+        );
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            ...currentState,
+            gameStarted: true,
+          })
+        );
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -847,65 +907,70 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                         hintMove &&
                         (square === hintMove.from || square === hintMove.to);
 
-                      // Check if this piece can be taken by the current player
-                      const canBeTaken = !!(
-                        piece &&
-                        piece.color !== playerColor &&
-                        possibleMoves.includes(square)
-                      );
+                      // Calculate the square color
+                      const isLight =
+                        (actualRowIndex + actualColIndex) % 2 === 1;
 
-                      // Always show coordinates in the same position regardless of board orientation
-                      const showRank = showCoordinates && colIndex === 0;
-                      const showFile = showCoordinates && rowIndex === 7;
+                      const isSelected =
+                        selectedPiece &&
+                        selectedPiece.row === actualRowIndex &&
+                        selectedPiece.col === actualColIndex;
 
-                      // But the coordinate values need to account for the board orientation
-                      const rankValue = 8 - actualRowIndex;
-                      const fileValue = "abcdefgh"[actualColIndex];
+                      // Get the coordinates
+                      const shouldShowRank =
+                        showCoordinates && actualColIndex === 0;
+                      const shouldShowFile =
+                        showCoordinates && actualRowIndex === 7;
+                      const coordinate = shouldShowRank
+                        ? `${8 - actualRowIndex}`
+                        : shouldShowFile
+                        ? `${"abcdefgh"[actualColIndex]}`
+                        : undefined;
 
-                      const coordinate = showCoordinates
-                        ? showRank
-                          ? `${rankValue}`
-                          : showFile
-                          ? fileValue
-                          : ""
-                        : "";
+                      // Determine if the piece can be dragged
+                      const canDragPiece =
+                        piece?.color === playerColor &&
+                        game.turn() === playerColor &&
+                        !game.isGameOver();
 
                       return (
-                        <SquareComponent
-                          key={`${rowIndex}-${colIndex}`}
-                          isLight={(actualRowIndex + actualColIndex) % 2 === 0}
-                          isSelected={
-                            selectedPiece?.row === actualRowIndex &&
-                            selectedPiece?.col === actualColIndex
-                          }
-                          isPossibleMove={possibleMoves.includes(square)}
-                          onClick={() =>
-                            handleSquareClick(actualRowIndex, actualColIndex)
-                          }
-                          onContextMenu={(e) => handleRightClick(square, e)}
-                          difficulty={difficulty}
+                        <DroppableSquare
+                          key={`${actualRowIndex}-${actualColIndex}`}
+                          row={actualRowIndex}
+                          col={actualColIndex}
+                          isLight={isLight}
+                          isSelected={!!isSelected}
                           isCheck={isKingInCheck}
-                          isLastMove={isLastMove ?? false}
-                          isHintMove={isHintMove ?? false}
+                          isLastMove={!!isLastMove}
+                          isPossibleMove={possibleMoves.includes(square)}
+                          isHintMove={!!isHintMove}
                           isRedHighlighted={isHighlighted(square)}
                           isPreMadeMove={isPreMadeMove(square)}
                           isPreMadePossibleMove={isPreMadePossibleMove(square)}
-                          showRank={showRank}
-                          showFile={showFile}
                           coordinate={coordinate}
+                          showRank={shouldShowRank}
+                          showFile={shouldShowFile}
+                          difficulty={difficulty}
+                          onDrop={handleDragMove}
+                          onClick={() =>
+                            handleSquareClick(actualRowIndex, actualColIndex)
+                          }
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            handleRightClick(square, e);
+                          }}
                         >
                           {piece && (
-                            <Piece
-                              type={
-                                piece.color === "w"
-                                  ? piece.type.toUpperCase()
-                                  : piece.type.toLowerCase()
-                              }
+                            <DraggablePiece
+                              type={piece.type}
+                              color={piece.color}
+                              position={square}
                               pieceSet={pieceSet}
-                              canBeTaken={canBeTaken}
+                              canDrag={canDragPiece}
+                              onDragStart={handleDragStart}
                             />
                           )}
-                        </SquareComponent>
+                        </DroppableSquare>
                       );
                     })
                   )}
