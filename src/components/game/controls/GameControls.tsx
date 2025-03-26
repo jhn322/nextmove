@@ -530,7 +530,11 @@ const GameControls = ({
                               isCalculatingHint ? "animate-pulse" : ""
                             }`}
                           />
-                          {isCalculatingHint ? "Thinking..." : "Hint"}
+                          {isCalculatingHint ? (
+                            <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            "Hint"
+                          )}
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>

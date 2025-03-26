@@ -36,6 +36,7 @@ const SignInPage = () => {
                 style={{ objectFit: "contain" }}
                 width={64}
                 height={64}
+                priority
                 className="drop-shadow-md"
               />
             </div>

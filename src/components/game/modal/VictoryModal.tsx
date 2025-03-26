@@ -84,15 +84,29 @@ const VictoryModal = ({
   const [resultSaved, setResultSaved] = useState(false);
   const { session } = useAuth();
 
+  const isPlayerWinner = useCallback(() => {
+    if (game.isCheckmate()) {
+      const losingColor = game.turn() === "w" ? "w" : "b";
+      const winningColor = losingColor === "w" ? "b" : "w";
+      return winningColor === playerColor;
+    }
+    if (isResignation || game.isResigned) {
+      return false;
+    }
+    return false;
+  }, [game, playerColor, isResignation]);
+
   // Generate a unique game ID based on current state to prevent duplicate saves
   const gameStateId = useMemo(() => {
     if (!game || !selectedBot) return "";
 
     // Create a stable ID that doesn't change on refresh
-    // Use the game FEN, bot name, player color, and difficulty
-    // This is stable across refreshes for the same game state
-    return `${game.fen()}_${selectedBot.name}_${playerColor}_${difficulty}`;
-  }, [game, selectedBot, playerColor, difficulty]);
+    // Include the result (win/loss/draw) in the ID to distinguish between different outcomes with the same board position
+    const result = isPlayerWinner() ? "win" : game.isDraw() ? "draw" : "loss";
+    return `${game.fen()}_${
+      selectedBot.name
+    }_${playerColor}_${difficulty}_${result}`;
+  }, [game, selectedBot, playerColor, difficulty, isPlayerWinner]);
 
   // Load player data from localStorage and check if this game has already been saved
   useEffect(() => {
@@ -109,27 +123,20 @@ const VictoryModal = ({
       }
 
       // Check if this exact game result has already been saved
-      // We use the game FEN as the primary key for detecting duplicates
+      // Use both FEN and the gameStateId which includes the result
+      const savedGameId = localStorage.getItem("last-saved-game-id");
       const savedGameFen = localStorage.getItem("last-saved-game-fen");
 
-      if (savedGameFen === game.fen()) {
+      // Only consider a game saved if both FEN and game ID match
+      if (savedGameId === gameStateId && savedGameFen === game.fen()) {
         console.log("Game result already saved, preventing duplicate save");
         setResultSaved(true);
+      } else {
+        // Reset resultSaved when viewing a new game state
+        setResultSaved(false);
       }
     }
-  }, [game]);
-
-  const isPlayerWinner = useCallback(() => {
-    if (game.isCheckmate()) {
-      const losingColor = game.turn() === "w" ? "w" : "b";
-      const winningColor = losingColor === "w" ? "b" : "w";
-      return winningColor === playerColor;
-    }
-    if (isResignation || game.isResigned) {
-      return false;
-    }
-    return false;
-  }, [game, playerColor, isResignation]);
+  }, [game, gameStateId]);
 
   const renderWinnerText = useCallback(() => {
     if (isResignation) {
@@ -189,15 +196,15 @@ const VictoryModal = ({
       ) {
         try {
           // Check one more time if this game has already been saved
+          const savedGameId = localStorage.getItem("last-saved-game-id");
           const savedGameFen = localStorage.getItem("last-saved-game-fen");
-          if (savedGameFen === game.fen()) {
-            console.log("Game already saved (double-check), skipping save");
+
+          if (savedGameId === gameStateId && savedGameFen === game.fen()) {
             setResultSaved(true);
             return;
           }
 
-          console.log("Saving game result:", gameStateId);
-          await saveGameResult({
+          const savedResult = await saveGameResult({
             userId: session.user.id,
             game,
             difficulty,
@@ -208,13 +215,22 @@ const VictoryModal = ({
             isResignation: isResignation || game.isResigned,
             session,
           });
+
           setResultSaved(true);
 
+          // Store both the state ID and FEN to prevent duplicate saves
           localStorage.setItem("last-saved-game-id", gameStateId);
           localStorage.setItem("last-saved-game-fen", game.fen());
+
+          // Store the specific result too for additional verification
+          localStorage.setItem(
+            "last-saved-game-result",
+            isPlayerWinner() ? "win" : game.isDraw() ? "draw" : "loss"
+          );
         } catch (error) {
           console.error("Error saving game result:", error);
         }
+      } else {
       }
     };
 
@@ -231,6 +247,7 @@ const VictoryModal = ({
     gameTime,
     movesCount,
     gameStateId,
+    isPlayerWinner,
   ]);
 
   useEffect(() => {

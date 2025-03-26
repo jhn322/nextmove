@@ -40,7 +40,8 @@ export const determineGameResult = (
   if (game.isCheckmate()) {
     const losingColor = game.turn();
     const winningColor = losingColor === "w" ? "b" : "w";
-    return winningColor === playerColor ? "win" : "loss";
+    const result = winningColor === playerColor ? "win" : "loss";
+    return result;
   }
 
   // Default case (should not happen)
@@ -89,6 +90,11 @@ export const saveGameResult = async ({
 
     const result = determineGameResult(game, playerColor, isResignation);
     const normalizedDifficulty = normalizeDifficulty(difficulty);
+
+    // Simplified logging that's still informative
+    console.log(
+      `Saving game: ${result} against ${selectedBot.name} (${normalizedDifficulty})`
+    );
 
     const gameData: Omit<GameHistory, "id"> = {
       user_id: userId,

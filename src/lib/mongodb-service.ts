@@ -154,13 +154,16 @@ export async function saveGameResult(
   const result = await collection.insertOne(serializedData);
   if (result.acknowledged) {
     // Return a plain object with the inserted ID
-    return JSON.parse(
+    const savedResult = JSON.parse(
       JSON.stringify({
         ...serializedData,
         id: result.insertedId.toString(),
       })
     ) as GameHistory;
+
+    return savedResult;
   }
+
   return null;
 }
 

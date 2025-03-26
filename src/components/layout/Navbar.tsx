@@ -270,6 +270,7 @@ const Navbar = () => {
                   style={{ objectFit: "contain" }}
                   width={40}
                   height={40}
+                  priority
                   className="drop-shadow-md"
                 />
               </div>
@@ -527,6 +528,7 @@ const Navbar = () => {
                           style={{ objectFit: "contain" }}
                           width={40}
                           height={40}
+                          priority
                           className="drop-shadow-md"
                         />
                       </div>
