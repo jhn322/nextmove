@@ -204,7 +204,7 @@ const VictoryModal = ({
             return;
           }
 
-          const savedResult = await saveGameResult({
+          await saveGameResult({
             userId: session.user.id,
             game,
             difficulty,
