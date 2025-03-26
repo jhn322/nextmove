@@ -785,6 +785,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     const moveSuccessful = makeMove(fromPosition, toPosition);
 
     if (moveSuccessful) {
+      // Clear possible moves and selected piece after successful move
+      setPossibleMoves([]);
+      setSelectedPiece(null);
+
       // Hide bot selection panel when first move is made
       if (showBotSelection) {
         setShowBotSelection(false);
