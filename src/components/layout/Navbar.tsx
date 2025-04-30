@@ -231,7 +231,9 @@ const Navbar = () => {
     if (isAuthenticated) {
       await router.push(path);
     } else {
-      await signIn("google", `${window.location.origin}${path}`);
+      await signIn("google", {
+        callbackUrl: `${window.location.origin}${path}`,
+      });
     }
     setIsOpen(false); // Close mobile menu if open
   };
@@ -536,7 +538,7 @@ const Navbar = () => {
                         Cancel
                       </AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={signOut}
+                        onClick={() => signOut()}
                         className="rounded-lg"
                       >
                         Logout
@@ -821,7 +823,7 @@ const Navbar = () => {
                                   Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={signOut}
+                                  onClick={() => signOut()}
                                   className="rounded-lg"
                                 >
                                   Logout
@@ -832,7 +834,9 @@ const Navbar = () => {
                         ) : (
                           <>
                             <Button
-                              onClick={() => signIn("google", "/")}
+                              onClick={() =>
+                                signIn("google", { callbackUrl: "/" })
+                              }
                               className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
                             >
                               <LogIn className="mr-2 h-4 w-4" /> Login
