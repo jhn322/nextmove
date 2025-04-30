@@ -170,7 +170,7 @@ const difficultyLevels = [
 
 export default function Home() {
   const router = useRouter();
-  const { session, signIn } = useAuth();
+  const { session } = useAuth();
   const [showDialog, setShowDialog] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<
     (typeof difficultyLevels)[0] | null
@@ -687,9 +687,9 @@ export default function Home() {
                     </p>
                     <Button
                       className="mt-4"
-                      onClick={() => signIn("google", { callbackUrl: "/" })}
+                      onClick={() => router.push("/auth/login")}
                     >
-                      Sign In with Google
+                      Sign In
                     </Button>
                   </div>
                 )}

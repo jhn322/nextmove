@@ -550,7 +550,7 @@ const Navbar = () => {
             ) : (
               <>
                 <Button
-                  onClick={() => signIn("google")}
+                  onClick={() => router.push("/auth/login")}
                   className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
                 >
                   <LogIn className="mr-2 h-4 w-4" /> Login
@@ -834,9 +834,10 @@ const Navbar = () => {
                         ) : (
                           <>
                             <Button
-                              onClick={() =>
-                                signIn("google", { callbackUrl: "/" })
-                              }
+                              onClick={() => {
+                                router.push("/auth/login");
+                                setIsOpen(false);
+                              }}
                               className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
                             >
                               <LogIn className="mr-2 h-4 w-4" /> Login

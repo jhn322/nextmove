@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { signOut } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { AUTH_ROUTES } from '@/lib/auth/constants/auth';
-import { LogOut } from 'lucide-react'; // Importera ikon
+import { signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { AUTH_ROUTES } from "@/lib/auth/constants/auth";
+import { LogOut } from "lucide-react"; // Importera ikon
 
 interface LogoutButtonProps {
   children?: React.ReactNode;
@@ -21,13 +21,13 @@ export const LogoutButton = ({ children, className }: LogoutButtonProps) => {
   return (
     <Button
       onClick={handleLogout}
-      variant='ghost' // Eller annan passande variant
-      className={`flex items-center gap-2 ${className || ''}`}
+      variant="ghost" // Eller annan passande variant
+      className={`flex items-center gap-2 ${className || ""}`}
     >
       {children || (
         <>
-          <LogOut className='h-4 w-4' />
-          <span>Logga ut</span>
+          <LogOut className="h-4 w-4" />
+          <span>Log Out</span>
         </>
       )}
     </Button>

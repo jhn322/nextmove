@@ -12,6 +12,7 @@ import { useGoogleAuth } from "@/lib/auth/hooks/useGoogleAuth";
 import { useRedirect } from "@/lib/auth/hooks/useRedirect";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/auth/constants/auth";
 import { useAuth } from "@/lib/auth/hooks/useAuth";
+import { Spinner } from "@/components/ui/spinner";
 
 function LoginContent() {
   const router = useRouter();
@@ -43,13 +44,17 @@ function LoginContent() {
   const isLoading = formLoading || googleLoading || authLoading;
 
   if (authLoading || authenticated) {
-    return <div>Laddar...</div>;
+    return (
+      <div className="flex justify-center items-center h-full py-10">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
   }
 
   return (
     <AuthCard
-      title="Logga in på Egen Lista"
-      description="Fortsätt med Google eller använd ditt konto"
+      title="Sign in to Your Account"
+      description="Continue with Google or use your credentials"
       footer={<AuthFooter mode="login" onNavigate={redirectToRegister} />}
     >
       <GoogleButton
@@ -70,7 +75,13 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Laddar...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <Spinner className="h-10 w-10" />
+        </div>
+      }
+    >
       <LoginContent />
     </Suspense>
   );

@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { GoogleIcon } from './GoogleIcon';
-import type { GoogleButtonProps } from './types';
+import { signIn } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { GoogleIcon } from "./GoogleIcon";
+import type { GoogleButtonProps } from "./types";
 import {
   AUTH_MESSAGES,
   DEFAULT_LOGIN_REDIRECT,
-} from '@/lib/auth/constants/auth';
+} from "@/lib/auth/constants/auth";
 
 export const GoogleButton = ({
-  mode = 'login',
+  mode = "login",
   onSuccess,
   onError,
   isLoading = false,
 }: GoogleButtonProps) => {
   const handleGoogleSignIn = async () => {
     try {
-      const result = await signIn('google', {
+      const result = await signIn("google", {
         callbackUrl: DEFAULT_LOGIN_REDIRECT,
         redirect: false,
       });
@@ -40,13 +40,13 @@ export const GoogleButton = ({
 
   const buttonText = () => {
     if (isLoading) return AUTH_MESSAGES.TEXT_PROCESSING;
-    return `${mode === 'login' ? 'Logga in' : 'Registrera'} med Google`;
+    return `${mode === "login" ? "Sign in" : "Register"} with Google`;
   };
 
   return (
     <Button
-      variant='outline'
-      className='w-full'
+      variant="outline"
+      className="w-full"
       onClick={handleGoogleSignIn}
       disabled={isLoading}
     >

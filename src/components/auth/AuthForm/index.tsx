@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import type { AuthFormProps, AuthFormData } from './types';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { AuthFormProps, AuthFormData } from "./types";
 
 export const AuthForm = ({
   mode,
@@ -12,10 +12,10 @@ export const AuthForm = ({
   error,
 }: AuthFormProps) => {
   const [formData, setFormData] = useState<AuthFormData>({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,34 +24,34 @@ export const AuthForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-4'>
-      {mode === 'register' && (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {mode === "register" && (
         <Input
-          type='text'
-          placeholder='Namn'
+          type="text"
+          placeholder="Name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
       )}
       <Input
-        type='email'
-        placeholder='Email'
+        type="email"
+        placeholder="Email"
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         required
       />
       <Input
-        type='password'
-        placeholder='Lösenord'
+        type="password"
+        placeholder="Password"
         value={formData.password}
         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
         required
       />
-      {mode === 'register' && (
+      {mode === "register" && (
         <Input
-          type='password'
-          placeholder='Bekräfta lösenord'
+          type="password"
+          placeholder="Confirm Password"
           value={formData.confirmPassword}
           onChange={(e) =>
             setFormData({ ...formData, confirmPassword: e.target.value })
@@ -59,13 +59,13 @@ export const AuthForm = ({
           required
         />
       )}
-      {error && <div className='text-red-500 text-sm text-center'>{error}</div>}
-      <Button type='submit' className='w-full' disabled={isLoading}>
+      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+      <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading
-          ? 'Bearbetar...'
-          : mode === 'login'
-          ? 'Logga in'
-          : 'Skapa konto'}
+          ? "Processing..."
+          : mode === "login"
+          ? "Sign In"
+          : "Create Account"}
       </Button>
     </form>
   );
