@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
-import { getUserSettings } from "@/lib/mongodb-service";
 
 type SoundType =
   | "move-self" // Player move
@@ -81,23 +80,17 @@ export const useGameSounds = () => {
     }
   }, [hasInteracted]);
 
-  // Load sound settings from user settings
+  // Load sound settings from session or default to true
   useEffect(() => {
-    async function loadSoundSettings() {
-      if (status === "authenticated" && session?.user?.id) {
-        try {
-          const settings = await getUserSettings(session.user.id);
-          if (settings) {
-            setSoundEnabled(settings.sound_enabled);
-          }
-        } catch (error) {
-          console.error("Unexpected error loading sound settings:", error);
-        }
-      }
+    if (status === "authenticated" && session?.user) {
+      // Use soundEnabled from session, default to true if undefined/null
+      setSoundEnabled(session.user.soundEnabled ?? true);
+    } else {
+      // Fallback for unauthenticated or loading status (default to true)
+      // Could potentially check localStorage here too if needed
+      setSoundEnabled(true);
     }
-
-    loadSoundSettings();
-  }, [session, status]);
+  }, [session?.user, status]);
 
   // Check if user has interacted with the document
   useEffect(() => {

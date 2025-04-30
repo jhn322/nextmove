@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
 // Remove unused import
-// import { getUserSettings } from "@/lib/mongodb-service";
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
