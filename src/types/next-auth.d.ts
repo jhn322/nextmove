@@ -15,6 +15,15 @@ declare module "next-auth" {
       pieceSet?: string | null;
       timezone?: string | null;
       clockFormat?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      location?: string | null;
+      preferredDifficulty?: string | null;
+      soundEnabled?: boolean | null;
+      whitePiecesBottom?: boolean | null;
+      showCoordinates?: boolean | null;
+      enableAnimations?: boolean | null;
+      enableConfetti?: boolean | null;
     } & DefaultSession["user"];
   }
 
@@ -26,6 +35,15 @@ declare module "next-auth" {
     pieceSet?: string | null;
     timezone?: string | null;
     clockFormat?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    location?: string | null;
+    preferredDifficulty?: string | null;
+    soundEnabled?: boolean | null;
+    whitePiecesBottom?: boolean | null;
+    showCoordinates?: boolean | null;
+    enableAnimations?: boolean | null;
+    enableConfetti?: boolean | null;
   }
 }
 

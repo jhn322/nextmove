@@ -1275,6 +1275,15 @@ export namespace Prisma {
     pieceSet: string | null
     timezone: string | null
     clockFormat: string | null
+    firstName: string | null
+    lastName: string | null
+    location: string | null
+    preferredDifficulty: string | null
+    soundEnabled: boolean | null
+    whitePiecesBottom: boolean | null
+    showCoordinates: boolean | null
+    enableAnimations: boolean | null
+    enableConfetti: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1292,6 +1301,15 @@ export namespace Prisma {
     pieceSet: string | null
     timezone: string | null
     clockFormat: string | null
+    firstName: string | null
+    lastName: string | null
+    location: string | null
+    preferredDifficulty: string | null
+    soundEnabled: boolean | null
+    whitePiecesBottom: boolean | null
+    showCoordinates: boolean | null
+    enableAnimations: boolean | null
+    enableConfetti: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1309,6 +1327,15 @@ export namespace Prisma {
     pieceSet: number
     timezone: number
     clockFormat: number
+    firstName: number
+    lastName: number
+    location: number
+    preferredDifficulty: number
+    soundEnabled: number
+    whitePiecesBottom: number
+    showCoordinates: number
+    enableAnimations: number
+    enableConfetti: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -1328,6 +1355,15 @@ export namespace Prisma {
     pieceSet?: true
     timezone?: true
     clockFormat?: true
+    firstName?: true
+    lastName?: true
+    location?: true
+    preferredDifficulty?: true
+    soundEnabled?: true
+    whitePiecesBottom?: true
+    showCoordinates?: true
+    enableAnimations?: true
+    enableConfetti?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1345,6 +1381,15 @@ export namespace Prisma {
     pieceSet?: true
     timezone?: true
     clockFormat?: true
+    firstName?: true
+    lastName?: true
+    location?: true
+    preferredDifficulty?: true
+    soundEnabled?: true
+    whitePiecesBottom?: true
+    showCoordinates?: true
+    enableAnimations?: true
+    enableConfetti?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1362,6 +1407,15 @@ export namespace Prisma {
     pieceSet?: true
     timezone?: true
     clockFormat?: true
+    firstName?: true
+    lastName?: true
+    location?: true
+    preferredDifficulty?: true
+    soundEnabled?: true
+    whitePiecesBottom?: true
+    showCoordinates?: true
+    enableAnimations?: true
+    enableConfetti?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -1452,6 +1506,15 @@ export namespace Prisma {
     pieceSet: string | null
     timezone: string | null
     clockFormat: string | null
+    firstName: string | null
+    lastName: string | null
+    location: string | null
+    preferredDifficulty: string | null
+    soundEnabled: boolean | null
+    whitePiecesBottom: boolean | null
+    showCoordinates: boolean | null
+    enableAnimations: boolean | null
+    enableConfetti: boolean | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -1486,6 +1549,15 @@ export namespace Prisma {
     pieceSet?: boolean
     timezone?: boolean
     clockFormat?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    location?: boolean
+    preferredDifficulty?: boolean
+    soundEnabled?: boolean
+    whitePiecesBottom?: boolean
+    showCoordinates?: boolean
+    enableAnimations?: boolean
+    enableConfetti?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
@@ -1509,11 +1581,20 @@ export namespace Prisma {
     pieceSet?: boolean
     timezone?: boolean
     clockFormat?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    location?: boolean
+    preferredDifficulty?: boolean
+    soundEnabled?: boolean
+    whitePiecesBottom?: boolean
+    showCoordinates?: boolean
+    enableAnimations?: boolean
+    enableConfetti?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "password" | "image" | "emailVerified" | "role" | "countryFlag" | "flair" | "pieceSet" | "timezone" | "clockFormat" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "password" | "image" | "emailVerified" | "role" | "countryFlag" | "flair" | "pieceSet" | "timezone" | "clockFormat" | "firstName" | "lastName" | "location" | "preferredDifficulty" | "soundEnabled" | "whitePiecesBottom" | "showCoordinates" | "enableAnimations" | "enableConfetti" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -1541,6 +1622,15 @@ export namespace Prisma {
       pieceSet: string | null
       timezone: string | null
       clockFormat: string | null
+      firstName: string | null
+      lastName: string | null
+      location: string | null
+      preferredDifficulty: string | null
+      soundEnabled: boolean | null
+      whitePiecesBottom: boolean | null
+      showCoordinates: boolean | null
+      enableAnimations: boolean | null
+      enableConfetti: boolean | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -1950,6 +2040,15 @@ export namespace Prisma {
     readonly pieceSet: FieldRef<"User", 'String'>
     readonly timezone: FieldRef<"User", 'String'>
     readonly clockFormat: FieldRef<"User", 'String'>
+    readonly firstName: FieldRef<"User", 'String'>
+    readonly lastName: FieldRef<"User", 'String'>
+    readonly location: FieldRef<"User", 'String'>
+    readonly preferredDifficulty: FieldRef<"User", 'String'>
+    readonly soundEnabled: FieldRef<"User", 'Boolean'>
+    readonly whitePiecesBottom: FieldRef<"User", 'Boolean'>
+    readonly showCoordinates: FieldRef<"User", 'Boolean'>
+    readonly enableAnimations: FieldRef<"User", 'Boolean'>
+    readonly enableConfetti: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -6469,6 +6568,15 @@ export namespace Prisma {
     pieceSet: 'pieceSet',
     timezone: 'timezone',
     clockFormat: 'clockFormat',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    location: 'location',
+    preferredDifficulty: 'preferredDifficulty',
+    soundEnabled: 'soundEnabled',
+    whitePiecesBottom: 'whitePiecesBottom',
+    showCoordinates: 'showCoordinates',
+    enableAnimations: 'enableAnimations',
+    enableConfetti: 'enableConfetti',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -6593,6 +6701,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -6639,6 +6754,15 @@ export namespace Prisma {
     pieceSet?: StringNullableFilter<"User"> | string | null
     timezone?: StringNullableFilter<"User"> | string | null
     clockFormat?: StringNullableFilter<"User"> | string | null
+    firstName?: StringNullableFilter<"User"> | string | null
+    lastName?: StringNullableFilter<"User"> | string | null
+    location?: StringNullableFilter<"User"> | string | null
+    preferredDifficulty?: StringNullableFilter<"User"> | string | null
+    soundEnabled?: BoolNullableFilter<"User"> | boolean | null
+    whitePiecesBottom?: BoolNullableFilter<"User"> | boolean | null
+    showCoordinates?: BoolNullableFilter<"User"> | boolean | null
+    enableAnimations?: BoolNullableFilter<"User"> | boolean | null
+    enableConfetti?: BoolNullableFilter<"User"> | boolean | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     accounts?: AccountListRelationFilter
@@ -6659,6 +6783,15 @@ export namespace Prisma {
     pieceSet?: SortOrder
     timezone?: SortOrder
     clockFormat?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    location?: SortOrder
+    preferredDifficulty?: SortOrder
+    soundEnabled?: SortOrder
+    whitePiecesBottom?: SortOrder
+    showCoordinates?: SortOrder
+    enableAnimations?: SortOrder
+    enableConfetti?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     accounts?: AccountOrderByRelationAggregateInput
@@ -6682,6 +6815,15 @@ export namespace Prisma {
     pieceSet?: StringNullableFilter<"User"> | string | null
     timezone?: StringNullableFilter<"User"> | string | null
     clockFormat?: StringNullableFilter<"User"> | string | null
+    firstName?: StringNullableFilter<"User"> | string | null
+    lastName?: StringNullableFilter<"User"> | string | null
+    location?: StringNullableFilter<"User"> | string | null
+    preferredDifficulty?: StringNullableFilter<"User"> | string | null
+    soundEnabled?: BoolNullableFilter<"User"> | boolean | null
+    whitePiecesBottom?: BoolNullableFilter<"User"> | boolean | null
+    showCoordinates?: BoolNullableFilter<"User"> | boolean | null
+    enableAnimations?: BoolNullableFilter<"User"> | boolean | null
+    enableConfetti?: BoolNullableFilter<"User"> | boolean | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     accounts?: AccountListRelationFilter
@@ -6702,6 +6844,15 @@ export namespace Prisma {
     pieceSet?: SortOrder
     timezone?: SortOrder
     clockFormat?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    location?: SortOrder
+    preferredDifficulty?: SortOrder
+    soundEnabled?: SortOrder
+    whitePiecesBottom?: SortOrder
+    showCoordinates?: SortOrder
+    enableAnimations?: SortOrder
+    enableConfetti?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -6725,6 +6876,15 @@ export namespace Prisma {
     pieceSet?: StringNullableWithAggregatesFilter<"User"> | string | null
     timezone?: StringNullableWithAggregatesFilter<"User"> | string | null
     clockFormat?: StringNullableWithAggregatesFilter<"User"> | string | null
+    firstName?: StringNullableWithAggregatesFilter<"User"> | string | null
+    lastName?: StringNullableWithAggregatesFilter<"User"> | string | null
+    location?: StringNullableWithAggregatesFilter<"User"> | string | null
+    preferredDifficulty?: StringNullableWithAggregatesFilter<"User"> | string | null
+    soundEnabled?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    whitePiecesBottom?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    showCoordinates?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    enableAnimations?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    enableConfetti?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -7010,6 +7170,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -7030,6 +7199,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -7049,6 +7227,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -7068,6 +7255,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -7088,6 +7284,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -7104,6 +7309,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7120,6 +7334,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7442,6 +7665,12 @@ export namespace Prisma {
     not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
   }
 
+  export type BoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+    isSet?: boolean
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -7496,6 +7725,15 @@ export namespace Prisma {
     pieceSet?: SortOrder
     timezone?: SortOrder
     clockFormat?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    location?: SortOrder
+    preferredDifficulty?: SortOrder
+    soundEnabled?: SortOrder
+    whitePiecesBottom?: SortOrder
+    showCoordinates?: SortOrder
+    enableAnimations?: SortOrder
+    enableConfetti?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7513,6 +7751,15 @@ export namespace Prisma {
     pieceSet?: SortOrder
     timezone?: SortOrder
     clockFormat?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    location?: SortOrder
+    preferredDifficulty?: SortOrder
+    soundEnabled?: SortOrder
+    whitePiecesBottom?: SortOrder
+    showCoordinates?: SortOrder
+    enableAnimations?: SortOrder
+    enableConfetti?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7530,6 +7777,15 @@ export namespace Prisma {
     pieceSet?: SortOrder
     timezone?: SortOrder
     clockFormat?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    location?: SortOrder
+    preferredDifficulty?: SortOrder
+    soundEnabled?: SortOrder
+    whitePiecesBottom?: SortOrder
+    showCoordinates?: SortOrder
+    enableAnimations?: SortOrder
+    enableConfetti?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7594,6 +7850,15 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumUserRoleFilter<$PrismaModel>
     _max?: NestedEnumUserRoleFilter<$PrismaModel>
+  }
+
+  export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -7882,6 +8147,11 @@ export namespace Prisma {
     set?: $Enums.UserRole
   }
 
+  export type NullableBoolFieldUpdateOperationsInput = {
+    set?: boolean | null
+    unset?: boolean
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -8077,6 +8347,12 @@ export namespace Prisma {
     not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
   }
 
+  export type NestedBoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+    isSet?: boolean
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -8169,6 +8445,15 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumUserRoleFilter<$PrismaModel>
     _max?: NestedEnumUserRoleFilter<$PrismaModel>
+  }
+
+  export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -8434,6 +8719,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: SessionCreateNestedManyWithoutUserInput
@@ -8453,6 +8747,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
@@ -8487,6 +8790,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUpdateManyWithoutUserNestedInput
@@ -8505,6 +8817,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -8524,6 +8845,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -8543,6 +8873,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -8577,6 +8916,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -8595,6 +8943,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -8614,6 +8971,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
@@ -8633,6 +8999,15 @@ export namespace Prisma {
     pieceSet?: string | null
     timezone?: string | null
     clockFormat?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    location?: string | null
+    preferredDifficulty?: string | null
+    soundEnabled?: boolean | null
+    whitePiecesBottom?: boolean | null
+    showCoordinates?: boolean | null
+    enableAnimations?: boolean | null
+    enableConfetti?: boolean | null
     createdAt?: Date | string
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
@@ -8667,6 +9042,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
@@ -8685,6 +9069,15 @@ export namespace Prisma {
     pieceSet?: NullableStringFieldUpdateOperationsInput | string | null
     timezone?: NullableStringFieldUpdateOperationsInput | string | null
     clockFormat?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredDifficulty?: NullableStringFieldUpdateOperationsInput | string | null
+    soundEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    whitePiecesBottom?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    showCoordinates?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableAnimations?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    enableConfetti?: NullableBoolFieldUpdateOperationsInput | boolean | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput

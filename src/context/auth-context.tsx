@@ -6,14 +6,22 @@ import {
   useSession,
   signIn as nextAuthSignIn,
   signOut as nextAuthSignOut,
+  type SignInOptions,
+  type SignOutParams,
+  type SignInResponse,
 } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   session: Session | null;
   status: "loading" | "authenticated" | "unauthenticated";
-  signIn: (provider: string, callbackUrl?: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signIn: (
+    provider?: string,
+    options?: SignInOptions,
+    authorizationParams?: Record<string, string> | undefined
+  ) => Promise<SignInResponse | undefined>;
+  signOut: <R extends boolean = true>(
+    options?: SignOutParams<R>
+  ) => Promise<void>;
   refreshSession: () => Promise<Session | null>;
 }
 
@@ -21,9 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status, update } = useSession();
-  const router = useRouter();
 
-  // Refresh session function
   const refreshSession = async (): Promise<Session | null> => {
     try {
       const updatedSession = await update();
@@ -34,41 +40,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const handleSignIn = async (provider: string, callbackUrl?: string) => {
+  const handleSignIn = async (
+    provider?: string,
+    options?: SignInOptions,
+    authorizationParams?: Record<string, string> | undefined
+  ): Promise<SignInResponse | undefined> => {
     try {
-      const baseUrl =
-        typeof window !== "undefined"
-          ? window.location.origin
-          : process.env.NEXTAUTH_URL || "http://localhost:3000";
-
-      await nextAuthSignIn(provider, {
-        callbackUrl: callbackUrl || baseUrl,
-        redirect: true,
-      });
+      if (!provider && (!options || options.callbackUrl)) {
+        console.warn("[AuthContext] signIn called without a provider.");
+      }
+      const signInOptions = { redirect: true, ...options };
+      return await nextAuthSignIn(provider, signInOptions, authorizationParams);
     } catch (error) {
       console.error("[AuthContext] Sign in error:", error);
+      return undefined;
     }
   };
 
-  const handleSignOut = async () => {
+  const handleSignOut = async <R extends boolean = true>(
+    options?: SignOutParams<R>
+  ) => {
     try {
-      const baseUrl =
-        typeof window !== "undefined"
-          ? window.location.origin
-          : process.env.NEXTAUTH_URL || "http://localhost:3000";
-
-      await nextAuthSignOut({
-        callbackUrl: baseUrl,
-        redirect: true,
-      });
-
-      router.push("/");
+      const signOutOptions = { redirect: true, ...options };
+      await nextAuthSignOut(signOutOptions);
     } catch (error) {
       console.error("[AuthContext] Sign out error:", error);
     }
   };
 
-  const value = {
+  const value: AuthContextType = {
     session,
     status,
     signIn: handleSignIn,

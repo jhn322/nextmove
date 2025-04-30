@@ -117,6 +117,16 @@ export const configureCallbacks = () => ({
         session.user.pieceSet = userFromDb.pieceSet; // Add pieceSet
         session.user.timezone = userFromDb.timezone; // Add timezone
         session.user.clockFormat = userFromDb.clockFormat; // Add clockFormat
+        // Add settings page fields
+        session.user.firstName = userFromDb.firstName;
+        session.user.lastName = userFromDb.lastName;
+        session.user.location = userFromDb.location;
+        session.user.preferredDifficulty = userFromDb.preferredDifficulty;
+        session.user.soundEnabled = userFromDb.soundEnabled;
+        session.user.whitePiecesBottom = userFromDb.whitePiecesBottom;
+        session.user.showCoordinates = userFromDb.showCoordinates;
+        session.user.enableAnimations = userFromDb.enableAnimations;
+        session.user.enableConfetti = userFromDb.enableConfetti;
       } else {
         // Fallback or error handling if user not found in DB
         console.error(

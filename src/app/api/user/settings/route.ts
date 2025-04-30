@@ -7,10 +7,25 @@ import { z } from "zod";
 // Define the expected schema for the request body
 const updateSettingsSchema = z
   .object({
-    name: z.string().min(1).max(50).optional(), // Validate name
-    image: z.string().optional(), // Validate image path/URL
-    // Add other settings fields here if needed in the future
-    // e.g., countryFlag: z.string().optional(), flair: z.string().optional()
+    // Profile fields
+    name: z.string().min(1).max(50).optional(), // display_name in settings component
+    firstName: z.string().max(50).optional(), // first_name
+    lastName: z.string().max(50).optional(), // last_name
+    location: z.string().max(100).optional(),
+    image: z.string().optional(), // avatar_url
+    countryFlag: z.string().optional(), // country_flag
+    flair: z.string().optional(),
+    timezone: z.string().optional(),
+    clockFormat: z.enum(["12", "24"]).optional(), // clock_format
+
+    // Game settings fields
+    preferredDifficulty: z.string().optional(), // preferred_difficulty
+    soundEnabled: z.boolean().optional(), // sound_enabled
+    pieceSet: z.string().optional(), // piece_set
+    whitePiecesBottom: z.boolean().optional(), // white_pieces_bottom
+    showCoordinates: z.boolean().optional(), // show_coordinates
+    enableAnimations: z.boolean().optional(), // enable_animations
+    enableConfetti: z.boolean().optional(), // enable_confetti
   })
   .strict(); // Ensure no extra fields are passed
 
@@ -33,29 +48,60 @@ export async function PATCH(req: Request) {
       );
     }
 
+    const dataToUpdate = validationResult.data;
+
     // Ensure at least one valid field is provided
-    if (Object.keys(validationResult.data).length === 0) {
+    if (Object.keys(dataToUpdate).length === 0) {
       return NextResponse.json(
         { message: "No settings provided to update" },
         { status: 400 }
       );
     }
 
+    // Prepare data for Prisma update (handle potential name mismatches)
+    const prismaData: Partial<
+      Parameters<typeof prisma.user.update>[0]["data"]
+    > = {};
+    if (dataToUpdate.name !== undefined) prismaData.name = dataToUpdate.name;
+    if (dataToUpdate.firstName !== undefined)
+      prismaData.firstName = dataToUpdate.firstName;
+    if (dataToUpdate.lastName !== undefined)
+      prismaData.lastName = dataToUpdate.lastName;
+    if (dataToUpdate.location !== undefined)
+      prismaData.location = dataToUpdate.location;
+    if (dataToUpdate.image !== undefined) prismaData.image = dataToUpdate.image;
+    if (dataToUpdate.countryFlag !== undefined)
+      prismaData.countryFlag = dataToUpdate.countryFlag;
+    if (dataToUpdate.flair !== undefined) prismaData.flair = dataToUpdate.flair;
+    if (dataToUpdate.timezone !== undefined)
+      prismaData.timezone = dataToUpdate.timezone;
+    if (dataToUpdate.clockFormat !== undefined)
+      prismaData.clockFormat = dataToUpdate.clockFormat;
+    if (dataToUpdate.preferredDifficulty !== undefined)
+      prismaData.preferredDifficulty = dataToUpdate.preferredDifficulty;
+    if (dataToUpdate.soundEnabled !== undefined)
+      prismaData.soundEnabled = dataToUpdate.soundEnabled;
+    if (dataToUpdate.pieceSet !== undefined)
+      prismaData.pieceSet = dataToUpdate.pieceSet;
+    if (dataToUpdate.whitePiecesBottom !== undefined)
+      prismaData.whitePiecesBottom = dataToUpdate.whitePiecesBottom;
+    if (dataToUpdate.showCoordinates !== undefined)
+      prismaData.showCoordinates = dataToUpdate.showCoordinates;
+    if (dataToUpdate.enableAnimations !== undefined)
+      prismaData.enableAnimations = dataToUpdate.enableAnimations;
+    if (dataToUpdate.enableConfetti !== undefined)
+      prismaData.enableConfetti = dataToUpdate.enableConfetti;
+
     // Update user settings in the database
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: session.user.id },
-      data: {
-        name: validationResult.data.name, // Update name if provided
-        image: validationResult.data.image, // Update image if provided
-        // Add other fields here:
-        // countryFlag: validationResult.data.countryFlag,
-        // flair: validationResult.data.flair,
-      },
-      select: { id: true, name: true, image: true }, // Select only necessary fields for response
+      data: prismaData,
     });
 
+    // It might be better to just return success message instead of the full user object
+    // to avoid exposing too much data and keep the response lean.
     return NextResponse.json(
-      { message: "Settings updated successfully", user: updatedUser },
+      { message: "Settings updated successfully" },
       { status: 200 }
     );
   } catch (error) {

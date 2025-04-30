@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -56,13 +56,6 @@ import {
   getEnableAnimations,
 } from "@/lib/settings";
 import { useRouter } from "next/navigation";
-import { isSessionValid } from "../../lib/auth-service";
-import {
-  getUserSettings,
-  saveUserSettings,
-  UserSettings,
-  deleteUserAccount,
-} from "@/lib/mongodb-service";
 import SettingsLoading from "./loading";
 import HoverText from "@/components/ui/hover-text";
 import { getCharacterNameFromPath } from "@/lib/utils";
@@ -78,25 +71,46 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface SettingsState {
+  display_name: string;
+  first_name: string;
+  last_name: string;
+  location: string;
+  avatar_url: string;
+  preferred_difficulty: string;
+  sound_enabled: boolean;
+  piece_set: string;
+  white_pieces_bottom: boolean;
+  show_coordinates: boolean;
+  enable_animations: boolean;
+  enable_confetti: boolean;
+  timezone: string;
+  clock_format: "12" | "24";
+  country_flag: string;
+  flair: string;
+}
+
 export default function SettingsPage() {
-  const { status, session, signOut } = useAuth();
-  const [settings, setSettings] = useState<Omit<UserSettings, "user_id">>({
-    display_name: "",
-    first_name: "",
-    last_name: "",
-    location: "",
-    avatar_url: "",
-    preferred_difficulty: "intermediate",
-    sound_enabled: true,
-    piece_set: "staunty",
-    white_pieces_bottom: true,
-    show_coordinates: true,
-    enable_animations: true,
-    enable_confetti: true,
-    timezone: "UTC",
-    clock_format: "24",
-    country_flag: "",
-    flair: "",
+  const { status, session, signOut, refreshSession } = useAuth();
+  const [settings, setSettings] = useState<SettingsState>(() => {
+    return {
+      display_name: "",
+      first_name: "",
+      last_name: "",
+      location: "",
+      avatar_url: "",
+      preferred_difficulty: "intermediate",
+      sound_enabled: true,
+      piece_set: getPieceSet(),
+      white_pieces_bottom: true,
+      show_coordinates: getShowCoordinates(),
+      enable_animations: getEnableAnimations(),
+      enable_confetti: true,
+      timezone: "UTC",
+      clock_format: "24",
+      country_flag: "",
+      flair: "",
+    };
   });
   const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState("");
@@ -106,7 +120,6 @@ export default function SettingsPage() {
   const [flairDialogOpen, setFlairDialogOpen] = useState(false);
   const router = useRouter();
 
-  // Define the piece sets
   const pieceSets = [
     "staunty",
     "california",
@@ -128,100 +141,43 @@ export default function SettingsPage() {
     "tatiana",
   ];
 
-  // Function to load user settings
-  const loadUserSettings = useCallback(async () => {
-    if (status === "authenticated" && session?.user?.id) {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const settingsData = await getUserSettings(session.user.id);
-
-        if (settingsData) {
-          setSettings({
-            display_name: settingsData.display_name || "",
-            first_name: settingsData.first_name || "",
-            last_name: settingsData.last_name || "",
-            location: settingsData.location || "",
-            avatar_url: settingsData.avatar_url || "",
-            preferred_difficulty:
-              settingsData.preferred_difficulty || "intermediate",
-            sound_enabled: settingsData.sound_enabled !== false,
-            piece_set: settingsData.piece_set || getPieceSet(),
-            white_pieces_bottom: settingsData.white_pieces_bottom !== false,
-            show_coordinates: settingsData.show_coordinates !== false,
-            enable_animations: settingsData.enable_animations !== false,
-            enable_confetti: settingsData.enable_confetti !== false,
-            timezone: settingsData.timezone || "UTC",
-            clock_format: settingsData.clock_format || "24",
-            country_flag: settingsData.country_flag || "",
-            flair: settingsData.flair || "",
-          });
-        } else {
-          // No settings found, use defaults
-          setSettings({
-            display_name: session.user.name || "",
-            first_name: "",
-            last_name: "",
-            location: "",
-            avatar_url: session.user.image || "",
-            preferred_difficulty: "intermediate",
-            sound_enabled: true,
-            piece_set: getPieceSet(),
-            white_pieces_bottom: true,
-            show_coordinates: getShowCoordinates(),
-            enable_animations: getEnableAnimations(),
-            enable_confetti: true,
-            timezone: "UTC",
-            clock_format: "24",
-            country_flag: "",
-            flair: "",
-          });
-        }
-      } catch (error) {
-        console.error("Error loading settings:", error);
-        setError("Failed to load settings. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    }
-  }, [status, session]);
-
-  // Add a function to handle authentication errors
-  const handleAuthError = useCallback(
-    (error: Error) => {
-      console.error("Authentication error:", error);
-      setError("Authentication error. Please sign in again.");
-
-      // Redirect to sign in page after a short delay
-      setTimeout(() => {
-        router.push("/auth/signin");
-      }, 2000);
-    },
-    [router, setError]
-  );
-
   useEffect(() => {
-    if (status === "loading") return;
+    if (status === "loading") {
+      setLoading(true);
+      return;
+    }
 
-    if (status === "unauthenticated" || !session) {
+    if (status === "unauthenticated" || !session?.user) {
       router.push("/auth/signin");
       return;
     }
 
-    // Check if the session is valid
-    if (session) {
-      const valid = isSessionValid(session);
-      if (!valid) {
-        handleAuthError(new Error("Session is invalid"));
-        return;
-      }
+    setLoading(true);
+    setError(null);
+    const user = session.user;
 
-      loadUserSettings();
-    }
-  }, [status, session, router, handleAuthError, loadUserSettings]);
+    setSettings({
+      display_name: user.name || "",
+      first_name: user.firstName || "",
+      last_name: user.lastName || "",
+      location: user.location || "",
+      avatar_url: user.image || "/avatars/jake.png",
+      preferred_difficulty: user.preferredDifficulty || "intermediate",
+      sound_enabled: user.soundEnabled !== false,
+      piece_set: user.pieceSet || getPieceSet(),
+      white_pieces_bottom: user.whitePiecesBottom !== false,
+      show_coordinates: user.showCoordinates !== false,
+      enable_animations: user.enableAnimations !== false,
+      enable_confetti: user.enableConfetti !== false,
+      timezone: user.timezone || "UTC",
+      clock_format: user.clockFormat === "12" ? "12" : "24",
+      country_flag: user.countryFlag || "",
+      flair: user.flair || "",
+    });
 
-  // Load available avatars
+    setLoading(false);
+  }, [status, session, router]);
+
   useEffect(() => {
     const avatars = [
       "/avatars/aang.png",
@@ -273,7 +229,6 @@ export default function SettingsPage() {
       "/avatars/wendy.png",
       "/avatars/zim.png",
     ];
-
     setAvailableAvatars(avatars);
   }, []);
 
@@ -285,12 +240,43 @@ export default function SettingsPage() {
 
     setSaveMessage("");
     setLoading(true);
+    setError(null);
+
+    const dataToSend = {
+      name: settings.display_name,
+      firstName: settings.first_name,
+      lastName: settings.last_name,
+      location: settings.location,
+      image: settings.avatar_url,
+      countryFlag: settings.country_flag,
+      flair: settings.flair,
+      timezone: settings.timezone,
+      clockFormat: settings.clock_format,
+      preferredDifficulty: settings.preferred_difficulty,
+      soundEnabled: settings.sound_enabled,
+      pieceSet: settings.piece_set,
+      whitePiecesBottom: settings.white_pieces_bottom,
+      showCoordinates: settings.show_coordinates,
+      enableAnimations: settings.enable_animations,
+      enableConfetti: settings.enable_confetti,
+    };
 
     try {
-      const success = await saveUserSettings(session.user.id, settings);
+      const response = await fetch("/api/user/settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend),
+      });
 
-      if (success) {
-        // Save to localStorage for offline use
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to save settings:", errorData);
+        setError(
+          errorData.message || "Failed to save settings. Please try again."
+        );
+      } else {
         saveAllSettings({
           pieceSet: settings.piece_set,
           whitePiecesBottom: settings.white_pieces_bottom,
@@ -304,48 +290,13 @@ export default function SettingsPage() {
           flair: settings.flair,
         });
 
-        // Also save individual settings for backward compatibility
-        localStorage.setItem("chess_piece_set", settings.piece_set);
-        localStorage.setItem(
-          "chess_white_pieces_bottom",
-          settings.white_pieces_bottom.toString()
-        );
-        localStorage.setItem(
-          "chess_show_coordinates",
-          settings.show_coordinates.toString()
-        );
-        localStorage.setItem(
-          "chess_enable_animations",
-          settings.enable_animations.toString()
-        );
-        localStorage.setItem(
-          "chess_sound_enabled",
-          settings.sound_enabled.toString()
-        );
-        localStorage.setItem(
-          "chess_enable_confetti",
-          settings.enable_confetti.toString()
-        );
-        localStorage.setItem("chess_timezone", settings.timezone);
-        localStorage.setItem("chess_clock_format", settings.clock_format);
-        localStorage.setItem("chess_country_flag", settings.country_flag);
-        localStorage.setItem("chess_flair", settings.flair);
-
         setSaveMessage("Settings saved successfully");
+        await refreshSession();
         setTimeout(() => setSaveMessage(""), 3000);
       }
     } catch (error) {
       console.error("Error saving settings:", error);
-      setError("Failed to save settings. Please try again.");
-
-      if (
-        error instanceof Error &&
-        (error.message.includes("401") ||
-          error.message.includes("auth") ||
-          error.message.includes("permission"))
-      ) {
-        handleAuthError(error);
-      }
+      setError("An unexpected network error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -366,30 +317,25 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      const success = await deleteUserAccount(session.user.id);
+      const response = await fetch("/api/user/account", {
+        method: "DELETE",
+      });
 
-      if (success) {
-        localStorage.clear();
-
-        // Sign out the user
-        await signOut();
-
-        router.push("/");
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(
+          errorData.message || "Failed to delete account. Please try again."
+        );
       } else {
-        setError("Failed to delete account. Please try again.");
+        localStorage.clear();
+        await signOut({ redirect: false });
+        router.push("/");
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      setError("An error occurred while deleting your account.");
-
-      if (
-        error instanceof Error &&
-        (error.message.includes("401") ||
-          error.message.includes("auth") ||
-          error.message.includes("permission"))
-      ) {
-        handleAuthError(error);
-      }
+      setError(
+        "An unexpected network error occurred while deleting your account."
+      );
     } finally {
       setLoading(false);
     }
@@ -409,6 +355,10 @@ export default function SettingsPage() {
         </Alert>
       </div>
     );
+  }
+
+  if (status !== "authenticated" || !session?.user) {
+    return <SettingsLoading />;
   }
 
   return (
@@ -485,7 +435,7 @@ export default function SettingsPage() {
               <div className="space-y-1">
                 <Label className="text-sm font-medium">Email</Label>
                 <p className="text-sm text-muted-foreground mt-1.5">
-                  {session?.user?.email || "No email available"}
+                  {session.user.email || "No email available"}
                 </p>
               </div>
 
@@ -1012,6 +962,38 @@ export default function SettingsPage() {
             </TabsContent>
 
             <TabsContent value="game" className="space-y-6 mt-6">
+              <div className="space-y-2">
+                <Label htmlFor="preferred_difficulty">
+                  Preferred Difficulty
+                </Label>
+                <Select
+                  value={settings.preferred_difficulty}
+                  onValueChange={(value) =>
+                    setSettings({ ...settings, preferred_difficulty: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select preferred difficulty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      "beginner",
+                      "easy",
+                      "intermediate",
+                      "advanced",
+                      "hard",
+                      "expert",
+                      "master",
+                      "grandmaster",
+                    ].map((difficulty) => (
+                      <SelectItem key={difficulty} value={difficulty}>
+                        <span className="capitalize">{difficulty}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="piece_set">Chess Piece Set</Label>
                 <Select

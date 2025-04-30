@@ -30,6 +30,15 @@ model User {
   games         Game[]     // Add relation to Game model
   timezone      String?    @default("UTC") // User's selected timezone (e.g., "Europe/London")
   clockFormat   String?    @default("24")  // User's selected clock format ("12" or "24")
+  firstName           String? // User's first name
+  lastName            String? // User's last name
+  location            String? // User's location
+  preferredDifficulty String? @default("intermediate") // User's preferred bot difficulty
+  soundEnabled        Boolean? @default(true) // Game sound preference
+  whitePiecesBottom   Boolean? @default(true) // Board orientation preference
+  showCoordinates     Boolean? @default(true) // Board coordinates preference
+  enableAnimations    Boolean? @default(true) // Game animations preference
+  enableConfetti      Boolean? @default(true) // Victory confetti preference
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 }

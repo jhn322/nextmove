@@ -126,6 +126,15 @@ exports.Prisma.UserScalarFieldEnum = {
   pieceSet: 'pieceSet',
   timezone: 'timezone',
   clockFormat: 'clockFormat',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  location: 'location',
+  preferredDifficulty: 'preferredDifficulty',
+  soundEnabled: 'soundEnabled',
+  whitePiecesBottom: 'whitePiecesBottom',
+  showCoordinates: 'showCoordinates',
+  enableAnimations: 'enableAnimations',
+  enableConfetti: 'enableConfetti',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

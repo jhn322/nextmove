@@ -56,12 +56,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
-import { isSessionValid } from "../../lib/auth-service";
 import {
   getUserGameHistory,
   clearUserGameHistory,
-  GameHistory,
-} from "@/lib/mongodb-service";
+  type GameHistory,
+} from "@/lib/game-service";
 import HistoryLoading from "./loading";
 import Link from "next/link";
 
@@ -113,68 +112,52 @@ const HistoryPage = () => {
         setError(null);
 
         try {
-          // Check if session is valid
-          if (!isSessionValid(session)) {
-            setError("Your session has expired. Please sign in again.");
-            setTimeout(() => {
-              router.push("/auth/signin");
-            }, 2000);
-            return;
-          }
-
-          // Fetch game history using direct fetch
+          // Fetch game history using game-service function
           const history = await getUserGameHistory(session.user.id);
           setGameHistory(history || []);
 
-          // Calculate game stats
+          // Calculate game stats (using correct types)
           if (history && history.length > 0) {
-            const wins = history.filter(
-              (game: GameHistory) => game.result === "win"
-            ).length;
+            const wins = history.filter((game) => game.result === "win").length;
             const losses = history.filter(
-              (game: GameHistory) => game.result === "loss"
+              (game) => game.result === "loss"
             ).length;
             const draws = history.filter(
-              (game: GameHistory) => game.result === "draw"
+              (game) => game.result === "draw"
             ).length;
             const resigns = history.filter(
-              (game: GameHistory) => game.result === "resign"
+              (game) => game.result === "resign"
             ).length;
             const totalGames = history.length;
             const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
 
-            // Calculate average moves per game
             const totalMoves = history.reduce(
-              (sum: number, game: GameHistory) => sum + game.moves_count,
+              (sum, game) => sum + game.movesCount,
               0
             );
             const averageMovesPerGame =
               totalGames > 0 ? totalMoves / totalGames : 0;
 
-            // Calculate average game time
             const totalTime = history.reduce(
-              (sum: number, game: GameHistory) => sum + game.time_taken,
+              (sum, game) => sum + game.timeTaken,
               0
             );
             const averageGameTime = totalGames > 0 ? totalTime / totalGames : 0;
 
-            // Get list of beaten bots
             const beatenBots: Array<{
               name: string;
               difficulty: string;
               id: number;
             }> = [];
-            history.forEach((game: GameHistory) => {
+            history.forEach((game) => {
               if (game.result === "win") {
                 const botName = game.opponent;
                 const difficulty = game.difficulty;
 
-                // Find the bot in BOTS_BY_DIFFICULTY to get its ID
                 const botInDifficulty = BOTS_BY_DIFFICULTY[
                   difficulty as keyof typeof BOTS_BY_DIFFICULTY
                 ]?.find((bot: Bot) => bot.name === botName);
 
-                // Check if this bot is already in the list
                 const existingBot = beatenBots.find(
                   (bot) => bot.name === botName
                 );
@@ -201,24 +184,28 @@ const HistoryPage = () => {
               beatenBots,
             });
           } else {
+            setGameStats(null);
             setMessage("No games found in your history");
           }
         } catch (error: unknown) {
           console.error("Unexpected error:", error);
-
-          // Check if this is an authentication error
           if (
             error instanceof Error &&
             (error.message.includes("401") ||
               error.message.includes("auth") ||
-              error.message.includes("permission"))
+              error.message.includes("permission") ||
+              error.message.includes("User ID missing"))
           ) {
-            setError("Authentication error. Please sign in again.");
+            setError(
+              "Authentication error or missing user ID. Please sign in again."
+            );
             setTimeout(() => {
               router.push("/auth/signin");
             }, 2000);
           } else {
-            setError("An unexpected error occurred. Please try again.");
+            setError(
+              "An unexpected error occurred fetching history. Please try again."
+            );
           }
         } finally {
           setLoading(false);
@@ -271,7 +258,6 @@ const HistoryPage = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  // Get all bots from all difficulties
   const getAllBots = () => {
     const allBots: Array<Bot & { difficulty: string }> = [];
     Object.keys(BOTS_BY_DIFFICULTY).forEach((difficulty) => {
@@ -289,7 +275,6 @@ const HistoryPage = () => {
 
   const allBots = getAllBots();
 
-  // Check if a bot has been beaten
   const isBotBeaten = (botName: string) => {
     if (!gameStats) return false;
     return gameStats.beatenBots.some((bot) => bot.name === botName);
@@ -310,14 +295,12 @@ const HistoryPage = () => {
         setGameHistory([]);
         setGameStats(null);
         setMessage("Game history cleared successfully");
-
-        // Trigger a refresh
         setRefreshTrigger((prev) => prev + 1);
+      } else {
+        setError("Failed to clear history. Please try again.");
       }
     } catch (error) {
       console.error("Error clearing history:", error);
-
-      // Check if this is an authentication error
       if (
         error instanceof Error &&
         (error.message.includes("401") ||
@@ -329,7 +312,9 @@ const HistoryPage = () => {
           router.push("/auth/signin");
         }, 2000);
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError(
+          "An unexpected error occurred clearing history. Please try again."
+        );
       }
     } finally {
       setIsClearing(false);
@@ -452,9 +437,9 @@ const HistoryPage = () => {
                       {gameHistory.map((game) => (
                         <TableRow key={game.id}>
                           <TableCell>
-                            {format(new Date(game.date), "MMM d, yyyy")}
+                            {format(new Date(game.createdAt), "MMM d, yyyy")}
                             <div className="text-xs text-muted-foreground">
-                              {format(new Date(game.date), "h:mm a")}
+                              {format(new Date(game.createdAt), "h:mm a")}
                             </div>
                           </TableCell>
                           <TableCell>{game.opponent}</TableCell>
@@ -501,11 +486,11 @@ const HistoryPage = () => {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell>{game.moves_count}</TableCell>
+                          <TableCell>{game.movesCount}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5">
                               <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                              {formatTime(game.time_taken)}
+                              {formatTime(game.timeTaken)}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -657,7 +642,7 @@ const HistoryPage = () => {
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {format(
-                                    new Date(game.date),
+                                    new Date(game.createdAt),
                                     "MMM d, yyyy • h:mm a"
                                   )}
                                 </div>
