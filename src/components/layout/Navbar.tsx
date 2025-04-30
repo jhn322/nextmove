@@ -336,6 +336,7 @@ const Navbar = () => {
                     href="/"
                     className={cn(
                       "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
+                      "h-10",
                       isActive("/")
                         ? "bg-primary/10 text-primary"
                         : "hover:bg-accent hover:text-accent-foreground"
@@ -350,6 +351,9 @@ const Navbar = () => {
                   <NavigationMenuTrigger
                     className={cn(
                       "text-base font-medium px-4 py-2 rounded-xl",
+                      "h-10",
+                      "inline-flex items-center",
+                      "hover:bg-accent hover:text-accent-foreground",
                       pathname.startsWith("/play")
                         ? "bg-primary/10 text-primary"
                         : ""
@@ -427,6 +431,7 @@ const Navbar = () => {
                         onClick={() => handleProtectedNavigation("/history")}
                         className={cn(
                           "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
+                          "h-10",
                           isActive("/history")
                             ? "bg-primary/10 text-primary"
                             : ""
@@ -443,6 +448,7 @@ const Navbar = () => {
                         onClick={() => handleProtectedNavigation("/settings")}
                         className={cn(
                           "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
+                          "h-10",
                           isActive("/settings")
                             ? "bg-primary/10 text-primary"
                             : ""
@@ -550,6 +556,13 @@ const Navbar = () => {
             ) : (
               <>
                 <Button
+                  variant="secondary"
+                  onClick={() => router.push("/auth/register")}
+                  className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
+                >
+                  Register
+                </Button>
+                <Button
                   onClick={() => router.push("/auth/login")}
                   className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
                 >
@@ -559,8 +572,46 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Trigger */}
-          <div className="lg:hidden">
+          {/* Mobile Menu Trigger & Mobile Auth Button */}
+          <div className="flex items-center gap-2 lg:hidden">
+            {isAuthenticated ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all">
+                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you sure you want to logout?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      You will be signed out of your account and redirected to
+                      the home page.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-lg">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => signOut()}
+                      className="rounded-lg"
+                    >
+                      Logout
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <Button
+                onClick={() => router.push("/auth/login")}
+                className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all"
+              >
+                <LogIn className="mr-2 h-4 w-4" /> Login
+              </Button>
+            )}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -606,6 +657,7 @@ const Navbar = () => {
                         href="/"
                         className={cn(
                           "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center",
+                          "h-10",
                           isActive("/")
                             ? "bg-primary/10 text-primary"
                             : "hover:bg-accent hover:text-accent-foreground"
@@ -736,7 +788,7 @@ const Navbar = () => {
 
                   <div className="p-6 border-t w-full">
                     <div className="flex flex-col space-y-4">
-                      <div className="flex items-center justify-between w-3/4 mx-auto">
+                      <div className="flex items-center justify-center gap-4">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
@@ -833,6 +885,16 @@ const Navbar = () => {
                           </AlertDialog>
                         ) : (
                           <>
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                router.push("/auth/register");
+                                setIsOpen(false);
+                              }}
+                              className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
+                            >
+                              Register
+                            </Button>
                             <Button
                               onClick={() => {
                                 router.push("/auth/login");
