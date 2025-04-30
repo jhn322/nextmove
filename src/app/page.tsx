@@ -207,7 +207,7 @@ export default function Home() {
       if (!session?.user?.id) return;
 
       try {
-        const stats = await getUserGameStats(session.user.id, session);
+        const stats = await getUserGameStats(session.user.id);
         setGameStats(stats);
 
         // Get all bots in order of difficulty
@@ -687,7 +687,7 @@ export default function Home() {
                     </p>
                     <Button
                       className="mt-4"
-                      onClick={() => signIn("google", "/")}
+                      onClick={() => signIn("google", { callbackUrl: "/" })}
                     >
                       Sign In with Google
                     </Button>
