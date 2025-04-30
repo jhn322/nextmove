@@ -590,7 +590,7 @@ const GameControls = ({
                   <TooltipTrigger asChild>
                     <Button
                       onClick={handleNewBotDialog}
-                      variant="outline"
+                      variant="secondary"
                       className="w-full py-1.5 sm:py-2 md:py-3 laptop-screen:py-1.5 text-sm sm:text-base font-medium flex items-center justify-center gap-2"
                     >
                       <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
