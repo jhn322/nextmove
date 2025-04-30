@@ -20,7 +20,6 @@ import BotSelectionPanel from "@/components/game/controls/BotSelectionPanel";
 import PawnPromotionModal from "./PawnPromotionModal";
 import PreMadeMove from "./PreMadeMove";
 import { useAuth } from "@/context/auth-context";
-import { getUserSettings } from "@/lib/mongodb-service";
 import DraggablePiece from "./DraggablePiece";
 import DroppableSquare from "./DroppableSquare";
 
@@ -80,7 +79,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const { getBotMove } = useStockfish(game, selectedBot, makeMove);
   const { getHint, isCalculating } = useHintEngine();
 
-  // Load user settings from MongoDB or localStorage
+  // Load user settings from session or localStorage
   const { status, session } = useAuth();
   const [pieceSet, setPieceSet] = useState("staunty");
   const [showCoordinates, setShowCoordinates] = useState(true);
@@ -105,50 +104,38 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   }, []);
 
-  // Load user settings from MongoDB or localStorage
+  // Load user settings from session or localStorage
   useEffect(() => {
-    const loadSettings = async () => {
-      if (status === "authenticated" && session?.user?.id) {
-        try {
-          const settings = await getUserSettings(session.user.id);
-          if (settings) {
-            setPieceSet(settings.piece_set || "staunty");
-            setShowCoordinates(settings.show_coordinates !== false);
-            setWhitePiecesBottom(settings.white_pieces_bottom !== false);
-          }
-        } catch (error) {
-          console.error("Error loading user settings:", error);
-          // Fallback to localStorage
-          loadFromLocalStorage();
-        }
-      } else {
-        // Not authenticated, use localStorage
-        loadFromLocalStorage();
+    let loadedFromSession = false;
+    if (status === "authenticated" && session?.user) {
+      const user = session.user;
+      // Load settings from session, provide fallbacks
+      setPieceSet(user.pieceSet || "staunty");
+      setShowCoordinates(user.showCoordinates !== false);
+      setWhitePiecesBottom(user.whitePiecesBottom !== false);
+      loadedFromSession = true;
+    }
+
+    // Fallback to localStorage if not loaded from session or not authenticated
+    if (!loadedFromSession && typeof window !== "undefined") {
+      const savedPieceSet = localStorage.getItem("chess_piece_set");
+      const savedShowCoordinates = localStorage.getItem(
+        "chess_show_coordinates"
+      );
+      const savedWhitePiecesBottom = localStorage.getItem(
+        "chess_white_pieces_bottom"
+      );
+
+      if (savedPieceSet) setPieceSet(savedPieceSet);
+      if (savedShowCoordinates !== null) {
+        setShowCoordinates(savedShowCoordinates !== "false");
       }
-    };
-
-    const loadFromLocalStorage = () => {
-      if (typeof window !== "undefined") {
-        const savedPieceSet = localStorage.getItem("chess_piece_set");
-        const savedShowCoordinates = localStorage.getItem(
-          "chess_show_coordinates"
-        );
-        const savedWhitePiecesBottom = localStorage.getItem(
-          "chess_white_pieces_bottom"
-        );
-
-        if (savedPieceSet) setPieceSet(savedPieceSet);
-        if (savedShowCoordinates !== null) {
-          setShowCoordinates(savedShowCoordinates !== "false");
-        }
-        if (savedWhitePiecesBottom !== null) {
-          setWhitePiecesBottom(savedWhitePiecesBottom !== "false");
-        }
+      if (savedWhitePiecesBottom !== null) {
+        setWhitePiecesBottom(savedWhitePiecesBottom !== "false");
       }
-    };
-
-    loadSettings();
-  }, [status, session]);
+    }
+    // Depend on session user object and status
+  }, [status, session?.user]);
 
   useEffect(() => {
     if (initialBot) {
