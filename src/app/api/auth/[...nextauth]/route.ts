@@ -1,8 +1,10 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/auth";
+import NextAuth from "next-auth/next";
+import { authOptions } from "@/lib/auth/options";
 
-// Create a more efficient handler
+/**
+ * Denna handler hanterar GET och POST-förfrågningar till /api/auth/*
+ * Den använder konfigurationen från authOptions för att hantera autentisering
+ */
 const handler = NextAuth(authOptions);
 
-// Export the handler functions directly
 export { handler as GET, handler as POST };

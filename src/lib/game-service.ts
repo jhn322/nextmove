@@ -1,13 +1,10 @@
 import { Chess } from "chess.js";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
-import { Session } from "next-auth";
 import { DIFFICULTY_LEVELS } from "@/config/game";
-import {
-  GameHistory,
-  saveGameResult as saveGameToDb,
-  getUserGameHistory as getGameHistoryFromDb,
-  clearUserGameHistory as clearHistoryFromDb,
-} from "./mongodb-service";
+import prisma from "./prisma";
+import type { Game as PrismaGame } from "@/generated/prisma";
+
+export type GameHistory = PrismaGame;
 
 interface SaveGameResultParams {
   userId: string;
@@ -18,7 +15,6 @@ interface SaveGameResultParams {
   gameTime: number;
   movesCount: number;
   isResignation?: boolean;
-  session: Session | null;
 }
 
 /**
@@ -70,7 +66,7 @@ const normalizeDifficulty = (difficulty: string): string => {
 };
 
 /**
- * Saves a game result to the database
+ * Saves a game result to the database using Prisma
  */
 export const saveGameResult = async ({
   userId,
@@ -91,23 +87,23 @@ export const saveGameResult = async ({
     const result = determineGameResult(game, playerColor, isResignation);
     const normalizedDifficulty = normalizeDifficulty(difficulty);
 
-    // Simplified logging that's still informative
     console.log(
       `Saving game: ${result} against ${selectedBot.name} (${normalizedDifficulty})`
     );
 
-    const gameData: Omit<GameHistory, "id"> = {
-      user_id: userId,
-      opponent: selectedBot.name,
-      result,
-      date: new Date().toISOString(),
-      moves_count: movesCount,
-      time_taken: gameTime,
-      difficulty: normalizedDifficulty,
-      fen: game.fen(),
-    };
+    const savedGame = await prisma.game.create({
+      data: {
+        userId: userId,
+        opponent: selectedBot.name,
+        result: result,
+        difficulty: normalizedDifficulty,
+        movesCount: movesCount,
+        timeTaken: gameTime,
+        fen: game.fen(),
+      },
+    });
 
-    return await saveGameToDb(gameData);
+    return savedGame;
   } catch (error) {
     console.error("Unexpected error saving game result:", error);
     return null;
@@ -115,21 +111,24 @@ export const saveGameResult = async ({
 };
 
 /**
- * Gets all game history for a user
+ * Gets all game history for a user using Prisma
  */
 export const getUserGameHistory = async (
-  userId: string,
-  session: Session | null
+  userId: string
 ): Promise<GameHistory[]> => {
   try {
-    if (!userId || !session) {
-      console.error("Missing required parameters to fetch game history");
-      throw new Error("Authentication required");
+    if (!userId) {
+      console.error("Missing user ID to fetch game history");
+      throw new Error("Authentication required or User ID missing");
     }
 
-    const gameHistory = await getGameHistoryFromDb(userId);
+    const gameHistory = await prisma.game.findMany({
+      where: { userId: userId },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-    // Normalize difficulty values in the retrieved data
     return gameHistory.map((game) => ({
       ...game,
       difficulty: normalizeDifficulty(game.difficulty),
@@ -141,19 +140,16 @@ export const getUserGameHistory = async (
 };
 
 /**
- * Gets statistics about a user's game history
+ * Gets statistics about a user's game history using Prisma
  */
-export const getUserGameStats = async (
-  userId: string,
-  session: Session | null
-) => {
+export const getUserGameStats = async (userId: string) => {
   try {
-    if (!userId || !session) {
-      console.error("Missing required parameters to fetch game stats");
-      throw new Error("Authentication required");
+    if (!userId) {
+      console.error("Missing user ID to fetch game stats");
+      throw new Error("Authentication required or User ID missing");
     }
 
-    const gameHistory = await getUserGameHistory(userId, session);
+    const gameHistory = await getUserGameHistory(userId);
 
     if (gameHistory.length === 0) {
       return {
@@ -173,7 +169,6 @@ export const getUserGameStats = async (
       };
     }
 
-    // Calculate statistics
     const wins = gameHistory.filter((game) => game.result === "win").length;
     const losses = gameHistory.filter((game) => game.result === "loss").length;
     const draws = gameHistory.filter((game) => game.result === "draw").length;
@@ -184,24 +179,22 @@ export const getUserGameStats = async (
     const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
 
     const totalMoves = gameHistory.reduce(
-      (sum, game) => sum + game.moves_count,
+      (sum, game) => sum + game.movesCount,
       0
     );
     const averageMovesPerGame = totalGames > 0 ? totalMoves / totalGames : 0;
 
     const totalTime = gameHistory.reduce(
-      (sum, game) => sum + game.time_taken,
+      (sum, game) => sum + game.timeTaken,
       0
     );
     const averageGameTime = totalGames > 0 ? totalTime / totalGames : 0;
 
-    // Get list of bots the player has beaten
     const beatenBots = Array.from(
       new Set(
         gameHistory
           .filter((game) => game.result === "win")
           .map((game) => {
-            // Find the bot in BOTS_BY_DIFFICULTY to get its ID
             const difficulty = normalizeDifficulty(game.difficulty);
             const botInDifficulty = BOTS_BY_DIFFICULTY[
               difficulty as keyof typeof BOTS_BY_DIFFICULTY
@@ -233,20 +226,23 @@ export const getUserGameStats = async (
   }
 };
 
+/**
+ * Clears game history for a user using Prisma
+ */
 export const clearUserGameHistory = async (
-  userId: string,
-  session: Session | null
+  userId: string
 ): Promise<boolean> => {
   try {
-    if (!userId || !session) {
-      console.error("Missing required parameters to clear game history");
+    if (!userId) {
+      console.error("Missing user ID to clear game history");
       return false;
     }
 
-    const success = await clearHistoryFromDb(userId);
+    await prisma.game.deleteMany({
+      where: { userId: userId },
+    });
 
-    if (success && typeof window !== "undefined") {
-      // Clear all game-related data from localStorage
+    if (typeof window !== "undefined") {
       localStorage.removeItem("last-saved-game-id");
       localStorage.removeItem("last-saved-game-fen");
       localStorage.removeItem("chess-game-history");
@@ -254,7 +250,7 @@ export const clearUserGameHistory = async (
       localStorage.removeItem("chess-last-game-result");
     }
 
-    return success;
+    return true;
   } catch (error) {
     console.error("Unexpected error clearing game history:", error);
     return false;

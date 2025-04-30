@@ -15,7 +15,6 @@ import Image from "next/image";
 import CapturedPieces from "./CapturedPieces";
 import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
 import { useAuth } from "@/context/auth-context";
-import { getUserSettings } from "@/lib/mongodb-service";
 
 interface PlayerProfileProps {
   difficulty: string;
@@ -64,78 +63,52 @@ const PlayerProfile = ({
   // Check if there are any captured pieces to display
   const hasCapturedPieces = filteredPieces.length > 0;
 
-  // Load player data from MongoDB and fallback to localStorage
+  // Load player data from session or localStorage
   useEffect(() => {
     if (!isBot) {
-      async function loadUserSettings() {
-        // First try to load from MongoDB if authenticated
-        if (status === "authenticated" && session?.user?.id) {
-          try {
-            const settings = await getUserSettings(session.user.id);
+      let loadedFromSession = false;
+      // Try loading from session first if authenticated
+      if (status === "authenticated" && session?.user) {
+        const user = session.user;
+        // Use session data, provide fallbacks
+        setPlayerName(user.name || "Player");
+        setPlayerAvatar(user.image || "/default-pfp.png");
+        setCountryFlag(user.countryFlag || "");
+        setFlair(user.flair || "");
+        setCurrentPieceSet(user.pieceSet || initialPieceSet);
+        loadedFromSession = true;
 
-            if (settings) {
-              setPlayerName(settings.display_name);
-              setPlayerAvatar(settings.avatar_url);
-              setCountryFlag(settings.country_flag || "");
-              setFlair(settings.flair || "");
-
-              // Update piece set if provided in user settings
-              if (settings.piece_set) {
-                setCurrentPieceSet(settings.piece_set);
-              }
-
-              // Also update localStorage for offline use
-              localStorage.setItem("chess-player-name", settings.display_name);
-              localStorage.setItem("chess-player-avatar", settings.avatar_url);
-              localStorage.setItem(
-                "chess-player-flag",
-                settings.country_flag || ""
-              );
-              localStorage.setItem("chess-player-flair", settings.flair || "");
-              if (settings.piece_set) {
-                localStorage.setItem("chess-piece-set", settings.piece_set);
-              }
-
-              return; // Exit early if we loaded from MongoDB
-            }
-          } catch (error) {
-            console.error("Unexpected error loading user settings:", error);
-          }
-        }
-
-        // Fallback to localStorage if MongoDB failed or user is not authenticated
-        if (typeof window !== "undefined") {
-          const savedPlayerName = localStorage.getItem("chess-player-name");
-          const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
-          const savedFlag = localStorage.getItem("chess-player-flag");
-          const savedFlair = localStorage.getItem("chess-player-flair");
-          const savedPieceSet = localStorage.getItem("chess-piece-set");
-
-          if (savedPlayerName) {
-            setPlayerName(savedPlayerName);
-          }
-
-          if (savedAvatarUrl) {
-            setPlayerAvatar(savedAvatarUrl);
-          }
-
-          if (savedFlag) {
-            setCountryFlag(savedFlag);
-          }
-
-          if (savedFlair) {
-            setFlair(savedFlair);
-          }
-
-          if (savedPieceSet) {
-            setCurrentPieceSet(savedPieceSet);
-          }
-        }
+        // Update localStorage from session data
+        localStorage.setItem("chess-player-name", user.name || "Player");
+        localStorage.setItem(
+          "chess-player-avatar",
+          user.image || "/default-pfp.png"
+        );
+        localStorage.setItem("chess-player-flag", user.countryFlag || "");
+        localStorage.setItem("chess-player-flair", user.flair || "");
+        localStorage.setItem(
+          "chess-piece-set",
+          user.pieceSet || initialPieceSet
+        );
       }
 
-      loadUserSettings();
+      // Fallback to localStorage if not loaded from session
+      if (!loadedFromSession && typeof window !== "undefined") {
+        const savedPlayerName = localStorage.getItem("chess-player-name");
+        const savedAvatarUrl = localStorage.getItem("chess-player-avatar");
+        const savedFlag = localStorage.getItem("chess-player-flag");
+        const savedFlair = localStorage.getItem("chess-player-flair");
+        const savedPieceSet = localStorage.getItem("chess-piece-set");
+
+        if (savedPlayerName) setPlayerName(savedPlayerName);
+        if (savedAvatarUrl) setPlayerAvatar(savedAvatarUrl);
+        if (savedFlag) setCountryFlag(savedFlag);
+        if (savedFlair) setFlair(savedFlair);
+        if (savedPieceSet) setCurrentPieceSet(savedPieceSet);
+      }
     }
-  }, [isBot, session, status]);
+    // Depend on session user object directly, status, and isBot
+  }, [isBot, session?.user, status, initialPieceSet]);
 
   useEffect(() => {
     if (isBot && lastMove && game) {

@@ -1,7 +1,7 @@
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { ReactNode } from "react";
+'use client';
 
-export function DNDProvider({ children }: { children: ReactNode }) {
-  return <DndProvider backend={HTML5Backend}>{children}</DndProvider>;
+import { SessionProvider } from 'next-auth/react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>;
 }

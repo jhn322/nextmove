@@ -15,7 +15,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Pencil } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { getUserSettings, saveUserSettings } from "@/lib/mongodb-service";
 import Image from "next/image";
 import HoverText from "@/components/ui/hover-text";
 import { getCharacterNameFromPath } from "@/lib/utils";
@@ -35,63 +34,29 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
-  // Force refresh when session changes
+  // Load player data from session
   useEffect(() => {
-    if (session) {
-      setLastRefresh(Date.now());
+    setIsLoading(true);
+    if (status === "authenticated" && session?.user) {
+      const user = session.user;
+      setPlayerName(user.name || "Player");
+      setInputValue(user.name || "Player");
+      setAvatarUrl(user.image || "/avatars/jake.png");
+      setCountryFlag(user.countryFlag || "");
+      setFlair(user.flair || "");
+      setIsLoading(false);
+    } else if (status === "unauthenticated") {
+      // Reset to defaults if logged out
+      setPlayerName("Player");
+      setInputValue("Player");
+      setAvatarUrl("/avatars/jake.png");
+      setCountryFlag("");
+      setFlair("");
+      setIsLoading(false);
     }
-  }, [session]);
-
-  // Load player data from backend
-  useEffect(() => {
-    async function loadUserSettings() {
-      if (status === "authenticated" && session?.user?.id) {
-        setIsLoading(true);
-        try {
-          const settings = await getUserSettings(session.user.id);
-
-          if (settings) {
-            setPlayerName(settings.display_name || "Player");
-            setInputValue(settings.display_name || "Player");
-            setAvatarUrl(settings.avatar_url || "/avatars/jake.png");
-            setCountryFlag(settings.country_flag || "");
-            setFlair(settings.flair || "");
-          } else {
-            // Use defaults or user info from session
-            const defaultName = session.user.name || "Player";
-            const defaultAvatar = session.user.image || "/avatars/jake.png";
-            setPlayerName(defaultName);
-            setInputValue(defaultName);
-            setAvatarUrl(defaultAvatar);
-            setCountryFlag("");
-            setFlair("");
-          }
-        } catch (error) {
-          console.error("Unexpected error:", error);
-          // Set default values on error
-          setPlayerName("Player");
-          setInputValue("Player");
-          setAvatarUrl("/avatars/jake.png");
-          setCountryFlag("");
-          setFlair("");
-        } finally {
-          setIsLoading(false);
-        }
-      } else if (status === "unauthenticated") {
-        setIsLoading(false);
-        // Set default values for unauthenticated users
-        setPlayerName("Player");
-        setInputValue("Player");
-        setAvatarUrl("/avatars/jake.png");
-        setCountryFlag("");
-        setFlair("");
-      }
-    }
-
-    loadUserSettings();
-  }, [session, status, lastRefresh]);
+    // Add session.user as dependency
+  }, [session?.user, status]);
 
   // Load available avatars
   useEffect(() => {
@@ -159,18 +124,32 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
 
     setIsLoading(true);
     const newName = inputValue.trim();
-    setPlayerName(newName);
+    setPlayerName(newName); // Optimistically update UI
 
     try {
-      const success = await saveUserSettings(session.user.id, {
-        display_name: newName,
+      // Call the API endpoint to save the name
+      const response = await fetch("/api/user/settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newName }),
       });
 
-      if (success) {
+      if (!response.ok) {
+        // Revert optimistic update on error
+        setPlayerName(session.user.name || "Player");
+        console.error("Failed to save name:", await response.text());
+        // TODO: Show error message to user
+      } else {
+        // Refresh session to get updated user info
         await refreshSession();
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
+      // Revert optimistic update on error
+      setPlayerName(session.user.name || "Player");
+      console.error("Unexpected error saving name:", error);
+      // TODO: Show error message to user
     } finally {
       setIsLoading(false);
       setIsEditing(false);
@@ -188,20 +167,35 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
   const handleAvatarSelect = async (avatarPath: string) => {
     if (!session?.user?.id) return;
 
-    setAvatarUrl(avatarPath);
+    const previousAvatar = avatarUrl;
+    setAvatarUrl(avatarPath); // Optimistically update UI
     setIsAvatarDialogOpen(false);
     setIsLoading(true);
 
     try {
-      const success = await saveUserSettings(session.user.id, {
-        avatar_url: avatarPath,
+      // Call the API endpoint to save the avatar
+      const response = await fetch("/api/user/settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image: avatarPath }),
       });
 
-      if (success) {
+      if (!response.ok) {
+        // Revert optimistic update on error
+        setAvatarUrl(previousAvatar);
+        console.error("Failed to save avatar:", await response.text());
+        // TODO: Show error message to user
+      } else {
+        // Refresh session to get updated user info
         await refreshSession();
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
+      // Revert optimistic update on error
+      setAvatarUrl(previousAvatar);
+      console.error("Unexpected error saving avatar:", error);
+      // TODO: Show error message to user
     } finally {
       setIsLoading(false);
     }

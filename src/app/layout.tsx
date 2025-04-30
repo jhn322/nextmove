@@ -5,9 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/theme-providers";
 import { AuthProvider } from "@/context/auth-context";
-import { NextAuthProvider } from "@/providers/next-auth-provider";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { Providers } from "@/app/providers";
 import { DndProvider } from "@/components/dnd-provider";
 
 const geistSans = Geist({
@@ -31,19 +29,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <NextAuthProvider session={session}>
+        <Providers>
           <AuthProvider>
             <ThemeProvider
               attribute="class"
@@ -58,7 +54,7 @@ export default async function RootLayout({
               </DndProvider>
             </ThemeProvider>
           </AuthProvider>
-        </NextAuthProvider>
+        </Providers>
       </body>
     </html>
   );

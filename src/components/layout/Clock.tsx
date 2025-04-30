@@ -2,33 +2,35 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
-import { getUserSettings } from "@/lib/mongodb-service";
+// Remove unused import
+// import { getUserSettings } from "@/lib/mongodb-service";
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+
+// Define valid clock formats explicitly
+type ClockFormat = "12" | "24";
 
 export default function Clock() {
   const { session, status } = useAuth();
   const [time, setTime] = useState(new Date());
+  // Default timezone and format
   const [timezone, setTimezone] = useState("UTC");
-  const [clockFormat, setClockFormat] = useState<"12" | "24">("24");
+  const [clockFormat, setClockFormat] = useState<ClockFormat>("24");
 
   useEffect(() => {
-    const loadSettings = async () => {
-      if (status === "authenticated" && session?.user?.id) {
-        try {
-          const settings = await getUserSettings(session.user.id);
-          if (settings) {
-            setTimezone(settings.timezone || "UTC");
-            setClockFormat(settings.clock_format || "24");
-          }
-        } catch (error) {
-          console.error("Error loading user settings:", error);
-        }
-      }
-    };
-
-    loadSettings();
-  }, [session, status]);
+    // Set timezone and format from session if available
+    if (status === "authenticated" && session?.user) {
+      setTimezone(session.user.timezone || "UTC");
+      // Ensure clockFormat is either "12" or "24", default to "24"
+      const formatFromSession = session.user.clockFormat;
+      setClockFormat(formatFromSession === "12" ? "12" : "24");
+    } else {
+      // Optionally load from localStorage if not authenticated (or reset to defaults)
+      // For simplicity, we'll just use defaults if not logged in
+      setTimezone("UTC");
+      setClockFormat("24");
+    }
+  }, [session?.user, status]); // Depend on session user object
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -38,11 +40,15 @@ export default function Clock() {
     return () => clearInterval(timer);
   }, []);
 
-  const zonedTime = toZonedTime(time, timezone);
-  const timeString = format(
-    zonedTime,
-    clockFormat === "12" ? "hh:mm a" : "HH:mm"
-  );
+  // Use a try-catch block for timezone conversion as invalid zones can cause errors
+  let timeString = "--:--";
+  try {
+    const zonedTime = toZonedTime(time, timezone);
+    timeString = format(zonedTime, clockFormat === "12" ? "hh:mm a" : "HH:mm");
+  } catch (error) {
+    console.error(`Invalid timezone specified: ${timezone}`, error);
+    // Keep default timeString or handle error display
+  }
 
   return (
     <div className="font-mono text-sm text-muted-foreground">{timeString}</div>
