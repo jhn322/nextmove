@@ -213,7 +213,6 @@ const VictoryModal = ({
             gameTime,
             movesCount,
             isResignation: isResignation || game.isResigned,
-            session,
           });
 
           setResultSaved(true);
