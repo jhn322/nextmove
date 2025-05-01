@@ -464,7 +464,7 @@ const Navbar = () => {
             </NavigationMenu>
           </div>
 
-          {/* Theme Toggle and Login */}
+          {/* Theme Toggle and Log In */}
           <div className="flex items-center gap-4">
             <div className="hidden lg:block">
               <Clock />
@@ -556,17 +556,10 @@ const Navbar = () => {
             ) : (
               <>
                 <Button
-                  variant="secondary"
-                  onClick={() => router.push("/auth/register")}
-                  className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
-                >
-                  Register
-                </Button>
-                <Button
                   onClick={() => router.push("/auth/login")}
                   className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
                 >
-                  <LogIn className="mr-2 h-4 w-4" /> Login
+                  <LogIn className="mr-2 h-4 w-4" /> Log In
                 </Button>
               </>
             )}
@@ -609,7 +602,7 @@ const Navbar = () => {
                 onClick={() => router.push("/auth/login")}
                 className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all"
               >
-                <LogIn className="mr-2 h-4 w-4" /> Login
+                <LogIn className="mr-2 h-4 w-4" /> Log In
               </Button>
             )}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -886,23 +879,13 @@ const Navbar = () => {
                         ) : (
                           <>
                             <Button
-                              variant="secondary"
-                              onClick={() => {
-                                router.push("/auth/register");
-                                setIsOpen(false);
-                              }}
-                              className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
-                            >
-                              Register
-                            </Button>
-                            <Button
                               onClick={() => {
                                 router.push("/auth/login");
                                 setIsOpen(false);
                               }}
                               className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
                             >
-                              <LogIn className="mr-2 h-4 w-4" /> Login
+                              <LogIn className="mr-2 h-4 w-4" /> Log In
                             </Button>
                           </>
                         )}
