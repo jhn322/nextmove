@@ -526,13 +526,13 @@ const Navbar = () => {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all">
-                      <LogOut className="mr-2 h-4 w-4" /> Logout
+                      <LogOut className="mr-2 h-4 w-4" /> Log Out
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="rounded-xl">
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        Are you sure you want to logout?
+                        Are you sure you want to log out?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
                         You will be signed out of your account and redirected to
@@ -547,7 +547,7 @@ const Navbar = () => {
                         onClick={() => signOut()}
                         className="rounded-lg"
                       >
-                        Logout
+                        Log Out
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -571,13 +571,13 @@ const Navbar = () => {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all">
-                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                    <LogOut className="mr-2 h-4 w-4" /> Log Out
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="rounded-xl">
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      Are you sure you want to logout?
+                      Are you sure you want to log out?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       You will be signed out of your account and redirected to
@@ -592,7 +592,7 @@ const Navbar = () => {
                       onClick={() => signOut()}
                       className="rounded-lg"
                     >
-                      Logout
+                      Log Out
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -850,13 +850,13 @@ const Navbar = () => {
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg">
-                                <LogOut className="mr-2 h-4 w-4" /> Logout
+                                <LogOut className="mr-2 h-4 w-4" /> Log Out
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="rounded-xl">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Are you sure you want to logout?
+                                  Are you sure you want to log out?
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   You will be signed out of your account and
@@ -871,7 +871,7 @@ const Navbar = () => {
                                   onClick={() => signOut()}
                                   className="rounded-lg"
                                 >
-                                  Logout
+                                  Log Out
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

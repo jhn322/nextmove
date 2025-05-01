@@ -148,7 +148,7 @@ export default function SettingsPage() {
     }
 
     if (status === "unauthenticated" || !session?.user) {
-      router.push("/auth/signin");
+      router.push("/auth/login?callbackUrl=/settings");
       return;
     }
 

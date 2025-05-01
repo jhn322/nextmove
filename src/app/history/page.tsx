@@ -2,8 +2,9 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/options";
 import { getUserGameHistory, type GameHistory } from "@/lib/game-service";
 import { BOTS_BY_DIFFICULTY, Bot } from "@/components/game/data/bots";
-import { HistoryPageClient } from "./history-page-client"; // Import the new client component
+import { HistoryPageClient } from "./history-page-client";
 import React from "react";
+import { redirect } from "next/navigation";
 
 // Define GameStats interface here or import if defined centrally
 interface GameStats {
@@ -76,18 +77,8 @@ export default async function HistoryPageServer() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    // Option 1: Redirect to signin
-    // redirect("/auth/signin?callbackUrl=/history");
-
-    // Option 2: Show an error message on the page (client component will handle redirect via useEffect)
-    return (
-      <HistoryPageClient
-        session={null}
-        initialGameHistory={[]}
-        initialGameStats={null}
-        initialError="You need to sign in to view your game history."
-      />
-    );
+    // Redirect to login page if not authenticated
+    redirect("/auth/login?callbackUrl=/history");
   }
 
   let initialGameHistory: GameHistory[] = [];

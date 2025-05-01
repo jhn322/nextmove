@@ -22,9 +22,9 @@ export async function middleware(request: NextRequest) {
 
     // If there's no token and we're on a protected route, redirect to sign in
     if (!token) {
-      const signInUrl = new URL("/auth/signin", request.url);
-      signInUrl.searchParams.set("callbackUrl", request.url);
-      return NextResponse.redirect(signInUrl);
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", request.url);
+      return NextResponse.redirect(loginUrl);
     }
 
     // User is authenticated, allow the request
