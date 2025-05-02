@@ -65,7 +65,7 @@ function LoginContent() {
             <Link href="/" className="inline-block mb-6">
               <div className="flex items-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5">
                 <Image
-                  className="h-10 w-auto"
+                  className=""
                   src="/favicon.svg"
                   alt="NextMove Logo"
                   width={40}
@@ -105,6 +105,14 @@ function LoginContent() {
               isLoading={formLoading}
               error={error}
             />
+            <div className="text-sm text-right">
+              <Link
+                href="/auth/forgot-password"
+                className="font-semibold text-primary hover:text-primary/90"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -112,7 +120,7 @@ function LoginContent() {
       <div className="relative hidden w-0 flex-1 lg:block">
         <Image
           className="absolute inset-0 h-full w-full object-cover"
-          src="/signinout/signin.webp"
+          src="/authentication/signin.webp"
           alt="Sign in illustration"
           fill
           priority

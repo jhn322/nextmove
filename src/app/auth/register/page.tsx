@@ -60,9 +60,10 @@ function RegisterContent() {
       <div className="relative hidden lg:block lg:w-[577px]">
         <Image
           className="absolute inset-0 h-full w-full object-cover"
-          src="/signinout/signout.webp"
+          src="/authentication/signout.webp"
           alt="Sign up illustration"
           fill
+          sizes="(min-width: 1024px) 577px, 0vw"
           priority
         />
       </div>

@@ -41,6 +41,7 @@ model User {
   enableConfetti      Boolean? @default(true) // Victory confetti preference
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+  passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken model
 }
 
 // NextAuth required models
@@ -80,6 +81,17 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  token     String   @unique // Store a hash of the actual token
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
 
 enum UserRole {
   USER
