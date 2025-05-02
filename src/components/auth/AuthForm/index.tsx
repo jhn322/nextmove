@@ -17,10 +17,10 @@ import {
 } from "@/components/ui/form";
 import type { AuthFormProps, AuthFormData } from "./types";
 import { loginSchema } from "@/lib/validations/auth/login";
-import { registerApiSchema as registerSchema } from "@/lib/validations/auth/register";
+import { registerFormSchema } from "@/lib/validations/auth/register";
 
 const getValidationSchema = (mode: "login" | "register") => {
-  return mode === "login" ? loginSchema : registerSchema;
+  return mode === "login" ? loginSchema : registerFormSchema;
 };
 
 type FormValues = AuthFormData;
@@ -43,9 +43,18 @@ export const AuthForm = ({
     },
   });
 
-  const handleFormSubmit = form.handleSubmit(async (data) => {
-    await onSubmit(data);
-  });
+  const handleFormSubmit = form.handleSubmit(
+    async (data) => {
+      const submitData =
+        mode === "register"
+          ? { name: data.name, email: data.email, password: data.password }
+          : data;
+      await onSubmit(submitData as AuthFormData);
+    },
+    (errors) => {
+      console.error("Form validation errors:", errors);
+    }
+  );
 
   return (
     <Form {...form}>

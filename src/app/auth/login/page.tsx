@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { AuthDivider } from "@/components/auth/AuthDivider";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -17,10 +18,20 @@ import { Spinner } from "@/components/ui/spinner";
 
 function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { redirectToCallback } = useRedirect();
   const { status } = useAuth();
   const authenticated = status === "authenticated";
   const authLoading = status === "loading";
+
+  useEffect(() => {
+    if (searchParams.get("verified") === "true") {
+      toast.success("Email verified successfully! You can now log in.");
+    }
+    // if (searchParams.get("unverified") === "true") {
+    //   toast.error("Please verify your email before accessing that page.");
+    // }
+  }, [searchParams, router]);
 
   const {
     loading: formLoading,

@@ -1,25 +1,41 @@
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import prisma from '@/lib/prisma';
-import { USER_ROLES, AUTH_MESSAGES } from '@/lib/auth/constants/auth';
-import { registerApiSchema } from '@/lib/validations/auth/register'; // Importera nya schemat
-import { ZodIssue } from 'zod'; // Importera ZodIssue
-// import { createVerificationToken } from '@/lib/auth/utils/token';
-// import { sendVerificationEmail } from '@/lib/email';
+import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import crypto from "crypto"; // Import crypto
+import prisma from "@/lib/prisma";
+import { USER_ROLES, AUTH_MESSAGES } from "@/lib/auth/constants/auth";
+import { registerApiSchema } from "@/lib/validations/auth/register"; // Importera nya schemat
+import { ZodIssue } from "zod"; // Importera ZodIssue
+import { sendVerificationEmail } from "@/lib/email/resend"; // Import our new function
+
+const HASH_ROUNDS = 10;
+// Email verification token expires in 24 hours (adjust as needed)
+const TOKEN_EXPIRATION_DURATION = 24 * 60 * 60 * 1000; // 24 hours in ms
+
+/**
+ * Generates a secure random token and its hash.
+ * Similar to the password reset token generation.
+ * @returns An object containing the token and its hash.
+ */
+const generateVerificationTokenAndHash = async () => {
+  const token = crypto.randomBytes(32).toString("hex");
+  const hash = await bcrypt.hash(token, HASH_ROUNDS);
+  return { token, hash };
+};
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-
     //* Validera input med det nya API-schemat
     const validationResult = registerApiSchema.safeParse(body); // Använd nya schemat
 
     if (!validationResult.success) {
-      const errors = validationResult.error.errors.map((e: ZodIssue) => e.message); // Använd ZodIssue typen
+      const errors = validationResult.error.errors.map(
+        (e: ZodIssue) => e.message
+      ); // Använd ZodIssue typen
       return NextResponse.json(
         // Använd specifikt fel eller standard om join är tom
-        { message: errors.join(', ') || AUTH_MESSAGES.ERROR_MISSING_FIELDS },
+        { message: errors.join(", ") || AUTH_MESSAGES.ERROR_MISSING_FIELDS },
         { status: 400 }
       );
     }
@@ -51,7 +67,7 @@ export async function POST(req: Request) {
     }
 
     //* Hasha lösenordet
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, HASH_ROUNDS);
 
     //* Skapa användaren (om ingen fanns)
     const user = await prisma.user.create({
@@ -60,57 +76,40 @@ export async function POST(req: Request) {
         email,
         password: hashedPassword,
         role: USER_ROLES.USER, // Använd konstant
-        // Observera att emailVerified är null eftersom användaren måste verifiera sin e-post
+        emailVerified: null, // Explicitly null until verified
       },
     });
 
-    // Ta bort alla befintliga tokens för denna e-post (för säkerhets skull)
-    // await prisma.verificationToken.deleteMany({
-    //   where: {
-    //     identifier: email,
-    //   },
-    // });
+    // --- Start Email Verification Process ---
+    try {
+      // Generate verification token
+      const { token, hash: hashedToken } =
+        await generateVerificationTokenAndHash();
+      const expires = new Date(Date.now() + TOKEN_EXPIRATION_DURATION);
 
-    //* Generera verifieringstoken och skicka e-post
-    // let verificationToken = null;
-    // try {
-    //   // Skapa en verifieringstoken
-    //   console.log(`Skapar verifieringstoken för ${email}...`);
-    //   verificationToken = await createVerificationToken(email);
-    //   console.log(`Token skapad: ${verificationToken.substring(0, 10)}...`);
+      // Store the *hashed* token in the new table
+      await prisma.emailVerificationToken.create({
+        data: {
+          userId: user.id, // Link to the created user
+          token: hashedToken,
+          expires: expires,
+        },
+      });
 
-    //   // Dubbelkolla att token verkligen har skapats i databasen
-    //   const tokenInDb = await prisma.verificationToken.findFirst({
-    //     where: {
-    //       identifier: email,
-    //       token: verificationToken
-    //     }
-    //   });
-
-    //   if (!tokenInDb) {
-    //     console.error(`VARNING: Token kunde inte verifieras i databasen för ${email}`);
-    //   } else {
-    //     console.log(`Token verifierad i databasen för ${email}`);
-    //   }
-
-    //   // Skicka verifieringsmail
-    //   console.log(`Skickar verifieringsmail till ${email} med token ${verificationToken.substring(0, 10)}...`);
-    //   const emailResult = await sendVerificationEmail(
-    //     email,
-    //     verificationToken,
-    //     name
-    //   );
-
-    //   if (!emailResult.success) {
-    //     console.error('Failed to send verification email:', emailResult.error);
-    //     // Fortsätt ändå, användaren kan begära en ny verifieringslänk senare
-    //   } else {
-    //     console.log(`Verifieringsmail skickat till ${email} med token ${verificationToken.substring(0, 10)}...`);
-    //   }
-    // } catch (emailError) {
-    //   console.error('Error in verification process:', emailError);
-    //   // Vi fortsätter ändå, användaren kan begära en ny verifieringslänk senare
-    // }
+      // Send the verification email with the *unhashed* token
+      await sendVerificationEmail(email, token);
+      console.log(`Verification email process initiated for ${email}`);
+    } catch (verificationError) {
+      console.error(
+        `Error during email verification process for ${email}:`,
+        verificationError
+      );
+      // Log the error, but allow registration to succeed.
+      // The user can request a resend later if needed.
+      // Optionally, you could delete the user here if verification email fails critically,
+      // but that might be a poor user experience.
+    }
+    // --- End Email Verification Process ---
 
     // Ta bort lösenordet från svaret
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -118,17 +117,18 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        message: AUTH_MESSAGES.SUCCESS_REGISTRATION,
+        message:
+          "Registration successful. Please check your email to verify your account.",
         user: userWithoutPassword,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Registreringsfel:', error);
+    console.error("Registration error:", error); // Changed log prefix
     // Använd mer generellt registreringsfel här
     return NextResponse.json(
       { message: AUTH_MESSAGES.ERROR_REGISTRATION_FAILED },
       { status: 500 }
     );
   }
-} 
+}

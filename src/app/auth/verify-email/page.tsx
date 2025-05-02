@@ -1,167 +1,137 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { AUTH_MESSAGES, AUTH_ROUTES } from "@/lib/auth/constants/auth";
+import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { MailWarning, LogOut } from "lucide-react";
 
-// *VerifyEmailContent component - används för att verifiera användarens e-post
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { signOut } from "next-auth/react";
+
 function VerifyEmailContent() {
-  const searchParams = useSearchParams();
-  const token = searchParams?.get("token");
-  const email = searchParams?.get("email");
+  const { data: session, status } = useSession();
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isVerified, setIsVerified] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const handleResendClick = async () => {
+    if (!session?.user?.email) {
+      toast.error("Could not get user email. Please log out and log back in.");
+      return;
+    }
 
-  useEffect(() => {
-    const verifyEmail = async () => {
-      if (!token || !email) {
-        setError(AUTH_MESSAGES.ERROR_MISSING_FIELDS);
-        setIsLoading(false);
-        return;
-      }
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: session.user.email }),
+      });
 
-      try {
-        const response = await fetch(
-          `/api/auth/verify?token=${encodeURIComponent(
-            token
-          )}&email=${encodeURIComponent(email)}`,
-          {
-            method: "GET",
-          }
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          responseData.message || "Failed to resend verification email."
         );
-
-        const data = await response.json();
-
-        if (response.ok) {
-          setIsVerified(true);
-        } else {
-          setError(data.message || AUTH_MESSAGES.ERROR_DEFAULT);
-        }
-      } catch (err) {
-        setError(AUTH_MESSAGES.ERROR_DEFAULT);
-        console.error("Verification error:", err);
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    verifyEmail();
-  }, [token, email]);
+      toast.success(
+        responseData.message || "Verification email sent successfully!"
+      );
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred.";
+      console.error("Resend verification error:", errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Handle loading state while session is checked
+  if (status === "loading") {
+    return (
+      <div className="flex justify-center items-center py-4">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  // If somehow user lands here without being logged in (middleware should prevent this)
+  if (status === "unauthenticated") {
+    return (
+      <div className="text-center space-y-4">
+        <MailWarning
+          className={`mx-auto h-12 w-12 text-yellow-600`}
+          aria-hidden="true"
+        />
+        <h2 className={`text-2xl font-semibold`}>Authentication Required</h2>
+        <p className="text-muted-foreground">
+          You need to be logged in to manage email verification.
+        </p>
+        <Button asChild variant="outline">
+          <Link href="/auth/login">Back to Login</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // Main content for logged-in, unverified user
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
-      <div className="w-full max-w-md space-y-8 bg-white p-6 rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-blue-900">
-            E-postverifiering
-          </h1>
-        </div>
-
-        <div className="mt-4">
-          {isLoading ? (
-            <div className="text-center p-4">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
-              <p className="mt-2 text-gray-600">
-                {AUTH_MESSAGES.TEXT_VERIFYING}
-              </p>
-            </div>
-          ) : isVerified ? (
-            <div className="text-center space-y-4">
-              <div className="flex justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-16 w-16 text-green-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              <p className="text-lg font-medium text-blue-900">
-                {AUTH_MESSAGES.SUCCESS_VERIFICATION}
-              </p>
-              <div className="pt-4">
-                <Link
-                  href={AUTH_ROUTES.LOGIN}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Gå till inloggning
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center space-y-4">
-              <div className="flex justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-16 w-16 text-red-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </div>
-              <p className="text-lg font-medium text-blue-900">
-                Verifiering misslyckades
-              </p>
-              <p className="text-sm text-gray-600">
-                {error || AUTH_MESSAGES.ERROR_DEFAULT}
-              </p>
-              <div className="pt-4 space-y-2">
-                <Link
-                  href={AUTH_ROUTES.LOGIN}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Gå till inloggning
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
+    <div className="text-center space-y-4">
+      <MailWarning
+        className={`mx-auto h-12 w-12 text-yellow-600`}
+        aria-hidden="true"
+      />
+      <h2 className={`text-2xl font-semibold`}>Verify Your Email</h2>
+      <p className="text-muted-foreground">
+        A verification link has been sent to{" "}
+        <strong>{session?.user?.email || "your email"}</strong>. Please check
+        your inbox (and spam folder) and click the link to activate your
+        account.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+        <Button onClick={handleResendClick} disabled={isLoading}>
+          {isLoading ? <Spinner className="mr-2 h-4 w-4 animate-spin" /> : null}
+          {isLoading ? "Sending..." : "Resend Verification Link"}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => signOut({ callbackUrl: "/auth/login" })}
+        >
+          <LogOut className="mr-2 h-4 w-4" /> Log Out
+        </Button>
       </div>
     </div>
   );
 }
 
-// Loading fallback component
-function VerifyEmailLoading() {
+export default function VerifyEmailPage() {
+  // Note: This page assumes it's accessed by an authenticated but unverified user.
+  // Middleware should handle redirecting here.
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
-      <div className="w-full max-w-md space-y-8 bg-white p-6 rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-blue-900">
-            E-postverifiering
-          </h1>
-        </div>
-        <div className="text-center p-4">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Laddar...</p>
-        </div>
+    // Use the centered layout
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <div className="mx-auto w-full max-w-md lg:w-[450px]">
+        {/* Optional Logo */}
+        <Link href="/" className="inline-block mb-8 mx-auto">
+          <div className="flex items-center justify-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5 mx-auto">
+            <Image
+              className="h-10 w-auto"
+              src="/favicon.svg"
+              alt="NextMove Logo"
+              width={40}
+              height={40}
+            />
+          </div>
+        </Link>
+
+        <VerifyEmailContent />
       </div>
     </div>
-  );
-}
-
-// *VerifyEmail component - används för att verifiera användarens e-post
-export default function VerifyEmail() {
-  return (
-    <Suspense fallback={<VerifyEmailLoading />}>
-      <VerifyEmailContent />
-    </Suspense>
   );
 }

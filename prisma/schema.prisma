@@ -42,6 +42,7 @@ model User {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken model
+  emailVerificationTokens EmailVerificationToken[] // Relation to EmailVerificationToken model
 }
 
 // NextAuth required models
@@ -91,6 +92,19 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// New model specifically for our custom email verification flow
+model EmailVerificationToken {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  token     String   @unique // Store a hash of the actual token
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId]) // Index for quicker lookups by userId if needed
 }
 
 enum UserRole {

@@ -37,3 +37,39 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     throw new Error("Failed to send password reset email.");
   }
 };
+
+/**
+ * Sends an email verification link to the specified user.
+ * @param email - The recipient's email address.
+ * @param token - The email verification token (unhashed).
+ */
+export const sendVerificationEmail = async (email: string, token: string) => {
+  // Reuse environment variable checks or ensure they are done elsewhere
+  if (!process.env.NEXT_PUBLIC_APP_URL) {
+    console.error("Error: NEXT_PUBLIC_APP_URL is not set.");
+    throw new Error("Application URL is not configured.");
+  }
+  if (!process.env.RESEND_API_KEY) {
+    console.error("Error: RESEND_API_KEY is not set.");
+    throw new Error("Resend API Key is not configured.");
+  }
+
+  // Construct verification link (API route that handles verification)
+  const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify?token=${token}`;
+  // Use the Resend onboarding address for development/testing
+  const fromEmail = "onboarding@resend.dev";
+  const fromName = process.env.RESEND_FROM_NAME || "NextMove";
+
+  try {
+    await resend.emails.send({
+      from: `${fromName} <${fromEmail}>`,
+      to: [email],
+      subject: `Verify your email for ${fromName}`,
+      html: `<p>Welcome to ${fromName}!</p><p>Click the link below to verify your email address:</p><p><a href="${verificationLink}">${verificationLink}</a></p><p>If you did not sign up for an account, please ignore this email.</p>`,
+    });
+    console.log(`Verification email sent successfully to ${email}`);
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw new Error("Failed to send verification email.");
+  }
+};

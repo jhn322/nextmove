@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-import { registerFormSchema } from "@/lib/validations/auth/register";
+// import { registerFormSchema } from "@/lib/validations/auth/register"; // Removed unused import
 import type { AuthFormData } from "@/components/auth/AuthForm/types";
 import { AUTH_MESSAGES, AUTH_ROUTES } from "@/lib/auth/constants/auth";
 import { registerUser } from "@/services/auth/mutations/register";
@@ -23,23 +23,20 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
     setError(null);
 
     try {
-      //* Validera registreringsdata
       if (mode === "register") {
-        const validatedData = registerFormSchema.parse({
-          name: data.name,
+        // Remove redundant validation - data is already validated by react-hook-form
+        // const validatedData = registerFormSchema.parse({ ... });
+
+        // Directly use the validated data passed from the form
+        const result = await registerUser({
+          // Zod validation in AuthForm ensures name is a valid string in register mode
+          name: data.name!, // Use non-null assertion, or default: data.name || ''
           email: data.email,
           password: data.password,
-          confirmPassword: data.confirmPassword,
-        });
-
-        //* Registrera användare via API
-        const result = await registerUser({
-          name: validatedData.name,
-          email: validatedData.email,
-          password: validatedData.password,
         });
 
         if (!result.success) {
+          // console.error("registerUser call failed or returned success: false. Result:", result); // Removed log
           throw new Error(
             result.message || AUTH_MESSAGES.ERROR_REGISTRATION_FAILED
           );
@@ -82,7 +79,9 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
         }
       }
     } catch (error) {
-      // Hantera Zod valideringsfel specifikt
+      // console.error("Error caught in useAuthForm handleSubmit:", error); // Removed log
+
+      // Hantera Zod valideringsfel specifikt (Shouldn't happen anymore for register if redundant parse is removed)
       if (error instanceof z.ZodError) {
         setError(error.errors.map((e) => e.message).join(", "));
       } else {

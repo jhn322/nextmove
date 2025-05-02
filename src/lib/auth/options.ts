@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { configureProviders } from "./providers";
 import { configureCallbacks } from "./callbacks";
 // Assuming constants are in lib/auth/constants/auth.ts
-import { AUTH_ROUTES, USER_ROLES } from '@/lib/auth/constants/auth';
+import { AUTH_ROUTES, USER_ROLES } from "@/lib/auth/constants/auth";
 
 /**
  * Huvudkonfiguration för NextAuth
@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
 
   // Session-hantering
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
   },
 
   // Anpassade sidor
@@ -62,4 +62,4 @@ export const authOptions: NextAuthOptions = {
 
   // Aktivera debugging i utvecklingsmiljö
   debug: process.env.NODE_ENV === "development",
-}; 
+};
