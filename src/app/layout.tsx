@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { Providers } from "@/app/providers";
 import { DndProvider } from "@/components/dnd-provider";
 import PageWrapper from "@/components/layout/PageWrapper";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
             >
               <DndProvider>
                 <PageWrapper>{children}</PageWrapper>
+                <Toaster />
               </DndProvider>
             </ThemeProvider>
           </AuthProvider>

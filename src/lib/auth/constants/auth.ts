@@ -32,40 +32,40 @@ export const PUBLIC_ROUTES = [
 ];
 
 export const AUTH_MESSAGES = {
-  // Felmeddelanden
-  ERROR_DEFAULT: "Något gick fel. Försök igen.",
-  ERROR_INVALID_CREDENTIALS: "Felaktig email eller lösenord.",
-  ERROR_MISSING_FIELDS: "Vänligen fyll i alla obligatoriska fält.",
-  ERROR_EMAIL_EXISTS: "En användare med denna email finns redan.",
+  // Error Messages
+  ERROR_DEFAULT: "Something went wrong. Please try again.",
+  ERROR_INVALID_CREDENTIALS: "Invalid email or password.",
+  ERROR_MISSING_FIELDS: "Please fill in all required fields.",
+  ERROR_EMAIL_EXISTS: "A user with this email already exists.",
   ERROR_EMAIL_EXISTS_OAUTH:
-    "Emailen är redan registrerad via en annan tjänst (t.ex. Google). Prova att logga in med den istället.",
-  ERROR_REGISTRATION_FAILED: "Registreringen misslyckades.",
-  ERROR_LOGIN_FAILED: "Inloggningen misslyckades.",
-  ERROR_GOOGLE_SIGNIN_FAILED: "Inloggning med Google misslyckades.",
-  ERROR_PASSWORD_MISMATCH: "Lösenorden matchar inte.",
-  ERROR_PASSWORD_REQUIRED: "Lösenord är obligatoriskt.",
-  ERROR_UNAUTHORIZED: "Du har inte behörighet att se denna sida.",
-  ERROR_VERIFICATION_EMAIL_FAILED: "Kunde inte skicka verifieringsmail.",
-  ERROR_INVALID_TOKEN: "Ogiltig eller utgången verifieringslänk.",
-  ERROR_ALREADY_VERIFIED: "Din e-post är redan verifierad.",
+    "Email already registered via another service (e.g., Google). Try signing in with that instead.",
+  ERROR_REGISTRATION_FAILED: "Registration failed.",
+  ERROR_LOGIN_FAILED: "Sign in failed.",
+  ERROR_GOOGLE_SIGNIN_FAILED: "Sign in with Google failed.",
+  ERROR_PASSWORD_MISMATCH: "Passwords do not match.",
+  ERROR_PASSWORD_REQUIRED: "Password is required.",
+  ERROR_UNAUTHORIZED: "You do not have permission to view this page.",
+  ERROR_VERIFICATION_EMAIL_FAILED: "Could not send verification email.",
+  ERROR_INVALID_TOKEN: "Invalid or expired verification link.",
+  ERROR_ALREADY_VERIFIED: "Your email is already verified.",
   ERROR_EMAIL_NOT_VERIFIED:
-    "Din e-post har inte verifierats. Vänligen kontrollera din e-post för en verifieringslänk eller begär en ny.",
+    "Your email has not been verified. Please check your email for a verification link or request a new one.",
 
-  // Framgångsmeddelanden
+  // Success Messages
   SUCCESS_REGISTRATION:
-    "Registrering lyckades! Kontrollera din inkorg för ett verifieringsmail.",
-  SUCCESS_LOGIN: "Inloggning lyckades!",
-  SUCCESS_VERIFICATION: "Din e-post har verifierats! Du kan nu logga in.",
+    "Registration successful! You can now sign in to your account.",
+  SUCCESS_LOGIN: "Sign in successful!",
+  SUCCESS_VERIFICATION: "Your email has been verified! You can now sign in.",
 
-  // Informationsmeddelanden
+  // Information Messages
   INFO_VERIFICATION_EMAIL_SENT:
-    "Ett verifieringsmail har skickats. Kontrollera din inkorg.",
+    "A verification email has been sent. Check your inbox.",
 
-  // Övriga
+  // Other
   INFO_REGISTRATION_REDIRECT:
-    "Registrering lyckades! Omdirigerar till inloggning...",
-  TEXT_LOGGING_IN: "Loggar in...",
-  TEXT_REGISTERING: "Registrerar...",
-  TEXT_PROCESSING: "Bearbetar...",
-  TEXT_VERIFYING: "Verifierar...",
+    "Registration successful! Redirecting to sign in...",
+  TEXT_LOGGING_IN: "Signing in...",
+  TEXT_REGISTERING: "Registering...",
+  TEXT_PROCESSING: "Processing...",
+  TEXT_VERIFYING: "Verifying...",
 } as const;

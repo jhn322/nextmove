@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 import { registerFormSchema } from "@/lib/validations/auth/register";
 import type { AuthFormData } from "@/components/auth/AuthForm/types";
 import { AUTH_MESSAGES, AUTH_ROUTES } from "@/lib/auth/constants/auth";
@@ -44,8 +45,8 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
           );
         }
 
-        // Visa meddelande och omdirigera till login
-        console.log(AUTH_MESSAGES.INFO_REGISTRATION_REDIRECT); // TODO: Byt ut mot en alert/toast
+        // Show message and redirect to login
+        toast.success(AUTH_MESSAGES.SUCCESS_REGISTRATION);
         router.push(`${AUTH_ROUTES.LOGIN}?registered=true`);
       } else {
         //* Logga in användare
@@ -71,6 +72,7 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
           }
         } else {
           if (onSuccess) {
+            toast.success(AUTH_MESSAGES.SUCCESS_LOGIN);
             onSuccess();
           } else {
             console.error(
