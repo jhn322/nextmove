@@ -57,6 +57,16 @@ function RegisterContent() {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <div className="relative hidden lg:block lg:w-[577px]">
+        <Image
+          className="absolute inset-0 h-full w-full object-cover"
+          src="/signinout/signout.webp"
+          alt="Sign up illustration"
+          fill
+          priority
+        />
+      </div>
+
       <div className="flex flex-1 flex-col px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
@@ -105,16 +115,6 @@ function RegisterContent() {
             />
           </div>
         </div>
-      </div>
-
-      <div className="relative hidden w-0 flex-1 lg:block">
-        <Image
-          className="absolute inset-0 h-full w-full object-cover"
-          src="/signinout/signout.webp"
-          alt="Sign up illustration"
-          fill
-          priority
-        />
       </div>
     </div>
   );
