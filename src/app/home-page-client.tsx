@@ -11,6 +11,7 @@ import {
   Trophy,
   Award,
   ChevronRight,
+  LogIn,
   Sparkles,
   Brain,
   Zap,
@@ -534,29 +535,31 @@ export function HomePageClient({
               </p>
 
               {/* Progress Link */}
-              <Link
-                href="/history?tab=bots"
-                className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors mb-6 group"
-                scroll={false}
-              >
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <History className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium flex items-center gap-2">
-                    Bot Progression
-                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Track your victories and challenges
-                  </p>
-                </div>
-                {gameStats && (
-                  <Badge variant="secondary" className="ml-2">
-                    {gameStats.beatenBots.length}/48
-                  </Badge>
-                )}
-              </Link>
+              {session && (
+                <Link
+                  href="/history?tab=bots"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors mb-6 group"
+                  scroll={false}
+                >
+                  <div className="bg-primary/10 p-2 rounded-full">
+                    <History className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium flex items-center gap-2">
+                      Bot Progression
+                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Track your victories and challenges
+                    </p>
+                  </div>
+                  {gameStats && (
+                    <Badge variant="secondary" className="ml-2">
+                      {gameStats.beatenBots.length}/48
+                    </Badge>
+                  )}
+                </Link>
+              )}
 
               {/* Stats Section */}
               <div className="space-y-4">
@@ -666,10 +669,32 @@ export function HomePageClient({
                   )
                 ) : (
                   // User is not logged in
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
-                      Login to track your progress and see your next challenge!
+                  <div className="border border-primary/30 rounded-lg p-4 my-2">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Trophy className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium">Track Your Progress</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Challenge all 48 unique bots
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Sign in to unlock personalized challenges, track your
+                      victories, and climb the ranks from Beginner to
+                      Grandmaster.
                     </p>
+
+                    <Link
+                      href="/api/auth/signin"
+                      className="flex w-full items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-md font-medium transition-colors"
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Begin Your Journey
+                    </Link>
                   </div>
                 )}
               </div>
