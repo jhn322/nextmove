@@ -10,7 +10,6 @@ import {
 } from "@/lib/auth/constants/auth";
 
 export const GoogleButton = ({
-  mode = "login",
   onSuccess,
   onError,
   isLoading = false,
@@ -38,20 +37,15 @@ export const GoogleButton = ({
     }
   };
 
-  const buttonText = () => {
-    if (isLoading) return AUTH_MESSAGES.TEXT_PROCESSING;
-    return `${mode === "login" ? "Sign in" : "Register"} with Google`;
-  };
-
   return (
     <Button
       variant="outline"
-      className="w-full"
+      className="w-full rounded-full"
       onClick={handleGoogleSignIn}
       disabled={isLoading}
     >
       <GoogleIcon />
-      {buttonText()}
+      Google
     </Button>
   );
 };

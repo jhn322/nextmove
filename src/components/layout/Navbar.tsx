@@ -310,7 +310,7 @@ const Navbar = () => {
               href="/"
               className="flex items-center space-x-3 hover:opacity-90 transition-all group"
             >
-              <div className="relative w-9 h-9 flex-shrink-0 bg-primary/10 rounded-xl p-1.5 group-hover:scale-105 transition-transform">
+              <div className="relative w-10 h-10 flex-shrink-0 bg-primary/10 rounded-xl p-1.5 group-hover:scale-105 transition-transform">
                 <Image
                   src="/favicon.svg"
                   alt="Pawn Icon"
@@ -464,7 +464,7 @@ const Navbar = () => {
             </NavigationMenu>
           </div>
 
-          {/* Theme Toggle and Log In */}
+          {/* Theme Toggle and Sign In */}
           <div className="flex items-center gap-4">
             <div className="hidden lg:block">
               <Clock />
@@ -526,13 +526,13 @@ const Navbar = () => {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all">
-                      <LogOut className="mr-2 h-4 w-4" /> Log Out
+                      <LogOut className="mr-2 h-4 w-4" /> Sign Out
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="rounded-xl">
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        Are you sure you want to log out?
+                        Are you sure you want to sign out?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
                         You will be signed out of your account and redirected to
@@ -559,7 +559,7 @@ const Navbar = () => {
                   onClick={() => router.push("/auth/login")}
                   className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
                 >
-                  <LogIn className="mr-2 h-4 w-4" /> Log In
+                  <LogIn className="mr-2 h-4 w-4" /> Sign In
                 </Button>
               </>
             )}
@@ -571,13 +571,13 @@ const Navbar = () => {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all">
-                    <LogOut className="mr-2 h-4 w-4" /> Log Out
+                    <LogOut className="mr-2 h-4 w-4" /> Sign Out
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="rounded-xl">
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      Are you sure you want to log out?
+                      Are you sure you want to sign out?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       You will be signed out of your account and redirected to
@@ -602,7 +602,7 @@ const Navbar = () => {
                 onClick={() => router.push("/auth/login")}
                 className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all"
               >
-                <LogIn className="mr-2 h-4 w-4" /> Log In
+                <LogIn className="mr-2 h-4 w-4" /> Sign In
               </Button>
             )}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -850,13 +850,13 @@ const Navbar = () => {
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg">
-                                <LogOut className="mr-2 h-4 w-4" /> Log Out
+                                <LogOut className="mr-2 h-4 w-4" /> Sign Out
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="rounded-xl">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Are you sure you want to log out?
+                                  Are you sure you want to sign out?
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   You will be signed out of your account and
@@ -885,7 +885,7 @@ const Navbar = () => {
                               }}
                               className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
                             >
-                              <LogIn className="mr-2 h-4 w-4" /> Log In
+                              <LogIn className="mr-2 h-4 w-4" /> Sign In
                             </Button>
                           </>
                         )}

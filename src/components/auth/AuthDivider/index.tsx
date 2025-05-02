@@ -8,7 +8,7 @@ export const AuthDivider = ({ text = "Or" }: AuthDividerProps) => (
       <div className="w-full border-t border-white" />
     </div>
     <div className="relative flex justify-center text-sm">
-      <span className="px-2 bg-white text-black">{text}</span>
+      <span className="px-2 bg-white rounded-full text-black">{text}</span>
     </div>
   </div>
 );

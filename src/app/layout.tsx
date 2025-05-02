@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/theme-providers";
 import { AuthProvider } from "@/context/auth-context";
 import { Providers } from "@/app/providers";
 import { DndProvider } from "@/components/dnd-provider";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,9 +47,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <DndProvider>
-                <Navbar />
-                <main className="flex-grow pb-20">{children}</main>
-                <Footer />
+                <PageWrapper>{children}</PageWrapper>
               </DndProvider>
             </ThemeProvider>
           </AuthProvider>

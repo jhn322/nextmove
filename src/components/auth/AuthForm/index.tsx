@@ -32,6 +32,7 @@ export const AuthForm = ({
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
+          className="rounded-xl"
         />
       )}
       <Input
@@ -40,6 +41,7 @@ export const AuthForm = ({
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         required
+        className="rounded-xl"
       />
       <Input
         type="password"
@@ -47,6 +49,7 @@ export const AuthForm = ({
         value={formData.password}
         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
         required
+        className="rounded-xl"
       />
       {mode === "register" && (
         <Input
@@ -57,6 +60,7 @@ export const AuthForm = ({
             setFormData({ ...formData, confirmPassword: e.target.value })
           }
           required
+          className="rounded-xl"
         />
       )}
       {error && <div className="text-red-500 text-sm text-center">{error}</div>}
