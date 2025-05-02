@@ -85,7 +85,7 @@ function LoginContent() {
                 href="/auth/register"
                 className="font-semibold text-primary hover:text-primary/90"
               >
-                Sign Up
+                Sign up
               </Link>
             </p>
           </div>

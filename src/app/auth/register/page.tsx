@@ -1,23 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { AuthCard } from "@/components/auth/AuthCard";
+import Image from "next/image";
+import Link from "next/link";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { AuthDivider } from "@/components/auth/AuthDivider";
 import { AuthForm } from "@/components/auth/AuthForm";
-import { AuthFooter } from "@/components/auth/AuthFooter";
+import type { AuthFormData } from "@/components/auth/AuthForm/types";
 import { useAuthForm } from "@/lib/auth/hooks/useAuthForm";
 import { useGoogleAuth } from "@/lib/auth/hooks/useGoogleAuth";
-import { useAuth } from "@/lib/auth/hooks/useAuth";
+import { useAuth } from "@/context/auth-context";
 import { Spinner } from "@/components/ui/spinner";
-
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/auth/constants/auth";
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
-
-  const { authenticated, loading: authLoading } = useAuth();
+  const { status } = useAuth();
+  const authenticated = status === "authenticated";
+  const authLoading = status === "loading";
 
   const {
     loading: formLoading,
@@ -26,6 +27,7 @@ export default function RegisterPage() {
     setError,
   } = useAuthForm({
     mode: "register",
+    onSuccess: () => router.push(DEFAULT_LOGIN_REDIRECT),
   });
 
   const { loading: googleLoading, handleGoogleSignIn } = useGoogleAuth({
@@ -41,37 +43,93 @@ export default function RegisterPage() {
 
   const isLoading = formLoading || googleLoading || authLoading;
 
-  if (authLoading || authenticated) {
+  if (authLoading || (!authLoading && authenticated)) {
     return (
-      <div className="flex justify-center items-center h-full py-10">
-        <Spinner className="h-8 w-8" />
+      <div className="flex justify-center items-center min-h-screen">
+        <Spinner className="h-10 w-10" />
       </div>
     );
   }
 
+  const handleFormSubmit = handleSubmit as (
+    data: AuthFormData
+  ) => Promise<void>;
+
   return (
-    <AuthCard
-      title="Create an Account"
-      description="Choose how you want to register"
-      footer={
-        <AuthFooter
-          mode="register"
-          onNavigate={() => router.push("/auth/login")}
+    <div className="flex min-h-screen bg-background">
+      <div className="flex flex-1 flex-col px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div>
+            <Link href="/" className="inline-block mb-6">
+              <div className="flex items-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5">
+                <Image
+                  className="h-10 w-auto"
+                  src="/favicon.svg"
+                  alt="NextMove Logo"
+                  width={40}
+                  height={40}
+                />
+                <span className="font-bold text-2xl tracking-tight p-2 whitespace-nowrap">
+                  NextMove
+                </span>
+              </div>
+            </Link>
+            <h2 className="mt-4 text-2xl font-bold leading-9 tracking-tight text-foreground sm:text-3xl">
+              Create your account
+            </h2>
+            <p className="mt-2 text-md leading-6 text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                href="/auth/login"
+                className="font-semibold text-primary hover:text-primary/90"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
+
+          <div className="mt-10 space-y-6">
+            <div className="w-full">
+              <GoogleButton
+                mode="register"
+                onSuccess={handleGoogleSignIn}
+                isLoading={isLoading}
+              />
+            </div>
+            <AuthDivider text="Or sign up with email and password" />
+            <AuthForm
+              mode="register"
+              onSubmit={handleFormSubmit}
+              isLoading={formLoading}
+              error={error}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="relative hidden w-0 flex-1 lg:block">
+        <Image
+          className="absolute inset-0 h-full w-full object-cover"
+          src="/signinout/signout.webp"
+          alt="Sign up illustration"
+          fill
+          priority
         />
+      </div>
+    </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <Spinner className="h-10 w-10" />
+        </div>
       }
     >
-      <GoogleButton
-        mode="register"
-        onSuccess={handleGoogleSignIn}
-        isLoading={isLoading}
-      />
-      <AuthDivider text="Or register with email" />
-      <AuthForm
-        mode="register"
-        onSubmit={handleSubmit}
-        isLoading={isLoading}
-        error={error}
-      />
-    </AuthCard>
+      <RegisterContent />
+    </Suspense>
   );
 }
