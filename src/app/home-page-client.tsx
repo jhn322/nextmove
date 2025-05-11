@@ -44,6 +44,7 @@ import { Bot } from "@/components/game/data/bots";
 import { Session } from "next-auth";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { APP_NAME } from "@/lib/constants/site";
 
 // Copied from page.tsx, should be defined centrally if used elsewhere
 const difficultyLevels = [
@@ -300,7 +301,7 @@ export function HomePageClient({
         <div className="flex flex-col items-center text-center space-y-4 pt-6 sm:pt-4">
           <div className="relative inline-block">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
-              Welcome to <span className="text-primary">NextMove</span>
+              Welcome to <span className="text-primary">{APP_NAME}</span>
             </h1>
             <div className="absolute -top-6 sm:-top-6 sm:-right-6 right-0 text-primary">
               <Sparkles className="h-8 w-8 animate-pulse" />

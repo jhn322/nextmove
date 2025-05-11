@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { APP_NAME } from "@/lib/constants/site";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -322,7 +323,7 @@ const Navbar = () => {
                 />
               </div>
               <span className="font-bold text-xl tracking-tight whitespace-nowrap group-hover:text-primary transition-colors">
-                NextMove
+                {APP_NAME}
               </span>
             </Link>
           </div>
@@ -503,8 +504,8 @@ const Navbar = () => {
                                 ? option.value === "cyberpunk"
                                   ? "bg-[#ff00ff]/70"
                                   : option.value === "comic"
-                                  ? "bg-[#ff6b9c]/70"
-                                  : "bg-accent/80"
+                                    ? "bg-[#ff6b9c]/70"
+                                    : "bg-accent/80"
                                 : "hover:bg-accent/40"
                             )}
                           >
@@ -635,12 +636,12 @@ const Navbar = () => {
                         />
                       </div>
                       <span className="font-bold text-xl tracking-tight whitespace-nowrap">
-                        NextMove
+                        {APP_NAME}
                       </span>
                     </div>
                     <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                     <SheetDescription className="sr-only">
-                      Navigate through NextMove application
+                      Navigate through {APP_NAME} application
                     </SheetDescription>
                   </SheetHeader>
 
@@ -817,8 +818,8 @@ const Navbar = () => {
                                           ? option.value === "cyberpunk"
                                             ? "bg-[#ff00ff]/70"
                                             : option.value === "comic"
-                                            ? "bg-[#ff6b9c]/70"
-                                            : "bg-accent/80"
+                                              ? "bg-[#ff6b9c]/70"
+                                              : "bg-accent/80"
                                           : "hover:bg-accent/40"
                                       )}
                                     >

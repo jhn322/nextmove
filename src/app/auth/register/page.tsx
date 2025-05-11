@@ -13,6 +13,7 @@ import { useGoogleAuth } from "@/lib/auth/hooks/useGoogleAuth";
 import { useAuth } from "@/context/auth-context";
 import { Spinner } from "@/components/ui/spinner";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/auth/constants/auth";
+import { APP_NAME } from "@/lib/constants/site";
 
 function RegisterContent() {
   const router = useRouter();
@@ -76,12 +77,12 @@ function RegisterContent() {
                 <Image
                   className="h-10 w-auto"
                   src="/favicon.svg"
-                  alt="NextMove Logo"
+                  alt={`${APP_NAME} Logo`}
                   width={40}
                   height={40}
                 />
                 <span className="font-bold text-2xl tracking-tight p-2 whitespace-nowrap">
-                  NextMove
+                  {APP_NAME}
                 </span>
               </div>
             </Link>

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { MailWarning, LogOut } from "lucide-react";
-
+import { APP_NAME } from "@/lib/constants/site";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { signOut } from "next-auth/react";
@@ -111,19 +111,15 @@ function VerifyEmailContent() {
 }
 
 export default function VerifyEmailPage() {
-  // Note: This page assumes it's accessed by an authenticated but unverified user.
-  // Middleware should handle redirecting here.
   return (
-    // Use the centered layout
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="mx-auto w-full max-w-md lg:w-[450px]">
-        {/* Optional Logo */}
         <Link href="/" className="inline-block mb-8 mx-auto">
           <div className="flex items-center justify-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5 mx-auto">
             <Image
               className="h-10 w-auto"
               src="/favicon.svg"
-              alt="NextMove Logo"
+              alt={`${APP_NAME} Logo`}
               width={40}
               height={40}
             />

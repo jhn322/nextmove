@@ -7,11 +7,14 @@ import {
   Globe,
   Mail,
 } from "lucide-react";
+import { APP_NAME } from "@/lib/constants/site";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | NextMove",
+  title: "Terms of Service | " + APP_NAME,
   description:
-    "Comprehensive guidelines for using NextMove, a single-player chess application.",
+    "Comprehensive guidelines for using " +
+    APP_NAME +
+    ", a single-player chess application.",
 };
 
 const TermsOfService = () => {
@@ -20,12 +23,12 @@ const TermsOfService = () => {
       <div className="space-y-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Terms of Service for NextMove
+            Terms of Service for {APP_NAME}
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Thank you for choosing NextMove. These Terms of Service outline the
-            rules and guidelines for using our chess application. By using
-            NextMove, you agree to comply with these terms.
+            Thank you for choosing {APP_NAME}. These Terms of Service outline
+            the rules and guidelines for using our chess application. By using
+            {APP_NAME}, you agree to comply with these terms.
           </p>
           <div className="mt-6 flex justify-center">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary">
@@ -45,9 +48,9 @@ const TermsOfService = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  By accessing or using NextMove, you agree to be bound by these
-                  Terms of Service. If you do not agree with any part of these
-                  terms, you must not use the application.
+                  By accessing or using {APP_NAME}, you agree to be bound by
+                  these Terms of Service. If you do not agree with any part of
+                  these terms, you must not use the application.
                 </p>
               </div>
             </div>
@@ -65,9 +68,9 @@ const TermsOfService = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  NextMove is designed for personal, non-commercial use. You may
-                  use the application to play chess against computer opponents
-                  at your own pace. The following guidelines apply:
+                  {APP_NAME} is designed for personal, non-commercial use. You
+                  may use the application to play chess against computer
+                  opponents at your own pace. The following guidelines apply:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>
@@ -100,8 +103,8 @@ const TermsOfService = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  NextMove is a single-player chess application that allows you
-                  to play against computer opponents. The application is
+                  {APP_NAME} is a single-player chess application that allows
+                  you to play against computer opponents. The application is
                   provided as-is, and while we strive to ensure a smooth
                   experience, occasional bugs or issues may arise. We appreciate
                   your understanding and patience as we work to improve the
@@ -123,8 +126,8 @@ const TermsOfService = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  In no event shall NextMove or its developers be liable for any
-                  damages arising from the use or inability to use the
+                  In no event shall {APP_NAME} or its developers be liable for
+                  any damages arising from the use or inability to use the
                   application, including but not limited to loss of data or
                   profits. Your use of the application is at your own risk.
                 </p>

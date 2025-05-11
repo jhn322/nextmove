@@ -25,10 +25,9 @@ export const PUBLIC_ROUTES = [
   AUTH_ROUTES.VERIFY_EMAIL,
   AUTH_ROUTES.AUTH_ERROR,
   "/",
-  "/about",
-  "/contact",
-  "/terms",
-  "/privacy",
+  "/play/",
+  "/termsofservice",
+  "/privacypolicy",
 ];
 
 export const AUTH_MESSAGES = {
@@ -53,7 +52,7 @@ export const AUTH_MESSAGES = {
 
   // Success Messages
   SUCCESS_REGISTRATION:
-    "Registration successful! You can now sign in to your account.",
+    "Registration successful! Please check your email to verify your account.",
   SUCCESS_LOGIN: "Sign in successful!",
   SUCCESS_VERIFICATION: "Your email has been verified! You can now sign in.",
 

@@ -15,6 +15,7 @@ import { useRedirect } from "@/lib/auth/hooks/useRedirect";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/auth/constants/auth";
 import { useAuth } from "@/context/auth-context";
 import { Spinner } from "@/components/ui/spinner";
+import { APP_NAME } from "@/lib/constants/site";
 
 function LoginContent() {
   const router = useRouter();
@@ -78,12 +79,12 @@ function LoginContent() {
                 <Image
                   className=""
                   src="/favicon.svg"
-                  alt="NextMove Logo"
+                  alt={`${APP_NAME} Logo`}
                   width={40}
                   height={40}
                 />
                 <span className="font-bold text-2xl tracking-tight p-2 whitespace-nowrap">
-                  NextMove
+                  {APP_NAME}
                 </span>
               </div>
             </Link>

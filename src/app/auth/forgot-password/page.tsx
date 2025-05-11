@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
-
+import { APP_NAME } from "@/lib/constants/site";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -75,12 +75,12 @@ export default function ForgotPasswordPage() {
                 <Image
                   className=""
                   src="/favicon.svg"
-                  alt="NextMove Logo"
+                  alt={`${APP_NAME} Logo`}
                   width={40}
                   height={40}
                 />
                 <span className="font-bold text-2xl tracking-tight p-2 whitespace-nowrap">
-                  NextMove
+                  {APP_NAME}
                 </span>
               </div>
             </Link>

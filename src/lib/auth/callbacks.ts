@@ -4,13 +4,13 @@ import prisma from "@/lib/prisma";
 // Assuming constants are in lib/auth/constants/auth.ts
 import { USER_ROLES } from "@/lib/auth/constants/auth";
 
-//* Callback-konfiguration för NextAuth
+// * Callback configuration for NextAuth
 
 export const configureCallbacks = () => ({
   /**
-   ** Körs efter lyckad autentisering men innan session skapas.
-   ** Används här för att automatiskt länka OAuth-konton till befintliga
-   ** användare baserat på email.
+   ** Runs after successful authentication but before session creation.
+   ** Used here to automatically link OAuth accounts to existing
+   ** users based on email.
    */
   async signIn({
     user,
@@ -20,7 +20,7 @@ export const configureCallbacks = () => ({
     account: Account | null;
     _profile?: Profile;
   }): Promise<boolean | string> {
-    // Kör bara länkning för OAuth providers (inte credentials)
+    // Only run linking for OAuth providers (not credentials)
     if (account && account.provider !== "credentials" && user.email) {
       try {
         const existingUser = await prisma.user.findUnique({
@@ -28,7 +28,7 @@ export const configureCallbacks = () => ({
           include: { accounts: true },
         });
 
-        // Om användare finns men detta specifika OAuth-konto inte är länkat
+        // If user exists but this specific OAuth account is not linked
         if (
           existingUser &&
           !existingUser.accounts.some(
@@ -37,7 +37,7 @@ export const configureCallbacks = () => ({
               acc.providerAccountId === account.providerAccountId
           )
         ) {
-          // Länka kontot
+          // Link the account
           await prisma.account.create({
             data: {
               userId: existingUser.id,
@@ -54,22 +54,19 @@ export const configureCallbacks = () => ({
             },
           });
 
-          // Här kan man också uppdatera användarens namn/bild från OAuth-profilen om man vill
+          // Here you could also update the user's name/image from the OAuth profile if desired
           // await prisma.user.update({ where: { id: existingUser.id }, data: { name: user.name, image: user.image } });
         }
       } catch (error) {
         console.error("AUTH: Error linking account in signIn callback:", error);
-        // Returnera false eller en felsida vid oväntat fel under länkning?
-        // För enkelhetens skull låter vi det gå vidare, men loggar felet.
-        // return false;
       }
     }
-    // Tillåt alltid inloggning att fortsätta om inga problem uppstod
+    // Always allow sign-in to continue if no problems occurred
     return true;
   },
 
   /**
-   * JWT-callback körs varje gång en JWT skapas eller uppdateras
+   * JWT callback runs every time a JWT is created or updated
    */
   async jwt({
     token,
@@ -80,14 +77,14 @@ export const configureCallbacks = () => ({
     _account?: Account | null;
   }) {
     if (user) {
-      // Se till att token får rätt roll, speciellt efter kontolänkning
-      // Hämta användaren från DB igen för att vara säker på att få rätt roll
+      // Ensure the token gets the correct role, especially after account linking
+      // Fetch the user from DB again to be sure to get the correct role
       const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
       if (dbUser) {
         token.role = dbUser.role;
       } else {
-        // Fallback om användaren av någon anledning inte hittas
-        token.role = USER_ROLES.USER; // Eller någon annan default/hantering
+        // Fallback if the user is not found for some reason
+        token.role = USER_ROLES.USER;
         console.error(
           `AUTH: User with id ${user.id} not found in JWT callback`
         );
@@ -97,7 +94,7 @@ export const configureCallbacks = () => ({
   },
 
   /**
-   * Session-callback körs varje gång en session används eller uppdateras
+   * Session callback runs every time a session is used or updated
    */
   async session({ session, token }: { session: Session; token: JWT }) {
     if (session.user && token.sub) {
@@ -107,17 +104,15 @@ export const configureCallbacks = () => ({
       });
 
       if (userFromDb) {
-        session.user.id = userFromDb.id; // Use ID from DB
-        session.user.role = userFromDb.role; // Use role from DB
-        session.user.name = userFromDb.name; // Add name
-        session.user.image = userFromDb.image; // Add image
-        session.user.email = userFromDb.email; // Ensure email is present
-        session.user.countryFlag = userFromDb.countryFlag; // Add countryFlag
-        session.user.flair = userFromDb.flair; // Add flair
-        session.user.pieceSet = userFromDb.pieceSet; // Add pieceSet
-        session.user.timezone = userFromDb.timezone; // Add timezone
-        session.user.clockFormat = userFromDb.clockFormat; // Add clockFormat
-        // Add settings page fields
+        session.user.id = userFromDb.id;
+        session.user.role = userFromDb.role;
+        session.user.name = userFromDb.name;
+        session.user.email = userFromDb.email;
+        session.user.countryFlag = userFromDb.countryFlag;
+        session.user.flair = userFromDb.flair;
+        session.user.pieceSet = userFromDb.pieceSet;
+        session.user.timezone = userFromDb.timezone;
+        session.user.clockFormat = userFromDb.clockFormat;
         session.user.firstName = userFromDb.firstName;
         session.user.lastName = userFromDb.lastName;
         session.user.location = userFromDb.location;

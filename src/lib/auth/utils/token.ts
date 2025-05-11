@@ -1,36 +1,36 @@
-import { randomBytes } from 'crypto';
-import prisma from '@/lib/prisma';
+import { randomBytes } from "crypto";
+import prisma from "@/lib/prisma";
 
 /**
  * Generates a secure random token for email verification or password reset
- * @returns A random string token
+ * @returns
  */
 export function generateToken(): string {
-  const token = randomBytes(32).toString('hex');
-  console.log(`Nya genererade token börjar med: ${token.substring(0, 10)}...`);
+  const token = randomBytes(32).toString("hex");
+  console.log(`New generated token starts with: ${token.substring(0, 10)}...`);
   return token;
 }
 
 /**
  * Creates a verification token in the database
  * @param email - The user's email address
- * @param expiresIn - Token expiration time in hours (default: 24)
+ * @param expiresIn - Token expiration time in 24 hours
  * @returns The generated token
  */
 export async function createVerificationToken(
   email: string,
   expiresIn = 24
 ): Promise<string> {
-  console.log(`Startar createVerificationToken för ${email}`);
+  console.log(`Starting createVerificationToken for ${email}`);
 
-  // Generera token först så vi har det klart
+  // Generate token first so we have it ready
   const token = generateToken();
 
-  // Sätt utgångsdatum
+  // Set expiration date
   const expires = new Date();
   expires.setHours(expires.getHours() + expiresIn);
 
-  console.log(`Raderar befintliga tokens för ${email}`);
+  console.log(`Deleting existing tokens for ${email}`);
 
   // Delete any existing tokens for this user
   try {
@@ -39,13 +39,13 @@ export async function createVerificationToken(
         identifier: email,
       },
     });
-    console.log(`${deleteResult.count} gamla tokens raderade för ${email}`);
+    console.log(`${deleteResult.count} old tokens deleted for ${email}`);
   } catch (error) {
-    console.error(`Fel vid radering av gamla tokens för ${email}:`, error);
-    // Fortsätt ändå, detta är bara en säkerhetsåtgärd
+    console.error(`Error deleting old tokens for ${email}:`, error);
+    // Continue anyway, this is just a precaution
   }
 
-  console.log(`Skapar ny token för ${email}: ${token.substring(0, 10)}...`);
+  console.log(`Creating new token for ${email}: ${token.substring(0, 10)}...`);
 
   // Create a new token
   try {
@@ -57,7 +57,7 @@ export async function createVerificationToken(
       },
     });
 
-    // Dubbelkolla att token verkligen har skapats
+    // Double check that the token was created correctly
     const createdToken = await prisma.verificationToken.findFirst({
       where: {
         identifier: email,
@@ -66,16 +66,18 @@ export async function createVerificationToken(
     });
 
     if (!createdToken) {
-      console.error(`KRITISKT: Token skapades inte korrekt för ${email}`);
+      console.error(`CRITICAL: Token was not created correctly for ${email}`);
     } else {
-      console.log(`Token bekräftad i databasen för ${email}, utgår: ${createdToken.expires.toISOString()}`);
+      console.log(
+        `Token confirmed in database for ${email}, expires: ${createdToken.expires.toISOString()}`
+      );
     }
   } catch (error) {
-    console.error(`Fel vid skapande av token för ${email}:`, error);
-    throw error; // Detta är ett kritiskt fel, så vi kastar det vidare
+    console.error(`Error creating token for ${email}:`, error);
+    throw error; // This is a critical error, so we rethrow it
   }
 
-  console.log(`Returnerar token för ${email}: ${token.substring(0, 10)}...`);
+  console.log(`Returning token for ${email}: ${token.substring(0, 10)}...`);
   return token;
 }
 
@@ -89,7 +91,9 @@ export async function validateVerificationToken(
   token: string,
   email?: string
 ): Promise<boolean> {
-  console.log(`Validating token for ${email || 'unknown'}: ${token.substring(0, 10)}...`);
+  console.log(
+    `Validating token for ${email || "unknown"}: ${token.substring(0, 10)}...`
+  );
 
   const whereClause = {
     token,
@@ -99,13 +103,13 @@ export async function validateVerificationToken(
     },
   };
 
-  console.log('Where clause:', JSON.stringify(whereClause, null, 2));
+  console.log("Where clause:", JSON.stringify(whereClause, null, 2));
 
   const tokenRecord = await prisma.verificationToken.findFirst({
     where: whereClause,
   });
 
-  console.log('Token validation result:', !!tokenRecord);
+  console.log("Token validation result:", !!tokenRecord);
   if (!tokenRecord) {
     // Om ingen token hittades, let's check if it might be expired
     const expiredToken = await prisma.verificationToken.findFirst({
@@ -116,9 +120,11 @@ export async function validateVerificationToken(
     });
 
     if (expiredToken) {
-      console.log(`Token found but expired. Expired at: ${expiredToken.expires}`);
+      console.log(
+        `Token found but expired. Expired at: ${expiredToken.expires}`
+      );
     } else {
-      console.log('No token found with the provided values');
+      console.log("No token found with the provided values");
     }
   }
 
@@ -150,24 +156,28 @@ export async function consumeVerificationToken(
   email?: string
 ): Promise<boolean> {
   try {
-    console.log(`Attempting to consume token for ${email || 'unknown'}: ${token.substring(0, 10)}...`);
+    console.log(
+      `Attempting to consume token for ${email || "unknown"}: ${token.substring(0, 10)}...`
+    );
 
     // For email verification, we just validate without deleting
     // This prevents issues with email clients pre-fetching URLs
     const isValid = await validateVerificationToken(token, email);
 
     if (!isValid) {
-      console.log('Token validation failed, cannot consume');
+      console.log("Token validation failed, cannot consume");
       return false;
     }
 
     // We don't delete the token here anymore - it will remain valid until the user
     // is marked as verified in the database, which prevents the pre-fetch issue
 
-    console.log(`Token validated successfully, not consumed to prevent prefetch issues`);
+    console.log(
+      `Token validated successfully, not consumed to prevent prefetch issues`
+    );
     return true;
   } catch (error) {
-    console.error('Error consuming verification token:', error);
+    console.error("Error consuming verification token:", error);
     return false;
   }
-} 
+}
