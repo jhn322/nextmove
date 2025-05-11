@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Github, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { APP_NAME } from "@/lib/constants/site";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -16,7 +17,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col items-center md:items-start">
             <p className="text-sm text-muted-foreground">
-              © {currentYear} NextMove. All rights reserved.
+              © {currentYear} {APP_NAME}. All rights reserved.
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Made with{" "}

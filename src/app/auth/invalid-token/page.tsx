@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { AlertTriangle, BadgeCheck, XCircle } from "lucide-react";
-
+import { APP_NAME } from "@/lib/constants/site";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -103,7 +103,7 @@ export default function InvalidTokenPage() {
             <Image
               className="h-10 w-auto"
               src="/favicon.svg"
-              alt="NextMove Logo"
+              alt={`${APP_NAME} Logo`}
               width={40}
               height={40}
             />

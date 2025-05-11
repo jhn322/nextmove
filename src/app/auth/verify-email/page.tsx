@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { MailWarning, LogOut } from "lucide-react";
-
+import { APP_NAME } from "@/lib/constants/site";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { signOut } from "next-auth/react";
@@ -119,7 +119,7 @@ export default function VerifyEmailPage() {
             <Image
               className="h-10 w-auto"
               src="/favicon.svg"
-              alt="NextMove Logo"
+              alt={`${APP_NAME} Logo`}
               width={40}
               height={40}
             />

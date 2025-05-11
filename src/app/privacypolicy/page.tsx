@@ -10,11 +10,11 @@ import {
   UserCheck,
   Mail,
 } from "lucide-react";
+import { APP_NAME } from "@/lib/constants/site";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | NextMove",
-  description:
-    "Privacy Policy for NextMove - Learn how we protect your data and privacy.",
+  title: `Privacy Policy | ${APP_NAME}`,
+  description: `Privacy Policy for ${APP_NAME} - Learn how we protect your data and privacy.`,
 };
 
 const PrivacyPolicy = () => {
@@ -26,7 +26,7 @@ const PrivacyPolicy = () => {
             Privacy Policy
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            At NextMove, we value your privacy and are committed to protecting
+            At {APP_NAME}, we value your privacy and are committed to protecting
             your personal information. This Privacy Policy explains how we
             collect, use, and safeguard your data.
           </p>
@@ -116,8 +116,8 @@ const PrivacyPolicy = () => {
                   </li>
                   <li>To comply with legal obligations</li>
                   <li>
-                    To protect the rights, property, or safety of NextMove, our
-                    users, or others
+                    To protect the rights, property, or safety of {APP_NAME},
+                    our users, or others
                   </li>
                 </ul>
               </div>

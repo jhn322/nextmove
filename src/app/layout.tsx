@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { Providers } from "@/app/providers";
 import { DndProvider } from "@/components/dnd-provider";
 import PageWrapper from "@/components/layout/PageWrapper";
+import { APP_NAME } from "@/lib/constants/site";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -19,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NextMove",
+  title: APP_NAME,
   description: "A modern chess app built with Next.js and shadcn UI.",
   icons: {
     icon: [
