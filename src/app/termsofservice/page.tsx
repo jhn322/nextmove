@@ -151,7 +151,7 @@ const TermsOfService = () => {
                   contact us at:
                 </p>
                 <div className="bg-background p-4 rounded-lg">
-                  <p>Discord: jhn322</p>
+                  <p>Discord: @jhn322</p>
                 </div>
               </div>
             </div>
