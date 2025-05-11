@@ -1,11 +1,11 @@
-# Next Move - Chess Application
+# Next Move - Chess App
 
-A modern chess application built with Next.js, TypeScript, and Supabase.
+A modern chess application built with Next.js, TypeScript, TailwindCSS, Shadcn, Prisma, MongoDB and more.
 
 ## Features
 
 - Play chess against AI opponents of varying difficulty levels
-- User authentication with NextAuth.js and Supabase
+- User authentication with NextAuth.js (Google & Email/Password)
 - Game history tracking and statistics
 - Customizable user settings
 - Sound effects and animations
@@ -14,163 +14,162 @@ A modern chess application built with Next.js, TypeScript, and Supabase.
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React 19, TypeScript
-- **UI**: Tailwind CSS, Radix UI, Shadcn UI
-- **Authentication**: NextAuth.js with Supabase adapter
-- **Database**: Supabase (PostgreSQL)
+- **UI**: Tailwind CSS (v4), Radix UI, Shadcn UI
+- **Styling Utilities**: `clsx`, `tailwind-merge`, `tailwindcss-animate`
+- **State Management**: `next-themes` (for theming)
+- **Authentication**: NextAuth.js (v4) with Prisma Adapter
+- **Database ORM**: Prisma
+- **Database**: MongoDB
+- **Validation**: Zod with React Hook Form
 - **Chess Logic**: chess.js
-- **AI Engine**: Stockfish
+- **AI Engine**: Stockfish (via `stockfish` npm package)
+- **Notifications**: `sonner`
+- **Emailing**: `Brevo`
+- **Linting/Formatting**: ESLint, Prettier (`prettier-plugin-tailwindcss`)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm
-- Supabase account and project
+- Node.js 18+ and npm/yarn/pnpm
+- MongoDB instance (local or cloud-hosted, e.g., MongoDB Atlas)
 
 ### Environment Setup
 
-Create a `.env.local` file in the root directory with the following variables:
+Create a `.env.` file in the root directory by copying `.env.example` (if it exists, otherwise create a new one) and populate the following variables:
 
-```
+```env
 # Next Auth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret
+NEXTAUTH_URL=http://localhost:3000 # Your app's URL
+NEXTAUTH_SECRET= # Generate a strong secret: openssl rand -hex 32
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+# Database (MongoDB)
+DATABASE_URL="mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority" # Your MongoDB connection string
+
+# Google OAuth (Optional - for Google Sign-In)
+# Create credentials at https://console.developers.google.com/apis/credentials
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Email Provider (Resend - for password reset, email verification etc.)
+# Sign up at https://resend.com/
+RESEND_API_KEY=
+EMAIL_FROM="noreply@example.com" # Your "from" email address for Resend
+
+# Optional: Other environment variables as needed by your application
+# Example:
+# NEXT_PUBLIC_APP_NAME="Next Move"
 ```
+
+Refer to `prisma/schema.prisma` for understanding the data models.
 
 ### Installation
 
-1. Clone the repository:
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/jhn322/next-move.git
+    cd next-move
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    # or
+    # yarn install
+    # or
+    # pnpm install
+    ```
+3.  Set up the database:
 
-   ```bash
-   git clone https://github.com/yourusername/next-move.git
-   cd next-move
-   ```
+    - Ensure your MongoDB server is running and accessible.
+    - Apply Prisma migrations to create the database schema:
 
-2. Install dependencies:
+    ```bash
+    npx prisma migrate dev --name init
+    # To generate Prisma Client (usually done automatically by migrate dev, but can be run manually)
+    # npx prisma generate
+    ```
 
-   ```bash
-   npm install
-   ```
+    Optionally, you can seed the database if a seed script is available (e.g., `npx prisma db seed`). Check `package.json` for any custom seed scripts.
 
-3. Set up the database:
-
-   ```bash
-   npm run setup-db
-   npm run create-tables
-   npm run update-rls-policies
-   ```
-
-4. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4.  Start the development server:
+    ```bash
+    npm run dev
+    # or
+    # yarn dev
+    # or
+    # pnpm dev
+    ```
+5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Authentication System
 
-The application uses NextAuth.js with the Supabase adapter for authentication. Here's how it works:
+The application uses NextAuth.js with the Prisma adapter for authentication, connecting to a MongoDB database. It supports:
 
-1. Users sign in through NextAuth.js, which creates a session.
-2. The session contains the user's ID and other information.
-3. When making requests to Supabase, we use the `getAuthenticatedSupabaseClient` function to create a client with the user's session.
-4. The client includes a custom header `x-user-id` with the user's ID.
-5. Supabase Row-Level Security (RLS) policies use this header to verify the user's identity and restrict access to data.
+- Email and password-based sign-up and sign-in.
+- OAuth Google provider.
 
-### Row-Level Security (RLS) Policies
-
-The application uses Supabase RLS policies to ensure that users can only access their own data. The policies are defined in `src/scripts/fix-rls-policies.sql` and can be applied using:
-
-```bash
-npm run update-rls-policies
-```
-
-The RLS policies use a custom function `get_auth_user_id()` that retrieves the user ID from either:
-
-- The standard Supabase auth context (`auth.uid()`)
-- The custom header (`x-user-id`)
-
-This allows the application to work with both the Supabase Auth system and our custom NextAuth.js integration.
+User sessions are managed by NextAuth.js, and user data is stored in the MongoDB database as defined in the `prisma/schema.prisma` file. Key models include `User`, `Account`, `Session`, and `VerificationToken`.
 
 ## Database Schema
 
-The application uses two main tables:
+The database schema is managed by Prisma and defined in `prisma/schema.prisma`.
+Key models include:
 
-### game_history
+- `User`: Stores user profiles, authentication details, and preferences.
+- `Account`: Stores OAuth account information linked to users.
+- `Session`: Manages user sessions for NextAuth.js.
+- `Game`: (Assumed - based on project description, verify in `prisma/schema.prisma`) Stores details of chess games played.
+- `PasswordResetToken`: For handling password reset requests.
+- `EmailVerificationToken`: For handling email verification requests.
 
-Stores the history of games played by users:
+For the exact structure, refer to the `prisma/schema.prisma` file.
 
-- `id`: UUID (primary key)
-- `user_id`: UUID (foreign key to auth.users)
-- `opponent`: String (name of the AI opponent)
-- `result`: Enum ('win', 'loss', 'draw')
-- `date`: Timestamp
-- `moves_count`: Integer
-- `time_taken`: Integer (seconds)
-- `difficulty`: String
+## Key Scripts (from package.json)
 
-### user_settings
+- `dev`: Starts the Next.js development server with Turbopack.
+- `build`: Builds the application for production.
+- `start`: Starts the production server.
+- `lint`: Lints the codebase using Next.js ESLint configuration.
+- `format`: (If defined, typically `prettier --write .`) Formats the code using Prettier.
+- `prisma migrate dev`: Applies database migrations during development.
+- `prisma generate`: Generates/updates the Prisma Client.
 
-Stores user preferences and settings:
-
-- `id`: UUID (primary key)
-- `user_id`: UUID (foreign key to auth.users)
-- `display_name`: String
-- `avatar_url`: String
-- `preferred_difficulty`: String
-- `theme_preference`: String
-- `sound_enabled`: Boolean
-- `notifications_enabled`: Boolean
-- `piece_set`: String (optional)
-- `default_color`: String (optional)
-- `show_coordinates`: Boolean (optional)
-- `enable_animations`: Boolean (optional)
+(The user should verify and update this list based on their `package.json`)
 
 ## Troubleshooting
 
 ### Authentication Issues
 
-If you encounter 401 Unauthorized errors when accessing Supabase:
-
-1. Make sure your RLS policies are correctly set up:
-
-   ```bash
-   npm run update-rls-policies
-   ```
-
-2. Check that you're using the authenticated Supabase client:
-
-   ```typescript
-   const client = getAuthenticatedSupabaseClient(session);
-   ```
-
-3. Verify that your session contains a valid user ID.
+- **Incorrect Credentials**: Double-check `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` if using Google OAuth.
+- **`NEXTAUTH_URL`**: Ensure `NEXTAUTH_URL` is correctly set to your application's public URL, especially in Vercel/deployment.
+- **`NEXTAUTH_SECRET`**: Make sure a strong `NEXTAUTH_SECRET` is set.
+- **Database Connection**: Verify the `DATABASE_URL` is correct and your MongoDB instance is accessible.
+- **Prisma Adapter**: Ensure `@auth/prisma-adapter` and `prisma` are correctly configured in `src/lib/auth/options.ts` (or equivalent auth configuration file).
 
 ### Database Issues
 
-If you encounter issues with the database:
+- **Connection String**: Confirm your `DATABASE_URL` in `.env.local` is correct and the MongoDB server is running.
+- **Migrations Not Applied**: Run `npx prisma migrate dev` to ensure your schema is up-to-date with `prisma/schema.prisma`.
+- **Prisma Client Not Generated**: Run `npx prisma generate` if you suspect the client is outdated or missing.
 
-1. Check your Supabase project settings and ensure the environment variables are correct.
-2. Run the setup scripts again:
-   ```bash
-   npm run setup-db
-   npm run create-tables
-   npm run update-rls-policies
-   ```
+### General Development Issues
+
+- **Environment Variables**: Ensure all required environment variables in `.env.local` are correctly set.
+- **Dependencies**: Run `npm install` (or yarn/pnpm) if you encounter module not found errors.
+- **Turbopack/Next.js Issues**: Consult the Next.js and Turbopack documentation for specific errors.
 
 ## Acknowledgements
 
 - [Next.js](https://nextjs.org/)
-- [Supabase](https://supabase.io/)
+- [Prisma](https://www.prisma.io/)
+- [MongoDB](https://www.mongodb.com/)
 - [NextAuth.js](https://next-auth.js.org/)
-- [chess.js](https://github.com/jhlywa/chess.js)
-- [Stockfish](https://stockfishchess.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Radix UI](https://www.radix-ui.com/)
 - [Shadcn UI](https://ui.shadcn.com/)
+- [chess.js](https://github.com/jhlywa/chess.js)
+- [Stockfish](https://stockfishchess.org/)
+- [Zod](https://zod.dev/)
+- [React Hook Form](https://react-hook-form.com/)
+- [Resend](https://resend.com/)
+- [Sonner](https://sonner.emilkowal.ski/)
