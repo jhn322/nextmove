@@ -5,16 +5,16 @@ import type { NextRequest } from "next/server";
 // Define protected routes that require authentication
 const protectedPaths = ["/settings", "/history"];
 // Define routes that require *verified* authentication
-const verifiedPaths = ["/settings", "/history"]; // Add paths requiring verification
+// const verifiedPaths = ["/settings", "/history"];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isProtectedRoute = protectedPaths.some((prefix) =>
     path.startsWith(prefix)
   );
-  const isVerifiedRoute = verifiedPaths.some((prefix) =>
-    path.startsWith(prefix)
-  );
+  // const isVerifiedRoute = verifiedPaths.some((prefix) =>
+  // path.startsWith(prefix)
+  // );
 
   // Skip middleware if not a protected route
   if (!isProtectedRoute) {
@@ -37,13 +37,13 @@ export async function middleware(request: NextRequest) {
     }
 
     // 2. Check for email verification if the route requires it
-    if (isVerifiedRoute && !token.emailVerified) {
-      // Redirect to the dedicated verification page
-      const verifyUrl = new URL("/auth/verify-email", request.url);
-      // Optionally add callbackUrl if they should return after verification
-      // verifyUrl.searchParams.set("callbackUrl", request.url);
-      return NextResponse.redirect(verifyUrl);
-    }
+    // if (isVerifiedRoute && !token.emailVerified) {
+    //   // Redirect to the dedicated verification page
+    //   const verifyUrl = new URL("/auth/verify-email", request.url);
+    //   // Optionally add callbackUrl if they should return after verification
+    //   // verifyUrl.searchParams.set("callbackUrl", request.url);
+    //   return NextResponse.redirect(verifyUrl);
+    // }
 
     // User is authenticated (and verified if required), allow the request
     return NextResponse.next();
