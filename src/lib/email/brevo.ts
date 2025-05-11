@@ -13,25 +13,57 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   // * 1. Get Configuration from Environment Variables
   const brevoApiKey = getEnvVar("BREVO_API_KEY");
   const senderEmail = getEnvVar("EMAIL_FROM_ADDRESS");
-  const senderName = getEnvVar("EMAIL_FROM_NAME") || APP_NAME; // Fallback to APP_NAME if not set
+  const senderName = getEnvVar("EMAIL_FROM_NAME") || APP_NAME;
   const baseUrl = getEnvVar("NEXT_PUBLIC_APP_URL");
 
   // * 2. Construct Reset URL and Payload
-  const resetLink = `${baseUrl}/auth/reset-password?token=${token}`; // Assuming this is your frontend path
+  const resetLink = `${baseUrl}/auth/reset-password?token=${token}`;
+  const privacyPolicyUrl = `${baseUrl}/privacypolicy`;
+  const termsOfServiceUrl = `${baseUrl}/termsofservice`;
+
   const payload = {
     sender: { name: senderName, email: senderEmail },
     to: [{ email: email }],
     subject: `Reset Your Password for ${APP_NAME}`,
     htmlContent: `
-      <h1>Reset Your Password</h1>
-      <p>You requested a password reset for your account with ${APP_NAME}.</p>
-      <p>Please click the link below to set a new password:</p>
-      <a href="${resetLink}" target="_blank" rel="noopener noreferrer">Reset My Password</a>
-      <p>This link is valid for a limited time (e.g., 1 hour).</p>
-      <p>If you did not request a password reset, please ignore this email.</p>
-      <br>
-      <p>Best regards,</p>
-      <p>The ${APP_NAME} Team</p>
+      <body style="margin: 0; padding: 0; width: 100%; color: #E5E7EB; font-family: Arial, sans-serif;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="center" style="padding: 20px;">
+              <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #0A0A0A; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <tr>
+                  <td align="center" style="padding: 40px 20px 20px 20px; border-bottom: 1px solid #374151;">
+                    <h1 style="color: #6904B7; margin: 0; font-size: 28px;">${APP_NAME}</h1>
+                  </td>
+                </tr>
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 30px 40px; text-align: left; font-size: 16px; line-height: 1.6;">
+                    <h2 style="color: #D1D5DB; margin-top: 0; margin-bottom: 20px; font-size: 22px;">Reset Your Password</h2>
+                    <p style="margin-bottom: 20px;">You requested a password reset for your account with ${APP_NAME}.</p>
+                    <p style="margin-bottom: 30px;">Please click the button below to set a new password:</p>
+                    <a href="${resetLink}" target="_blank" rel="noopener noreferrer" style="background-color: #6904B7; color: #FFFFFF; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset My Password</a>
+                    <p style="margin-top: 30px; margin-bottom: 10px;">This link is valid for a limited time (e.g., 1 hour).</p>
+                    <p style="margin-bottom: 0;">If you did not request a password reset, please ignore this email.</p>
+                  </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                  <td align="center" style="padding: 20px 40px; border-top: 1px solid #374151; font-size: 12px; color: #9CA3AF;">
+                    <p style="margin: 0 0 10px 0;">The ${APP_NAME} Team</p>
+                    <p style="margin: 0;">
+                      <a href="${privacyPolicyUrl}" target="_blank" rel="noopener noreferrer" style="color: #9CA3AF; text-decoration: underline; margin-right: 10px;">Privacy Policy</a> |
+                      <a href="${termsOfServiceUrl}" target="_blank" rel="noopener noreferrer" style="color: #9CA3AF; text-decoration: underline; margin-left: 10px;">Terms of Service</a>
+                    </p>
+                    <p style="margin: 10px 0 0 0;">&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
     `,
   };
 
@@ -94,27 +126,57 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   // * 1. Get Configuration from Environment Variables
   const brevoApiKey = getEnvVar("BREVO_API_KEY");
   const senderEmail = getEnvVar("EMAIL_FROM_ADDRESS");
-  const senderName = getEnvVar("EMAIL_FROM_NAME"); // Or use APP_NAME as a fallback: getEnvVar('EMAIL_FROM_NAME') || APP_NAME;
+  const senderName = getEnvVar("EMAIL_FROM_NAME") || APP_NAME;
   const baseUrl = getEnvVar("NEXT_PUBLIC_APP_URL");
 
   // * 2. Construct Verification URL and Payload
-  // Using API_AUTH_PATHS.VERIFY_EMAIL from your constants
   const verificationUrl = `${baseUrl}${API_AUTH_PATHS.VERIFY_EMAIL}?token=${token}`;
+  const privacyPolicyUrl = `${baseUrl}/privacypolicy`;
+  const termsOfServiceUrl = `${baseUrl}/termsofservice`;
+
   const payload = {
     sender: { name: senderName, email: senderEmail },
     to: [{ email: email }],
     subject: `Verify your email address for ${APP_NAME}`,
-    // TODO: Consider replacing with a more robust HTML template solution (e.g., React Email)
     htmlContent: `
-      <h1>Verify your email address</h1>
-      <p>Thank you for registering with ${APP_NAME}!</p>
-      <p>Please click the link below to verify your email address:</p>
-      <a href="${verificationUrl}" target="_blank" rel="noopener noreferrer">Verify my email</a>
-      <p>This link is valid for 24 hours.</p>
-      <p>If you did not register, please ignore this email.</p>
-      <br>
-      <p>Best regards,</p>
-      <p>The ${APP_NAME} Team</p>
+      <body style="margin: 0; padding: 0; width: 100%; color: #E5E7EB; font-family: Arial, sans-serif;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="center" style="padding: 20px;">
+              <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #0A0A0A; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <tr>
+                  <td align="center" style="padding: 40px 20px 20px 20px; border-bottom: 1px solid #374151;">
+                    <h1 style="color: #6904B7; margin: 0; font-size: 28px;">${APP_NAME}</h1>
+                  </td>
+                </tr>
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 30px 40px; text-align: left; font-size: 16px; line-height: 1.6;">
+                    <h2 style="color: #D1D5DB; margin-top: 0; margin-bottom: 20px; font-size: 22px;">Verify Your Email Address</h2>
+                    <p style="margin-bottom: 20px;">Thank you for registering with ${APP_NAME}!</p>
+                    <p style="margin-bottom: 30px;">Please click the button below to verify your email address:</p>
+                    <a href="${verificationUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #6904B7; color: #FFFFFF; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify My Email</a>
+                    <p style="margin-top: 30px; margin-bottom: 10px;">This link is valid for 24 hours.</p>
+                    <p style="margin-bottom: 0;">If you did not register, please ignore this email.</p>
+                  </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                  <td align="center" style="padding: 20px 40px; border-top: 1px solid #374151; font-size: 12px; color: #9CA3AF;">
+                    <p style="margin: 0 0 10px 0;">The ${APP_NAME} Team</p>
+                    <p style="margin: 0;">
+                      <a href="${privacyPolicyUrl}" target="_blank" rel="noopener noreferrer" style="color: #9CA3AF; text-decoration: underline; margin-right: 10px;">Privacy Policy</a> |
+                      <a href="${termsOfServiceUrl}" target="_blank" rel="noopener noreferrer" style="color: #9CA3AF; text-decoration: underline; margin-left: 10px;">Terms of Service</a>
+                    </p>
+                    <p style="margin: 10px 0 0 0;">&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
     `,
   };
 
