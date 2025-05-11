@@ -111,13 +111,9 @@ function VerifyEmailContent() {
 }
 
 export default function VerifyEmailPage() {
-  // Note: This page assumes it's accessed by an authenticated but unverified user.
-  // Middleware should handle redirecting here.
   return (
-    // Use the centered layout
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="mx-auto w-full max-w-md lg:w-[450px]">
-        {/* Optional Logo */}
         <Link href="/" className="inline-block mb-8 mx-auto">
           <div className="flex items-center justify-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5 mx-auto">
             <Image

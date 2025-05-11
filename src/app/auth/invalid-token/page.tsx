@@ -39,7 +39,6 @@ const reasonMap: Record<string, StatusInfo> = {
     colorClass: "text-destructive",
   },
   already_verified: {
-    // Optional: Add if you implement checks for already verified users
     title: "Already Verified",
     message: "This email address has already been verified.",
     icon: BadgeCheck,
@@ -87,10 +86,7 @@ function InvalidTokenContent() {
         {/* Conditionally show link to request new token if relevant */}
         {(reason === "not_found_or_expired" || reason === "missing") && (
           <Button asChild>
-            {/* TODO: Link to resend verification page/API when implemented */}
             <Link href="/auth/forgot-password">Request New Link</Link>
-            {/* For now, linking to forgot-password might be confusing, 
-                    consider linking to login or a dedicated resend page later */}
           </Button>
         )}
       </div>
@@ -100,10 +96,8 @@ function InvalidTokenContent() {
 
 export default function InvalidTokenPage() {
   return (
-    // Use the centered layout
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="mx-auto w-full max-w-md lg:w-[450px]">
-        {/* Optional Logo */}
         <Link href="/" className="inline-block mb-8 mx-auto">
           <div className="flex items-center justify-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5 mx-auto">
             <Image

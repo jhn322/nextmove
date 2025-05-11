@@ -5,29 +5,29 @@ import { AUTH_ROUTES, UserRole } from "@/lib/auth/constants/auth";
 import { hasRequiredRole } from "./auth";
 
 /**
- * Hämtar aktiv session på serversidan
+ * Fetches active session on the server-side
  */
 export const getSession = async () => {
   return await getServerSession(authOptions);
 };
 
 /**
- * Kontrollerar om användaren har rätt roll (server-side).
- * Omdirigerar till obehörig-sidan om fel roll.
- * Används EFTER att middleware har säkerställt inloggning.
+ * Checks if the user has the correct role (server-side).
+ * Redirects to the unauthorized page if the role is incorrect.
+ * Used AFTER middleware has ensured login.
  */
 export const requireRole = async (
   requiredRole: UserRole | UserRole[],
   unauthorizedUrl = AUTH_ROUTES.UNAUTHORIZED
 ) => {
-  const session = await getSession(); // Hämta session direkt
+  const session = await getSession(); // Fetch session directly
 
-  // Om ingen session finns (bör inte hända pga middleware, men som säkerhetsåtgärd)
-  // eller om användaren saknar roll
+  // If no session exists (should not happen due to middleware, but as a precaution)
+  // or if the user lacks a role
   if (!session?.user?.role) {
-    console.error('requireRole: Användare saknar session eller roll.');
-    redirect(AUTH_ROUTES.LOGIN); // Skicka till login om något är fel
-    return null; // Returnera null för att undvika TS-fel nedan
+    console.error("requireRole: User lacks session or role.");
+    redirect(AUTH_ROUTES.LOGIN); // Send to login if something is wrong
+    return null; // Return null to avoid TS errors below
   }
 
   const userRole = session.user.role as UserRole;
@@ -36,6 +36,6 @@ export const requireRole = async (
     redirect(unauthorizedUrl);
   }
 
-  // Returnera sessionen så den kan användas på sidan om kontrollen passerar
+  // Return the session so it can be used on the page if the check passes
   return session;
 };

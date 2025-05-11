@@ -9,40 +9,40 @@ import { configureCallbacks } from "./callbacks";
 import { AUTH_ROUTES, USER_ROLES } from "@/lib/auth/constants/auth";
 
 /**
- * Huvudkonfiguration för NextAuth
+ * Main configuration for NextAuth
  */
 export const authOptions: NextAuthOptions = {
-  // Adapter för att koppla NextAuth till Prisma
+  // Adapter to connect NextAuth to Prisma
   adapter: PrismaAdapter(prisma) as Adapter,
 
-  // Providers för olika inloggningsmetoder
+  // Providers for different login methods
   providers: configureProviders(),
 
-  // Session-hantering
+  // Session management
   session: {
     strategy: "jwt",
   },
 
-  // Anpassade sidor
+  // Custom pages
   pages: {
     signIn: AUTH_ROUTES.LOGIN,
     error: AUTH_ROUTES.AUTH_ERROR,
   },
 
-  // Callbacks för att anpassa JWT och session
+  // Callbacks to customize JWT and session
   callbacks: configureCallbacks(),
 
-  // Händelser för autentisering
+  // Authentication events
   events: {
     /**
-     * Hanterar användarinloggning specifikt för Google-autentisering
-     * - Om användaren finns: Uppdaterar namn och profilbild
-     * - Om ny användare: Skapar konto med USER-roll
-     * Detta säkerställer att databasen hålls synkroniserad med Google-profildata
+     * Handles user sign-in specifically for Google authentication
+     * - If the user exists: Updates name and profile picture
+     * - If new user: Creates account with USER role
+     * This ensures the database is kept synchronized with Google profile data
      */
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        // Uppdatera eller skapa användare med rätt roll
+        // Update or create user with the correct role
         await prisma.user.upsert({
           where: { email: user.email! },
           update: {
@@ -60,6 +60,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  // Aktivera debugging i utvecklingsmiljö
+  // Enable debugging in development environment
   debug: process.env.NODE_ENV === "development",
 };

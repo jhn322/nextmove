@@ -14,16 +14,10 @@ export async function DELETE() {
 
     const userId = session.user.id;
 
-    // Optional: Add extra checks or operations before deletion if needed
-    // e.g., deleting related data not handled by cascade
-
     // Delete the user
     await prisma.user.delete({
       where: { id: userId },
     });
-
-    // Note: Related Account, Session, and Game records should be deleted
-    // automatically due to the `onDelete: Cascade` defined in the Prisma schema.
 
     return NextResponse.json(
       { message: "Account deleted successfully" },
@@ -31,7 +25,6 @@ export async function DELETE() {
     );
   } catch (error) {
     console.error("Error deleting user account:", error);
-    // Check if the error is because the user was not found (already deleted?)
     if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return NextResponse.json(

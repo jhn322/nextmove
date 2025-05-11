@@ -1,24 +1,24 @@
 import { USER_ROLES, UserRole } from "@/lib/auth/constants/auth";
 
 /**
- * Konverterar en användarroll till en läsbar text
+ * Converts a user role to a readable text
  */
 export const formatRole = (role: UserRole): string => {
   const roleMap: Record<UserRole, string> = {
-    [USER_ROLES.USER]: "Elev",
-    [USER_ROLES.ADMIN]: "Administratör",
+    [USER_ROLES.USER]: "Student",
+    [USER_ROLES.ADMIN]: "Administrator",
   };
   return roleMap[role] || role;
 };
 
 /**
- * Kontrollerar om användaren har tillräckliga rättigheter baserat på hierarki
+ * Checks if the user has sufficient permissions based on hierarchy
  */
 export const hasRequiredRole = (
   userRole: UserRole,
   requiredRole: UserRole | UserRole[]
 ): boolean => {
-  // Uppdaterad hierarki
+  // Updated hierarchy
   const roleHierarchy: UserRole[] = [USER_ROLES.USER, USER_ROLES.ADMIN];
   const userRoleIndex = roleHierarchy.indexOf(userRole);
 
@@ -36,13 +36,13 @@ export const hasRequiredRole = (
 };
 
 /**
- * Säkert hämtar värdet av en miljövariabel, med felhantering
+ * Safely retrieves the value of an environment variable, with error handling
  */
 export const getEnvVar = (key: string): string => {
   const value = process.env[key];
   if (!value) {
-    // I produktion vill vi använda logger istället för console.error
-    console.error(`Miljövariabel ${key} är inte definierad!`);
+    // In production, we want to use a logger instead of console.error
+    console.error(`Environment variable ${key} is not defined!`);
     return "";
   }
   return value;

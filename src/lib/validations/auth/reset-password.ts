@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { passwordSchema } from "./common"; // Import common password rules
+import { passwordSchema } from "./common";
 
 export const resetPasswordSchema = z
   .object({
@@ -7,6 +7,6 @@ export const resetPasswordSchema = z
     confirmPassword: z.string(), // Basic string for confirmation
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match", // Translate Swedish message
+    message: "Passwords do not match",
     path: ["confirmPassword"], // Attach error to the confirmation field
   });

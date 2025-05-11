@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/prisma";
-import { sendVerificationEmail } from "@/lib/email/resend";
+import { sendVerificationEmail } from "@/lib/email/brevo";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import * as z from "zod";
@@ -11,7 +11,7 @@ const RequestBodySchema = z.object({
 });
 
 const HASH_ROUNDS = 10;
-const TOKEN_EXPIRATION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const TOKEN_EXPIRATION_DURATION = 24 * 60 * 60 * 1000;
 
 const generateVerificationTokenAndHash = async () => {
   const token = crypto.randomBytes(32).toString("hex");
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       await generateVerificationTokenAndHash();
     const expires = new Date(Date.now() + TOKEN_EXPIRATION_DURATION);
 
-    // Delete old tokens for this user (optional but good practice)
+    // Delete old tokens for this user
     await db.emailVerificationToken.deleteMany({
       where: { userId: user.id },
     });

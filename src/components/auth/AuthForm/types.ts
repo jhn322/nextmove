@@ -1,4 +1,4 @@
-export type AuthMode = 'login' | 'register';
+export type AuthMode = "login" | "register";
 
 export interface AuthFormData {
   name?: string;
@@ -12,4 +12,4 @@ export interface AuthFormProps {
   onSubmit: (data: AuthFormData) => Promise<void>;
   isLoading?: boolean;
   error?: string | null;
-} 
+}

@@ -15,12 +15,12 @@ export async function GET(req: NextRequest) {
 
   try {
     // 1. Find potential matching tokens (non-expired)
-    // We hash the incoming token and compare it to stored hashes.
+    // Hash the incoming token and compare it to stored hashes.
     const potentialTokens = await db.emailVerificationToken.findMany({
       where: {
         expires: { gt: new Date() },
       },
-      include: { user: true }, // Include user data for updating
+      include: { user: true },
     });
 
     let validTokenRecord = null;
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     await db.$transaction([
       db.user.update({
         where: { id: validTokenRecord.userId },
-        data: { emailVerified: new Date() }, // Set to current time
+        data: { emailVerified: new Date() },
       }),
       db.emailVerificationToken.delete({
         where: { id: validTokenRecord.id },
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     // 4. Redirect to a success page or login page
     const loginUrl = new URL("/auth/login", req.url);
-    loginUrl.searchParams.set("verified", "true"); // Add a query param to show a success message on login page
+    loginUrl.searchParams.set("verified", "true");
     return NextResponse.redirect(loginUrl);
   } catch (error) {
     console.error("[EMAIL_VERIFY_GET]", error);

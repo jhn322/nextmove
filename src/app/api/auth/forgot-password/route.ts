@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/prisma";
 import { forgotPasswordSchema } from "@/lib/validations/auth/forgot-password";
-import { sendPasswordResetEmail } from "@/lib/email/resend";
+import { sendPasswordResetEmail } from "@/lib/email/brevo";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 
@@ -37,8 +37,8 @@ export async function POST(req: Request) {
       where: { email },
     });
 
-    // Important: Only allow password reset for users with a password set (not OAuth users)
-    // Also, check if email is verified if your flow requires it before reset
+    // ** Important: Only allow password reset for users with a password set (not OAuth users)
+    // Also, check if email is verified
     if (!user || !user.password) {
       // Return a generic message to avoid disclosing whether an email exists
       return NextResponse.json(

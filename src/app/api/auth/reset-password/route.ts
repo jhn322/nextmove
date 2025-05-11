@@ -32,12 +32,8 @@ export async function POST(req: Request) {
 
     // Hash the token from the request to find the matching record
     // Note: This assumes the token stored is hashed. If not, adjust comparison.
-    // We can't directly query by the unhashed token for security.
-    // A potential optimization: index createdAt and query recent tokens for the user ID if available,
-    // then compare hashes. But direct hash comparison is simpler if feasible.
 
     // Find *all* tokens first to compare hashes (less efficient but necessary without direct hashed token query)
-    // Consider adding an index on expires or createdAt for optimization if performance becomes an issue
     const potentialTokens = await db.passwordResetToken.findMany({
       where: {
         expires: { gt: new Date() }, // Only consider non-expired tokens
@@ -49,7 +45,7 @@ export async function POST(req: Request) {
       const isTokenMatch = await bcrypt.compare(token, record.token);
       if (isTokenMatch) {
         validTokenRecord = record;
-        break; // Found the matching token
+        break;
       }
     }
 

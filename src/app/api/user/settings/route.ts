@@ -8,26 +8,26 @@ import { z } from "zod";
 const updateSettingsSchema = z
   .object({
     // Profile fields
-    name: z.string().min(1).max(50).optional(), // display_name in settings component
-    firstName: z.string().max(50).optional(), // first_name
-    lastName: z.string().max(50).optional(), // last_name
+    name: z.string().min(1).max(50).optional(),
+    firstName: z.string().max(50).optional(),
+    lastName: z.string().max(50).optional(),
     location: z.string().max(100).optional(),
-    image: z.string().optional(), // avatar_url
-    countryFlag: z.string().optional(), // country_flag
+    image: z.string().optional(),
+    countryFlag: z.string().optional(),
     flair: z.string().optional(),
     timezone: z.string().optional(),
-    clockFormat: z.enum(["12", "24"]).optional(), // clock_format
+    clockFormat: z.enum(["12", "24"]).optional(),
 
     // Game settings fields
-    preferredDifficulty: z.string().optional(), // preferred_difficulty
-    soundEnabled: z.boolean().optional(), // sound_enabled
-    pieceSet: z.string().optional(), // piece_set
-    whitePiecesBottom: z.boolean().optional(), // white_pieces_bottom
-    showCoordinates: z.boolean().optional(), // show_coordinates
-    enableAnimations: z.boolean().optional(), // enable_animations
-    enableConfetti: z.boolean().optional(), // enable_confetti
+    preferredDifficulty: z.string().optional(),
+    soundEnabled: z.boolean().optional(),
+    pieceSet: z.string().optional(),
+    whitePiecesBottom: z.boolean().optional(),
+    showCoordinates: z.boolean().optional(),
+    enableAnimations: z.boolean().optional(),
+    enableConfetti: z.boolean().optional(),
   })
-  .strict(); // Ensure no extra fields are passed
+  .strict();
 
 export async function PATCH(req: Request) {
   try {
@@ -58,7 +58,7 @@ export async function PATCH(req: Request) {
       );
     }
 
-    // Prepare data for Prisma update (handle potential name mismatches)
+    // Prepare data for Prisma update
     const prismaData: Partial<
       Parameters<typeof prisma.user.update>[0]["data"]
     > = {};
@@ -98,8 +98,6 @@ export async function PATCH(req: Request) {
       data: prismaData,
     });
 
-    // It might be better to just return success message instead of the full user object
-    // to avoid exposing too much data and keep the response lean.
     return NextResponse.json(
       { message: "Settings updated successfully" },
       { status: 200 }

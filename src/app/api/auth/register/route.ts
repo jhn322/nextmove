@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import crypto from "crypto"; // Import crypto
+import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { USER_ROLES, AUTH_MESSAGES } from "@/lib/auth/constants/auth";
-import { registerApiSchema } from "@/lib/validations/auth/register"; // Importera nya schemat
-import { ZodIssue } from "zod"; // Importera ZodIssue
-import { sendVerificationEmail } from "@/lib/email/resend"; // Import our new function
+import { registerApiSchema } from "@/lib/validations/auth/register";
+import { ZodIssue } from "zod";
+import { sendVerificationEmail } from "@/lib/email/brevo";
 
 const HASH_ROUNDS = 10;
-// Email verification token expires in 24 hours (adjust as needed)
-const TOKEN_EXPIRATION_DURATION = 24 * 60 * 60 * 1000; // 24 hours in ms
+// Email verification token expires in 24 hours
+const TOKEN_EXPIRATION_DURATION = 24 * 60 * 60 * 1000;
 
 /**
  * Generates a secure random token and its hash.
@@ -26,57 +26,57 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    //* Validera input med det nya API-schemat
-    const validationResult = registerApiSchema.safeParse(body); // Använd nya schemat
+    // * Validate input with the new API schema
+    const validationResult = registerApiSchema.safeParse(body);
 
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map(
         (e: ZodIssue) => e.message
-      ); // Använd ZodIssue typen
+      );
       return NextResponse.json(
-        // Använd specifikt fel eller standard om join är tom
+        // Use specific error or default if join is empty
         { message: errors.join(", ") || AUTH_MESSAGES.ERROR_MISSING_FIELDS },
         { status: 400 }
       );
     }
 
-    // Nu innehåller validationResult.data bara name, email, password
+    // ValidationResult.data only contains name, email, password
     const { name, email, password } = validationResult.data;
 
-    //* Kolla om användaren redan finns, inkludera konton
+    // * Check if the user already exists, include accounts
     const existingUser = await prisma.user.findUnique({
       where: { email },
-      include: { accounts: true }, // Inkludera länkade konton
+      include: { accounts: true }, // Include linked accounts
     });
 
     if (existingUser) {
-      //* Kolla om det finns några länkade OAuth-konton
+      // * Check if there are any linked OAuth accounts
       if (existingUser.accounts && existingUser.accounts.length > 0) {
-        // Användaren finns och har loggat in via OAuth tidigare
+        // User exists and has logged in via OAuth before
         return NextResponse.json(
-          { message: AUTH_MESSAGES.ERROR_EMAIL_EXISTS_OAUTH }, // Ge specifikt felmeddelande
-          { status: 409 } // Använd 409 Conflict
+          { message: AUTH_MESSAGES.ERROR_EMAIL_EXISTS_OAUTH },
+          { status: 409 }
         );
       } else {
-        // Användaren finns men har inga OAuth-konton (troligen skapad med credentials)
+        // User exists but has no OAuth accounts
         return NextResponse.json(
           { message: AUTH_MESSAGES.ERROR_EMAIL_EXISTS },
-          { status: 409 } // Använd 409 Conflict
+          { status: 409 }
         );
       }
     }
 
-    //* Hasha lösenordet
+    // * Hash the password
     const hashedPassword = await bcrypt.hash(password, HASH_ROUNDS);
 
-    //* Skapa användaren (om ingen fanns)
+    // * Create the user (if none existed)
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role: USER_ROLES.USER, // Använd konstant
-        emailVerified: null, // Explicitly null until verified
+        role: USER_ROLES.USER,
+        emailVerified: null,
       },
     });
 
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       // Store the *hashed* token in the new table
       await prisma.emailVerificationToken.create({
         data: {
-          userId: user.id, // Link to the created user
+          userId: user.id,
           token: hashedToken,
           expires: expires,
         },
@@ -106,26 +106,18 @@ export async function POST(req: Request) {
       );
       // Log the error, but allow registration to succeed.
       // The user can request a resend later if needed.
-      // Optionally, you could delete the user here if verification email fails critically,
-      // but that might be a poor user experience.
     }
     // --- End Email Verification Process ---
-
-    // Ta bort lösenordet från svaret
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userWithoutPassword } = user;
-
     return NextResponse.json(
       {
         message:
           "Registration successful. Please check your email to verify your account.",
-        user: userWithoutPassword,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error); // Changed log prefix
-    // Använd mer generellt registreringsfel här
+    console.error("Registration error:", error);
+    // General registration error
     return NextResponse.json(
       { message: AUTH_MESSAGES.ERROR_REGISTRATION_FAILED },
       { status: 500 }

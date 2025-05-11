@@ -2,11 +2,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-// import { registerFormSchema } from "@/lib/validations/auth/register"; // Removed unused import
 import type { AuthFormData } from "@/components/auth/AuthForm/types";
 import { AUTH_MESSAGES, AUTH_ROUTES } from "@/lib/auth/constants/auth";
 import { registerUser } from "@/services/auth/mutations/register";
 import { z } from "zod";
+
+// Function to call the resend verification API
+const resendVerificationApi = async (email: string) => {
+  const response = await fetch("/api/auth/resend-verification", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Failed to resend verification email." }));
+    throw new Error(
+      errorData.message || "Failed to resend verification email."
+    );
+  }
+  return response.json();
+};
 
 interface UseAuthFormProps {
   mode: "login" | "register";
@@ -18,25 +35,42 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Handler for the button inside the custom toast
+  const handleRequestNewVerificationEmail = async (email: string) => {
+    if (!email) {
+      toast.error("Email is not available to resend verification.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await resendVerificationApi(email);
+      toast.success(AUTH_MESSAGES.INFO_VERIFICATION_EMAIL_SENT);
+    } catch (apiError) {
+      toast.error(
+        apiError instanceof Error
+          ? apiError.message
+          : AUTH_MESSAGES.ERROR_DEFAULT
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (data: AuthFormData) => {
     setLoading(true);
     setError(null);
 
     try {
       if (mode === "register") {
-        // Remove redundant validation - data is already validated by react-hook-form
-        // const validatedData = registerFormSchema.parse({ ... });
-
         // Directly use the validated data passed from the form
         const result = await registerUser({
           // Zod validation in AuthForm ensures name is a valid string in register mode
-          name: data.name!, // Use non-null assertion, or default: data.name || ''
+          name: data.name!,
           email: data.email,
           password: data.password,
         });
 
         if (!result.success) {
-          // console.error("registerUser call failed or returned success: false. Result:", result); // Removed log
           throw new Error(
             result.message || AUTH_MESSAGES.ERROR_REGISTRATION_FAILED
           );
@@ -54,16 +88,15 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
         });
 
         if (result?.error) {
-          // Hantera specifika fel från NextAuth authorize
-          if (result.error === "CredentialsSignin") {
-            // NextAuth ger detta generiska fel, men vi kan härleda det från context
-            throw new Error(AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS);
-          } else if (result.error === "User not found") {
-            throw new Error(AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS);
-          } else if (result.error === "Incorrect password") {
-            throw new Error(AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS);
-          } else if (result.error === "EMAIL_NOT_VERIFIED") {
+          if (result.error === "EMAIL_NOT_VERIFIED") {
+            // Directly throw the specific error message to be caught below
             throw new Error(AUTH_MESSAGES.ERROR_EMAIL_NOT_VERIFIED);
+          } else if (
+            result.error === "CredentialsSignin" ||
+            result.error === "User not found" ||
+            result.error === "Incorrect password"
+          ) {
+            throw new Error(AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS);
           } else {
             throw new Error(result.error || AUTH_MESSAGES.ERROR_LOGIN_FAILED);
           }
@@ -78,15 +111,24 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
           }
         }
       }
-    } catch (error) {
-      // console.error("Error caught in useAuthForm handleSubmit:", error); // Removed log
-
-      // Hantera Zod valideringsfel specifikt (Shouldn't happen anymore for register if redundant parse is removed)
-      if (error instanceof z.ZodError) {
-        setError(error.errors.map((e) => e.message).join(", "));
+    } catch (err) {
+      if (
+        err instanceof Error &&
+        err.message === AUTH_MESSAGES.ERROR_EMAIL_NOT_VERIFIED
+      ) {
+        // Special handling for email not verified
+        toast.error(AUTH_MESSAGES.ERROR_EMAIL_NOT_VERIFIED, {
+          action: {
+            label: "Resend Email",
+            onClick: () => handleRequestNewVerificationEmail(data.email),
+          },
+          duration: 10000,
+        });
+      } else if (err instanceof z.ZodError) {
+        setError(err.errors.map((e) => e.message).join(", "));
       } else {
         setError(
-          error instanceof Error ? error.message : AUTH_MESSAGES.ERROR_DEFAULT
+          err instanceof Error ? err.message : AUTH_MESSAGES.ERROR_DEFAULT
         );
       }
     } finally {
