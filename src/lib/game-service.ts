@@ -242,14 +242,6 @@ export const clearUserGameHistory = async (
       where: { userId: userId },
     });
 
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("last-saved-game-id");
-      localStorage.removeItem("last-saved-game-fen");
-      localStorage.removeItem("chess-game-history");
-      localStorage.removeItem("chess-game-stats");
-      localStorage.removeItem("chess-last-game-result");
-    }
-
     return true;
   } catch (error) {
     console.error("Unexpected error clearing game history:", error);

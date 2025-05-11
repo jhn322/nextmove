@@ -55,7 +55,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
-import { clearUserGameHistory, type GameHistory } from "@/lib/game-service";
+import { type GameHistory } from "@/lib/game-service";
+import { clearUserGameHistoryAction } from "@/lib/actions/game.actions";
 import { Session } from "next-auth";
 import Link from "next/link";
 
@@ -175,13 +176,20 @@ export const HistoryPageClient = ({
     setSuccessMessage("");
 
     try {
-      const success = await clearUserGameHistory(session.user.id);
+      const success = await clearUserGameHistoryAction(session.user.id);
       if (success) {
         setGameHistory([]);
         setGameStats(null);
         setSuccessMessage("Game history cleared successfully");
-        // Optionally, you might want to refresh server-side state here if needed
-        // but for clearing, just updating client state is usually enough.
+
+        // Clear localStorage items now that server action was successful
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("last-saved-game-id");
+          localStorage.removeItem("last-saved-game-fen");
+          localStorage.removeItem("chess-game-history");
+          localStorage.removeItem("chess-game-stats");
+          localStorage.removeItem("chess-last-game-result");
+        }
       } else {
         setError("Failed to clear history. Please try again.");
       }
@@ -510,8 +518,8 @@ export const HistoryPageClient = ({
                           gameStats.winRate >= 60
                             ? "bg-green-500"
                             : gameStats.winRate >= 40
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         )}
                       />
                     </CardContent>

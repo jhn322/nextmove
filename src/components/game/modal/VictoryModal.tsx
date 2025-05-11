@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Chess } from "chess.js";
 import Confetti from "react-confetti";
-import { saveGameResult } from "@/lib/game-service";
+import { saveGameAction } from "@/lib/actions/game.actions";
 import { useAuth } from "@/context/auth-context";
 import { getConfettiEnabled } from "@/lib/settings";
 import { useRouter } from "next/navigation";
@@ -204,9 +204,11 @@ const VictoryModal = ({
             return;
           }
 
-          await saveGameResult({
+          // Call the server action instead of the direct service
+          await saveGameAction({
             userId: session.user.id,
-            game,
+            fen: game.fen(), // Pass FEN string
+            pgnHistory: game.history({ verbose: false }), // Explicitly get SAN strings
             difficulty,
             playerColor,
             selectedBot,
@@ -385,12 +387,12 @@ const VictoryModal = ({
             {isResignation
               ? "Confirm if you want to resign from the current game."
               : game.isDraw()
-              ? "The game ended in a draw."
-              : game.isCheckmate()
-              ? `Game over by checkmate. ${
-                  isPlayerWinner() ? "You won!" : "Bot won!"
-                }`
-              : "Game results and options for your next move."}
+                ? "The game ended in a draw."
+                : game.isCheckmate()
+                  ? `Game over by checkmate. ${
+                      isPlayerWinner() ? "You won!" : "Bot won!"
+                    }`
+                  : "Game results and options for your next move."}
           </DialogDescription>
           <div className="absolute right-2 top-2 sm:right-4 sm:top-4">
             <button
