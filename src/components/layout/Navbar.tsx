@@ -54,6 +54,7 @@ import {
   Wand2,
   Trophy as TrophyIcon,
   Monitor,
+  Loader2,
 } from "lucide-react";
 import {
   Collapsible,
@@ -96,6 +97,9 @@ const Navbar = () => {
   >(null);
   const [activeGameDifficultyInNavbar, setActiveGameDifficultyInNavbar] =
     useState<string | null>(null);
+  const [navigatingToPlayItem, setNavigatingToPlayItem] = useState<
+    string | null
+  >(null);
   const { setTheme, theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
@@ -143,6 +147,14 @@ const Navbar = () => {
     };
 
     checkSavedGame();
+  }, [pathname]);
+
+  // Reset spinner on pathname change
+  useEffect(() => {
+    if (navigatingToPlayItem) {
+      setNavigatingToPlayItem(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const playItems = [
@@ -250,6 +262,7 @@ const Navbar = () => {
       setPendingNavigationHref(href);
       setShowGameInProgressDialog(true);
     } else {
+      setNavigatingToPlayItem(href);
       router.push(href);
     }
     if (isOpen) setIsOpen(false);
@@ -259,6 +272,7 @@ const Navbar = () => {
     if (pendingNavigationHref) {
       localStorage.removeItem(STORAGE_KEY);
       setActiveGameDifficultyInNavbar(null);
+      setNavigatingToPlayItem(pendingNavigationHref);
       router.push(pendingNavigationHref);
     }
     setShowGameInProgressDialog(false);
@@ -399,23 +413,27 @@ const Navbar = () => {
                                   <span className="font-medium leading-none">
                                     {item.title}
                                   </span>
-                                  {activeGameDifficultyInNavbar ===
-                                    item.title.toLowerCase() && (
+                                  {navigatingToPlayItem === item.href ? (
+                                    <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                  ) : activeGameDifficultyInNavbar ===
+                                    item.title.toLowerCase() ? (
                                     <Badge
                                       variant="secondary"
                                       className="bg-green-500 animate-pulse"
                                     >
                                       <Save className="h-3 w-3" />
                                     </Badge>
-                                  )}
+                                  ) : null}
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <span className={item.color}>
-                                    {item.eloRange} ELO
-                                  </span>
-                                  <span>•</span>
-                                  <span>{item.playStyle}</span>
-                                </div>
+                                {navigatingToPlayItem !== item.href && (
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span className={item.color}>
+                                      {item.eloRange} ELO
+                                    </span>
+                                    <span>•</span>
+                                    <span>{item.playStyle}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </button>
@@ -718,23 +736,27 @@ const Navbar = () => {
                                     <span className="font-medium">
                                       {item.title}
                                     </span>
-                                    {activeGameDifficultyInNavbar ===
-                                      item.title.toLowerCase() && (
+                                    {navigatingToPlayItem === item.href ? (
+                                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                    ) : activeGameDifficultyInNavbar ===
+                                      item.title.toLowerCase() ? (
                                       <Badge
                                         variant="secondary"
                                         className="bg-green-500 animate-pulse"
                                       >
                                         <Save className="h-3 w-3" />
                                       </Badge>
-                                    )}
+                                    ) : null}
                                   </div>
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span className={item.color}>
-                                      {item.eloRange} ELO
-                                    </span>
-                                    <span>•</span>
-                                    <span>{item.playStyle}</span>
-                                  </div>
+                                  {navigatingToPlayItem !== item.href && (
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      <span className={item.color}>
+                                        {item.eloRange} ELO
+                                      </span>
+                                      <span>•</span>
+                                      <span>{item.playStyle}</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </button>

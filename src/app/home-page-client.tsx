@@ -22,6 +22,7 @@ import {
   History,
   Medal,
   PartyPopper,
+  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -213,6 +214,7 @@ export function HomePageClient({
   >(null);
   const [activeGameSpecificBotDifficulty, setActiveGameSpecificBotDifficulty] =
     useState<string | null>(null);
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
 
   // Track mouse position for spotlight effect
   useEffect(() => {
@@ -306,15 +308,20 @@ export function HomePageClient({
     targetType: "difficulty" | "botChallenge",
     targetName?: string
   ) => {
+    if (navigatingTo === targetName || navigatingTo === targetHref) {
+      e.preventDefault();
+      return;
+    }
+
     if (isGameActive) {
       let shouldShowDialog = false;
 
       if (targetType === "difficulty") {
-        // Only show dialog if clicking a *different* difficulty
         if (activeGameDifficulty?.toLowerCase() !== targetName?.toLowerCase()) {
           shouldShowDialog = true;
         }
       } else if (targetType === "botChallenge") {
+        // Check if navigating to the *current specific active game*. If so, no dialog.
         if (
           nextBot &&
           activeGameSpecificBotId === nextBot.id &&
@@ -331,9 +338,11 @@ export function HomePageClient({
         setPendingNavigationTarget({ href: targetHref, name: targetName });
         setShowGameInProgressDialog(true);
       } else {
+        if (targetName) setNavigatingTo(targetName);
         router.push(targetHref);
       }
     } else {
+      if (targetName) setNavigatingTo(targetName);
       router.push(targetHref); // Proceed with navigation if no active game
     }
   };
@@ -346,6 +355,9 @@ export function HomePageClient({
       setActiveGameDifficulty(null);
       setActiveGameSpecificBotId(null);
       setActiveGameSpecificBotDifficulty(null);
+      if (pendingNavigationTarget.name) {
+        setNavigatingTo(pendingNavigationTarget.name);
+      }
       router.push(pendingNavigationTarget.href);
     }
     setShowGameInProgressDialog(false);
@@ -560,12 +572,21 @@ export function HomePageClient({
 
                     {/* Play button for expanded mobile view */}
                     <div className="flex justify-end mt-4">
-                      <div
-                        className={`${level.textColor} flex items-center gap-1 text-sm font-medium`}
-                      >
-                        Play now{" "}
-                        <ChevronRight className="h-4 w-4 animate-bounceX" />
-                      </div>
+                      {navigatingTo === level.name ? (
+                        <div
+                          className={`${level.textColor} flex items-center gap-1 text-sm font-medium`}
+                        >
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading...
+                        </div>
+                      ) : (
+                        <div
+                          className={`${level.textColor} flex items-center gap-1 text-sm font-medium`}
+                        >
+                          Play now{" "}
+                          <ChevronRight className="h-4 w-4 animate-bounceX" />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -604,20 +625,35 @@ export function HomePageClient({
                           {level.eloRange}
                         </span>
                       </span>
-                      <div
-                        className={`sm:hidden ${level.textColor} flex items-center gap-1 text-xs font-medium`}
-                      >
-                        Play{" "}
-                        <ChevronRight className="h-3 w-3 animate-bounceX" />
-                      </div>
+                      {navigatingTo === level.name ? (
+                        <Loader2
+                          className={`h-3 w-3 animate-spin ${level.textColor}`}
+                        />
+                      ) : (
+                        <div
+                          className={`sm:hidden ${level.textColor} flex items-center gap-1 text-xs font-medium`}
+                        >
+                          Play{" "}
+                          <ChevronRight className="h-3 w-3 animate-bounceX" />
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div
                     className={`mt-auto pt-3 self-end ${level.textColor} sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1 text-sm font-medium transform sm:group-hover:translate-x-0 sm:-translate-x-2`}
                   >
-                    Play now{" "}
-                    <ChevronRight className="h-4 w-4 animate-bounceX" />
+                    {navigatingTo === level.name ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Play now{" "}
+                        <ChevronRight className="h-4 w-4 animate-bounceX" />
+                      </>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -786,7 +822,11 @@ export function HomePageClient({
                               </span>
                             </div>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          {navigatingTo === nextBot.name ? (
+                            <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                          ) : (
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          )}
                         </div>
                       </Link>
                     </>

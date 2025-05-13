@@ -36,6 +36,7 @@ import {
   Brain,
   Trash2,
   Flag,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -105,9 +106,10 @@ export const HistoryPageClient = ({
 
   // State for new game confirmation dialog
   const [showStartNewGameDialog, setShowStartNewGameDialog] = useState(false);
-  const [pendingNavigationHref, setPendingNavigationHref] = useState<
-    string | null
-  >(null);
+  const [pendingNavigationTarget, setPendingNavigationTarget] = useState<{
+    href: string;
+    botId: number;
+  } | null>(null);
 
   // State for tracking the specific active bot game
   const [activeBotGameId, setActiveBotGameId] = useState<
@@ -117,6 +119,11 @@ export const HistoryPageClient = ({
     string | null
   >(null);
   const [isAnyGameActive, setIsAnyGameActive] = useState<boolean>(false);
+
+  // State for spinner on bot cards
+  const [navigatingToBotId, setNavigatingToBotId] = useState<number | null>(
+    null
+  );
 
   // Get the default tab from URL parameters
   const [defaultTab, setDefaultTab] = useState("history");
@@ -260,25 +267,27 @@ export const HistoryPageClient = ({
         router.push(href);
       } else {
         e.preventDefault();
-        setPendingNavigationHref(href);
+        setPendingNavigationTarget({ href, botId: clickedBotId });
         setShowStartNewGameDialog(true);
       }
     } else {
+      setNavigatingToBotId(clickedBotId);
       router.push(href);
     }
   };
 
   const handleConfirmStartNewGame = () => {
-    if (pendingNavigationHref) {
+    if (pendingNavigationTarget) {
       localStorage.removeItem(GAME_STATE_STORAGE_KEY);
       localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
       setIsAnyGameActive(false);
       setActiveBotGameId(null);
       setActiveBotGameDifficulty(null);
-      router.push(pendingNavigationHref);
+      setNavigatingToBotId(pendingNavigationTarget.botId);
+      router.push(pendingNavigationTarget.href);
     }
     setShowStartNewGameDialog(false);
-    setPendingNavigationHref(null);
+    setPendingNavigationTarget(null);
   };
 
   const handleClearHistory = async () => {
@@ -860,7 +869,9 @@ export const HistoryPageClient = ({
                                           {bot.description}
                                         </div>
                                       </div>
-                                      {isBotBeaten(bot.name) ? (
+                                      {navigatingToBotId === bot.id ? (
+                                        <Loader2 className="h-6 w-6 animate-spin text-primary flex-shrink-0" />
+                                      ) : isBotBeaten(bot.name) ? (
                                         <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
                                       ) : !isCurrentActiveBot ? (
                                         <div className="h-6 w-6 rounded-full border-2 border-dashed border-muted-foreground/50 flex-shrink-0" />
@@ -927,7 +938,7 @@ export const HistoryPageClient = ({
             <AlertDialogCancel
               onClick={() => {
                 setShowStartNewGameDialog(false);
-                setPendingNavigationHref(null);
+                setPendingNavigationTarget(null);
               }}
             >
               Cancel
