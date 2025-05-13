@@ -182,6 +182,9 @@ interface HomePageClientProps {
   allBotsBeaten: boolean;
 }
 
+// Constant for game state in localStorage
+const GAME_STATE_STORAGE_KEY = "chess-game-state";
+
 export function HomePageClient({
   session,
   gameStats,
@@ -189,16 +192,21 @@ export function HomePageClient({
   allBotsBeaten,
 }: HomePageClientProps) {
   const router = useRouter();
-  const [showDialog, setShowDialog] = useState(false);
-  const [pendingDifficulty, setPendingDifficulty] = useState<
-    (typeof difficultyLevels)[0] | null
-  >(null);
+  const [showGameInProgressDialog, setShowGameInProgressDialog] =
+    useState(false);
+  const [pendingNavigationTarget, setPendingNavigationTarget] = useState<{
+    href: string;
+    name?: string;
+  } | null>(null);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>(
     {}
   );
-  const [savedDifficulty, setSavedDifficulty] = useState<string | null>(null);
+  const [isGameActive, setIsGameActive] = useState<boolean>(false);
+  const [activeGameDifficulty, setActiveGameDifficulty] = useState<
+    string | null
+  >(null);
 
   // Track mouse position for spotlight effect
   useEffect(() => {
@@ -214,44 +222,49 @@ export function HomePageClient({
 
   // Check for saved game on mount (client-side only)
   useEffect(() => {
-    const getSavedGameDifficulty = () => {
-      if (typeof window === "undefined") return null;
-
-      const saved = localStorage.getItem("chess-game-state");
+    const checkActiveGame = () => {
+      if (typeof window === "undefined") return false;
+      const saved = localStorage.getItem(GAME_STATE_STORAGE_KEY);
       if (saved) {
         try {
-          const state = JSON.parse(saved);
-          return state.fen ? state.difficulty : null;
+          const gameState = JSON.parse(saved);
+          setActiveGameDifficulty(gameState.difficulty || null);
+          return true;
         } catch {
-          return null;
+          localStorage.removeItem(GAME_STATE_STORAGE_KEY); // Clear corrupted data
+          setActiveGameDifficulty(null);
+          return false;
         }
       }
-      return null;
+      setActiveGameDifficulty(null);
+      return false;
     };
-    setSavedDifficulty(getSavedGameDifficulty());
+    setIsGameActive(checkActiveGame());
   }, []);
 
-  const handleDifficultyClick = (
+  const handleNavigationAttempt = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    level: (typeof difficultyLevels)[0]
+    targetHref: string,
+    targetName?: string
   ) => {
-    // If there's a saved game and user is clicking a different difficulty
-    if (
-      savedDifficulty &&
-      savedDifficulty.toLowerCase() !== level.name.toLowerCase()
-    ) {
+    if (isGameActive) {
       e.preventDefault();
-      setPendingDifficulty(level);
-      setShowDialog(true);
+      setPendingNavigationTarget({ href: targetHref, name: targetName });
+      setShowGameInProgressDialog(true);
+    } else {
+      router.push(targetHref); // Proceed with navigation if no active game
     }
   };
 
-  const handleConfirm = () => {
-    if (pendingDifficulty) {
-      localStorage.removeItem("chess-game-state");
-      router.push(pendingDifficulty.href);
+  const handleConfirmNavigation = () => {
+    if (pendingNavigationTarget) {
+      localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+      setIsGameActive(false);
+      setActiveGameDifficulty(null);
+      router.push(pendingNavigationTarget.href);
     }
-    setShowDialog(false);
+    setShowGameInProgressDialog(false);
+    setPendingNavigationTarget(null);
   };
 
   const toggleCardExpansion = (e: React.MouseEvent, levelName: string) => {
@@ -322,7 +335,9 @@ export function HomePageClient({
               <Link
                 key={level.name}
                 href={level.href}
-                onClick={(e) => handleDifficultyClick(e, level)}
+                onClick={(e) =>
+                  handleNavigationAttempt(e, level.href, level.name)
+                }
                 className={`relative p-5 rounded-xl border border-border/50 bg-gradient-to-br ${level.gradient} ${level.hoverGradient} backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group overflow-hidden animate-fadeIn flex flex-col`}
                 onMouseEnter={() => {
                   setHoveredCard(level.name);
@@ -350,12 +365,13 @@ export function HomePageClient({
                 )}
 
                 {/* Saved game badge - only visible on sm and larger screens */}
-                {savedDifficulty?.toLowerCase() ===
-                  level.name.toLowerCase() && (
-                  <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse hidden sm:block">
-                    Saved Game
-                  </div>
-                )}
+                {isGameActive &&
+                  activeGameDifficulty?.toLowerCase() ===
+                    level.name.toLowerCase() && (
+                    <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse hidden sm:block">
+                      In Progress
+                    </div>
+                  )}
 
                 {/* Card content */}
                 <div className="flex flex-col h-full z-10 relative">
@@ -373,26 +389,29 @@ export function HomePageClient({
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-bold">{level.name}</h2>
                         {/* Save icon for mobile */}
-                        {savedDifficulty?.toLowerCase() ===
-                          level.name.toLowerCase() && (
-                          <div
-                            className="relative sm:hidden"
-                            title="Saved Game"
-                          >
+                        {isGameActive &&
+                          activeGameDifficulty?.toLowerCase() ===
+                            level.name.toLowerCase() && (
                             <div
-                              className={`${
-                                level.color.split(" ")[0]
-                              } px-2 py-1 rounded-full animate-pulse flex items-center gap-1.5`}
+                              className="relative sm:hidden"
+                              title="Game In Progress"
                             >
-                              <Save className={`h-4 w-4 ${level.textColor}`} />
-                              <span
-                                className={`text-xs font-medium ${level.textColor}`}
+                              <div
+                                className={`${
+                                  level.color.split(" ")[0]
+                                } px-2 py-1 rounded-full animate-pulse flex items-center gap-1.5`}
                               >
-                                Saved
-                              </span>
+                                <Save
+                                  className={`h-4 w-4 ${level.textColor}`}
+                                />
+                                <span
+                                  className={`text-xs font-medium ${level.textColor}`}
+                                >
+                                  In Progress
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                       <div className="flex items-center gap-1.5 mt-1">
                         <level.styleIcon
@@ -602,6 +621,15 @@ export function HomePageClient({
                         href={`/play/${nextBot.difficulty.toLowerCase()}/${
                           nextBot.id
                         }`}
+                        onClick={(e) =>
+                          handleNavigationAttempt(
+                            e,
+                            `/play/${nextBot.difficulty.toLowerCase()}/${
+                              nextBot.id
+                            }`,
+                            `Challenge ${nextBot.name}`
+                          )
+                        }
                         className="block p-4 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
@@ -704,20 +732,31 @@ export function HomePageClient({
         </div>
       </div>
 
-      <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+      <AlertDialog
+        open={showGameInProgressDialog}
+        onOpenChange={setShowGameInProgressDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center">
-              Start New Game?
+              Game In Progress
             </AlertDialogTitle>
             <AlertDialogDescription>
-              You have a saved game in progress. Starting a new game will lose
-              your current progress. Are you sure you want to continue?
+              You have a game in progress. Starting a new game or changing
+              difficulty will erase your current game. Are you sure you want to
+              continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm}>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowGameInProgressDialog(false);
+                setPendingNavigationTarget(null);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmNavigation}>
               Continue
             </AlertDialogAction>
           </AlertDialogFooter>

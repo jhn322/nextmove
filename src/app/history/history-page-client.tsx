@@ -80,6 +80,9 @@ interface HistoryPageClientProps {
   serverMessage?: string;
 }
 
+// Constant for game state in localStorage
+const GAME_STATE_STORAGE_KEY = "chess-game-state";
+
 export const HistoryPageClient = ({
   session,
   initialGameHistory,
@@ -97,6 +100,12 @@ export const HistoryPageClient = ({
   const [error, setError] = useState<string | null>(initialError || null);
   const [isClearing, setIsClearing] = useState(false);
   const router = useRouter();
+
+  // State for new game confirmation dialog
+  const [showStartNewGameDialog, setShowStartNewGameDialog] = useState(false);
+  const [pendingNavigationHref, setPendingNavigationHref] = useState<
+    string | null
+  >(null);
 
   // Get the default tab from URL parameters
   const [defaultTab, setDefaultTab] = useState("history");
@@ -162,6 +171,35 @@ export const HistoryPageClient = ({
   const isBotBeaten = (botName: string) => {
     if (!gameStats) return false;
     return gameStats.beatenBots.some((bot) => bot.name === botName);
+  };
+
+  const isGameActiveFromStorage = (): boolean => {
+    if (typeof window === "undefined") return false;
+    const gameState = localStorage.getItem(GAME_STATE_STORAGE_KEY);
+    // Consider game active if any state exists, as starting a new one would overwrite it.
+    return gameState !== null;
+  };
+
+  const handleBotCardClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    if (isGameActiveFromStorage()) {
+      e.preventDefault();
+      setPendingNavigationHref(href);
+      setShowStartNewGameDialog(true);
+    } else {
+      router.push(href); // Or allow default Link behavior
+    }
+  };
+
+  const handleConfirmStartNewGame = () => {
+    if (pendingNavigationHref) {
+      localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+      router.push(pendingNavigationHref);
+    }
+    setShowStartNewGameDialog(false);
+    setPendingNavigationHref(null);
   };
 
   const handleClearHistory = async () => {
@@ -694,6 +732,12 @@ export const HistoryPageClient = ({
                           <Link
                             key={bot.name}
                             href={`/play/${difficulty}/${bot.id}`}
+                            onClick={(e) =>
+                              handleBotCardClick(
+                                e,
+                                `/play/${difficulty}/${bot.id}`
+                              )
+                            }
                             className={cn(
                               "block",
                               isBotBeaten(bot.name)
@@ -765,6 +809,34 @@ export const HistoryPageClient = ({
       </Tabs>
 
       {renderClearHistoryButton()}
+
+      <AlertDialog
+        open={showStartNewGameDialog}
+        onOpenChange={setShowStartNewGameDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start New Game?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have a game in progress. Starting a new game against this bot
+              will erase your current game progress. Are you sure?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowStartNewGameDialog(false);
+                setPendingNavigationHref(null);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmStartNewGame}>
+              Start New Game
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
