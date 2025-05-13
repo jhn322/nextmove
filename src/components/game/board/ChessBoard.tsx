@@ -22,6 +22,10 @@ import PreMadeMove from "./PreMadeMove";
 import { useAuth } from "@/context/auth-context";
 import DraggablePiece from "./DraggablePiece";
 import DroppableSquare from "./DroppableSquare";
+import { Chess } from "chess.js";
+
+const GAME_OVER_MODAL_SHOWN_KEY = "chess_gameOverModalShown";
+const GAME_OVER_FEN_KEY = "chess_gameOverFen";
 
 interface ChessBoardProps {
   difficulty: string;
@@ -164,75 +168,114 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
 
       localStorage.setItem("selectedBot", JSON.stringify(botWithoutDifficulty));
     }
-  }, [initialBot, difficulty, game, playerColor]);
+  }, [
+    initialBot,
+    difficulty,
+    game,
+    playerColor,
+    setBoard,
+    setHistory,
+    setSelectedBot,
+    setShowBotSelection,
+    setGameStarted,
+  ]);
 
+  // Handles initial game loading from localStorage
   useEffect(() => {
-    // Load selected bot
-    const savedBot = localStorage.getItem("selectedBot");
-    if (savedBot) {
-      const parsedBot = JSON.parse(savedBot);
-      // Check if the saved bot is from the current difficulty by comparing with available bots
-      const isFromCurrentDifficulty = BOTS_BY_DIFFICULTY[difficulty].some(
-        (bot) => bot.name === parsedBot.name
-      );
-      // Only use the saved bot if it's from the current difficulty
-      setSelectedBot(
-        isFromCurrentDifficulty ? parsedBot : BOTS_BY_DIFFICULTY[difficulty][0]
-      );
-    } else {
-      // If there's no saved bot, use the first bot from the difficulty category
-      const firstBot = BOTS_BY_DIFFICULTY[difficulty][0];
-      setSelectedBot(firstBot);
-    }
+    const savedStateJSON = localStorage.getItem(STORAGE_KEY);
+    const gameOverModalWasShownPreviously =
+      localStorage.getItem(GAME_OVER_MODAL_SHOWN_KEY) === "true";
+    const lastKnownGameOverFen = localStorage.getItem(GAME_OVER_FEN_KEY);
 
-    // Check if there's a saved game state
-    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (savedStateJSON) {
+      const savedState = JSON.parse(savedStateJSON);
+      let gameStillOverAfterLoad = false;
+      let currentFenForCheck = "";
 
-    if (
-      savedState?.fen &&
-      (savedState.fen !== DEFAULT_STATE.fen ||
-        savedState.playerColor === "b") &&
-      (savedState.lastMove !== null ||
-        (savedState.history && savedState.history.length > 1))
-    ) {
-      setShowBotSelection(false);
-      setGameStarted(true);
-
-      // Load the saved FEN which might be modified for black players
       if (savedState.fen) {
-        game.load(savedState.fen);
-        setBoard(game.board());
+        currentFenForCheck = savedState.fen;
+        const tempGame = new Chess(savedState.fen);
+        if (tempGame.isGameOver() || savedState.isResigned === true) {
+          gameStillOverAfterLoad = true;
+        }
       }
 
-      // Set player color
-      if (savedState.playerColor) {
-        setPlayerColor(savedState.playerColor);
+      if (
+        gameStillOverAfterLoad &&
+        gameOverModalWasShownPreviously &&
+        currentFenForCheck === lastKnownGameOverFen
+      ) {
+        // Call the existing handleGameReset to ensure all state is cleared consistently
+        handleGameReset(false);
+
+        setShowBotSelection(true); // Show bot selection after reset
+        // Ensure playerColor is preserved if it was part of savedState, handleGameReset might reset it based on default
+        if (savedState.playerColor) setPlayerColor(savedState.playerColor);
+        // game.reset() inside handleGameReset handles board, if playerColor was 'b', it needs to be set again for black's first move if desired
+        if (playerColor === "b" && savedState.playerColor === "b") {
+          game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+          setBoard(game.board()); // Update board after specific load for black
+        }
+
+        return;
+      } else {
+        // Load game normally (either ongoing, or game over but modal not yet processed for this load)
+        if (savedState.fen) {
+          game.load(savedState.fen);
+          if (savedState.isResigned === true) game.isResigned = true;
+          setBoard(game.board());
+        }
+        if (savedState.playerColor) setPlayerColor(savedState.playerColor);
+        if (savedState.history) setHistory(savedState.history);
+        if (savedState.currentMove) setCurrentMove(savedState.currentMove);
+        if (savedState.lastMove) setLastMove(savedState.lastMove);
+        if (savedState.pieceSet) setPieceSet(savedState.pieceSet);
+
+        setGameStarted(
+          savedState.gameStarted !== undefined ? savedState.gameStarted : true
+        );
+
+        // If a game is loaded (ongoing or game_over_not_yet_processed), hide bot selection.
+        if (savedState.fen) {
+          setShowBotSelection(false);
+        }
       }
     } else {
-      setShowBotSelection(true);
-      setGameStarted(false);
-
-      // If there's a saved state but no moves have been made, remove it
-      if (
-        savedState &&
-        (!savedState.lastMove ||
-          (savedState.history && savedState.history.length <= 1))
-      ) {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-
-      // Initialize the game based on player color
-      if (savedState?.playerColor === "b") {
-        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-        setBoard(game.board());
-        setPlayerColor("b");
+      if (!initialBot) {
+        // Only show bot selection if no initialBot is about to start a game
+        setShowBotSelection(true);
+        setGameStarted(false);
+        if (playerColor === "b") {
+          game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+          setBoard(game.board());
+        }
       }
     }
 
-    if (savedState?.pieceSet) {
-      setPieceSet(savedState.pieceSet);
+    // Load selected bot preference (this should run if no initialBot is provided, or after initialBot is processed)
+    if (!initialBot) {
+      const savedBotJson = localStorage.getItem("selectedBot");
+      if (savedBotJson) {
+        const parsedBot = JSON.parse(savedBotJson);
+        const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
+        const isFromCurrentDifficulty = currentDifficultyBots.some(
+          (bot: Bot) => bot.id === parsedBot.id
+        );
+        setSelectedBot(
+          isFromCurrentDifficulty
+            ? parsedBot
+            : currentDifficultyBots.length > 0
+              ? currentDifficultyBots[0]
+              : null
+        );
+      } else {
+        const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
+        if (currentDifficultyBots.length > 0) {
+          setSelectedBot(currentDifficultyBots[0]);
+        }
+      }
     }
-  }, [difficulty, game]);
+  }, [difficulty, initialBot]);
 
   const {
     showDifficultyDialog,
@@ -248,14 +291,13 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setShowDifficultyDialog,
     setShowColorDialog,
     showVictoryModal,
-    isResignationModal,
     handleCancelDialog,
     handleConfirmResign,
     setShowVictoryModal,
-    setIsResignationModal,
     showNewBotDialog,
     setShowNewBotDialog,
     handleNewBotDialog,
+    isResignationModal,
   } = useGameDialogs();
 
   const {
@@ -295,9 +337,13 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       const hasMovesBeenMade =
         lastMove !== null || (history && history.length > 1);
 
+      // Define these variables to use in dependencies and for saving
+      const currentFen = game.fen();
+      const currentIsResigned = game.isResigned === true;
+
       if (hasMovesBeenMade) {
         const gameState = {
-          fen: game.fen(),
+          fen: currentFen, // Use derived currentFen
           playerColor,
           gameTime,
           whiteTime,
@@ -309,23 +355,25 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
           lastMove,
           pieceSet,
           capturedPieces,
+          isResigned: currentIsResigned, // Use derived currentIsResigned
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
       }
     }
   }, [
-    game,
+    currentMove,
+    difficulty,
+    gameStarted,
+    history,
+    lastMove,
+    pieceSet,
     playerColor,
     gameTime,
     whiteTime,
     blackTime,
-    difficulty,
-    gameStarted,
-    history,
-    currentMove,
-    lastMove,
-    pieceSet,
     capturedPieces,
+    game.fen(),
+    game.isResigned,
   ]);
 
   // Save state when component unmounts
@@ -485,6 +533,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setPreMadeMoveHandler(() => () => false);
     setIsPreMadePossibleMove(() => () => false);
 
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(GAME_OVER_MODAL_SHOWN_KEY);
+    localStorage.removeItem(GAME_OVER_FEN_KEY);
+
     // Save state with preserved player color
     const currentState = {
       ...DEFAULT_STATE,
@@ -569,17 +621,32 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setPendingColor(null);
   };
 
-  // Add useEffect to show modal on game over
+  // Compute game status for effects
+  const isGameOverCurrent = game.isGameOver() || game.isResigned === true;
+
+  // Add useEffect to show modal on game over and set localStorage flags
   useEffect(() => {
-    if (game.isGameOver() && gameStarted) {
-      setShowVictoryModal(true);
-      setIsResignationModal(false);
+    // Condition for showing modal: game is over, game has started, and it's not an active resignation confirmation step.
+    if (isGameOverCurrent && gameStarted && !isResignationModal) {
+      const currentFen = game.fen();
+      const modalAlreadyProcessedForThisFen =
+        localStorage.getItem(GAME_OVER_MODAL_SHOWN_KEY) === "true" &&
+        localStorage.getItem(GAME_OVER_FEN_KEY) === currentFen;
+
+      if (!modalAlreadyProcessedForThisFen) {
+        setShowVictoryModal(true); // Show the modal
+        localStorage.setItem(GAME_OVER_MODAL_SHOWN_KEY, "true");
+        localStorage.setItem(GAME_OVER_FEN_KEY, currentFen);
+        playSound("game-end");
+      }
     }
   }, [
-    game.isGameOver(),
+    isGameOverCurrent,
     gameStarted,
+    isResignationModal,
+    game,
     setShowVictoryModal,
-    setIsResignationModal,
+    playSound,
   ]);
 
   const handleNewBot = () => {
@@ -805,8 +872,67 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   };
 
+  // ** TEMPORARY TEST BUTTON - HIDE LATER
+  const handleForceWinForTesting = () => {
+    // Player is white for this specific test scenario
+
+    game.reset();
+    // Black King a8, White Queen h7, White King a6. White to move. Qb7# is mate.
+    const testFEN = "k7/7Q/K7/8/8/8/8/8 w - - 0 1";
+    console.log("[ForceWinTest] FEN before move:", testFEN);
+    game.load(testFEN);
+    setBoard(game.board());
+
+    // Make the winning move
+    const winningMove = game.move({ from: "h7", to: "b7" }); // Qb7#
+
+    if (winningMove) {
+      setLastMove({ from: winningMove.from, to: winningMove.to });
+      const newFen = game.fen();
+      setHistory(() => [
+        { fen: testFEN, lastMove: null },
+        {
+          fen: newFen,
+          lastMove: { from: winningMove.from, to: winningMove.to },
+        },
+      ]);
+      setCurrentMove(2);
+      setBoard(game.board());
+
+      if (!gameStarted) {
+        setGameStarted(true);
+      }
+      console.log("Forced win: Checkmate?", game.isCheckmate());
+    } else {
+      console.error("Failed to make the forced winning move for testing.");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full">
+      {/* TEMPORARY TEST BUTTON - HIDE LATER */}
+      <button
+        onClick={handleForceWinForTesting}
+        style={{
+          backgroundColor: "rgba(220, 38, 38, 0.8)",
+          color: "white",
+          padding: "8px 12px",
+          margin: "10px",
+          borderRadius: "6px",
+          border: "1px solid rgba(153, 27, 27, 0.8)",
+          cursor: "pointer",
+          zIndex: 1000,
+          position: "absolute",
+          top: "5px",
+          right: "5px",
+          fontSize: "0.8rem",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+        }}
+      >
+        EZ (Test)
+      </button>
+      {/* END TEMPORARY TEST BUTTON */}
+
       <main className="flex flex-col w-full items-center justify-start">
         <PreMadeMove
           game={game}
@@ -915,8 +1041,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                       const coordinate = shouldShowRank
                         ? `${8 - actualRowIndex}`
                         : shouldShowFile
-                        ? `${"abcdefgh"[actualColIndex]}`
-                        : undefined;
+                          ? `${"abcdefgh"[actualColIndex]}`
+                          : undefined;
 
                       // Determine if the piece can be dragged
                       const canDragPiece =
@@ -1035,14 +1161,14 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         onNewBot={handleNewBot}
         game={game}
         difficulty={difficulty}
-        isResignation={isResignationModal}
-        onConfirmResign={handleConfirmResign}
         playerColor={playerColor}
         handleNewBotDialog={handleNewBotDialog}
         selectedBot={selectedBot}
         playerName={playerName}
         gameTime={gameTime}
         movesCount={history.length - 1}
+        isResignation={isResignationModal}
+        onConfirmResign={handleConfirmResign}
       />
 
       <GameDialogs
