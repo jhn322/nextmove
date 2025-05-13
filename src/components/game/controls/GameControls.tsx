@@ -156,6 +156,7 @@ const GameControls = ({
   isCalculatingHint,
   difficulty,
   selectedBot,
+  onNewBot,
 }: GameControlsProps) => {
   const router = useRouter();
   const currentTurn = gameStatus.toLowerCase().includes("white") ? "w" : "b";
@@ -216,6 +217,8 @@ const GameControls = ({
   const handlePlayNextBot = () => {
     game.reset();
     game.isResigned = false;
+
+    onNewBot();
 
     const nextBotInfo = findNextHarderBot();
     if (nextBotInfo) {

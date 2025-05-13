@@ -361,6 +361,8 @@ const VictoryModal = ({
     game.reset();
     game.isResigned = false;
 
+    onNewBot();
+
     onClose();
 
     const nextBotInfo = findNextHarderBot();
