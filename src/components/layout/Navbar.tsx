@@ -89,13 +89,13 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlayOpen, setIsPlayOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [showSavedGameDialog, setShowSavedGameDialog] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
-    null
-  );
-  const [savedGameDifficulty, setSavedGameDifficulty] = useState<string | null>(
-    null
-  );
+  const [showGameInProgressDialog, setShowGameInProgressDialog] =
+    useState(false);
+  const [pendingNavigationHref, setPendingNavigationHref] = useState<
+    string | null
+  >(null);
+  const [activeGameDifficultyInNavbar, setActiveGameDifficultyInNavbar] =
+    useState<string | null>(null);
   const { setTheme, theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
@@ -130,13 +130,15 @@ const Navbar = () => {
           localStorage.getItem(STORAGE_KEY) || "null"
         );
         if (savedState?.fen && savedState.fen !== DEFAULT_STATE.fen) {
-          setSavedGameDifficulty(savedState.difficulty);
+          setActiveGameDifficultyInNavbar(
+            savedState.difficulty?.toLowerCase() || null
+          );
         } else {
-          setSavedGameDifficulty(null);
+          setActiveGameDifficultyInNavbar(null);
         }
       } catch (error) {
-        console.error("Error checking saved game:", error);
-        setSavedGameDifficulty(null);
+        console.error("Error checking saved game in Navbar:", error);
+        setActiveGameDifficultyInNavbar(null);
       }
     };
 
@@ -239,26 +241,28 @@ const Navbar = () => {
     setIsOpen(false); // Close mobile menu if open
   };
 
-  const handlePlayNavigation = (href: string, difficulty: string) => {
-    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    const hasSavedGame =
-      savedState?.fen && savedState.fen !== DEFAULT_STATE.fen;
-
-    if (hasSavedGame && savedState.difficulty !== difficulty) {
-      setPendingNavigation(href);
-      setShowSavedGameDialog(true);
+  const handlePlayMenuItemClick = (href: string, itemDifficulty: string) => {
+    const lowercasedItemDifficulty = itemDifficulty.toLowerCase();
+    if (
+      activeGameDifficultyInNavbar &&
+      activeGameDifficultyInNavbar !== lowercasedItemDifficulty
+    ) {
+      setPendingNavigationHref(href);
+      setShowGameInProgressDialog(true);
     } else {
       router.push(href);
     }
+    if (isOpen) setIsOpen(false);
   };
 
-  const handleConfirmNavigation = () => {
-    if (pendingNavigation) {
+  const handleConfirmNewGameNavigation = () => {
+    if (pendingNavigationHref) {
       localStorage.removeItem(STORAGE_KEY);
-      router.push(pendingNavigation);
+      setActiveGameDifficultyInNavbar(null);
+      router.push(pendingNavigationHref);
     }
-    setShowSavedGameDialog(false);
-    setPendingNavigation(null);
+    setShowGameInProgressDialog(false);
+    setPendingNavigationHref(null);
   };
 
   const themeCategories = [
@@ -370,10 +374,7 @@ const Navbar = () => {
                           <button
                             key={item.href}
                             onClick={() =>
-                              handlePlayNavigation(
-                                item.href,
-                                item.title.toLowerCase()
-                              )
+                              handlePlayMenuItemClick(item.href, item.title)
                             }
                             className={cn(
                               "relative flex flex-col space-y-2 rounded-xl p-3 text-left transition-colors hover:bg-accent/50",
@@ -398,7 +399,7 @@ const Navbar = () => {
                                   <span className="font-medium leading-none">
                                     {item.title}
                                   </span>
-                                  {savedGameDifficulty?.toLowerCase() ===
+                                  {activeGameDifficultyInNavbar ===
                                     item.title.toLowerCase() && (
                                     <Badge
                                       variant="secondary"
@@ -691,10 +692,7 @@ const Navbar = () => {
                             <button
                               key={item.href}
                               onClick={() => {
-                                handlePlayNavigation(
-                                  item.href,
-                                  item.title.toLowerCase()
-                                );
+                                handlePlayMenuItemClick(item.href, item.title);
                                 setIsOpen(false);
                               }}
                               className={cn(
@@ -720,7 +718,7 @@ const Navbar = () => {
                                     <span className="font-medium">
                                       {item.title}
                                     </span>
-                                    {savedGameDifficulty?.toLowerCase() ===
+                                    {activeGameDifficultyInNavbar ===
                                       item.title.toLowerCase() && (
                                       <Badge
                                         variant="secondary"
@@ -902,29 +900,34 @@ const Navbar = () => {
 
       {/* AlertDialog for saved game warning */}
       <AlertDialog
-        open={showSavedGameDialog}
-        onOpenChange={setShowSavedGameDialog}
+        open={showGameInProgressDialog}
+        onOpenChange={setShowGameInProgressDialog}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Saved Game Found</AlertDialogTitle>
+            <AlertDialogTitle>Game In Progress</AlertDialogTitle>
             <AlertDialogDescription>
-              You have a saved game in progress at {savedGameDifficulty}{" "}
+              You have a game in progress with{" "}
+              {activeGameDifficultyInNavbar && (
+                <strong className="capitalize">
+                  {activeGameDifficultyInNavbar}
+                </strong>
+              )}{" "}
               difficulty. Starting a new game at a different difficulty will
-              delete your saved progress.
+              erase your current game progress. Are you sure?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={() => {
-                setShowSavedGameDialog(false);
-                setPendingNavigation(null);
+                setShowGameInProgressDialog(false);
+                setPendingNavigationHref(null);
               }}
             >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmNavigation}>
-              Continue
+            <AlertDialogAction onClick={handleConfirmNewGameNavigation}>
+              Continue & Start New
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

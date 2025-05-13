@@ -45,6 +45,7 @@ import { Session } from "next-auth";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/constants/site";
+import { DEFAULT_STATE } from "@/config/game";
 
 // Copied from page.tsx, should be defined centrally if used elsewhere
 const difficultyLevels = [
@@ -207,6 +208,11 @@ export function HomePageClient({
   const [activeGameDifficulty, setActiveGameDifficulty] = useState<
     string | null
   >(null);
+  const [activeGameSpecificBotId, setActiveGameSpecificBotId] = useState<
+    string | number | null
+  >(null);
+  const [activeGameSpecificBotDifficulty, setActiveGameSpecificBotDifficulty] =
+    useState<string | null>(null);
 
   // Track mouse position for spotlight effect
   useEffect(() => {
@@ -224,19 +230,71 @@ export function HomePageClient({
   useEffect(() => {
     const checkActiveGame = () => {
       if (typeof window === "undefined") return false;
-      const saved = localStorage.getItem(GAME_STATE_STORAGE_KEY);
-      if (saved) {
+      const savedGameState = localStorage.getItem(GAME_STATE_STORAGE_KEY);
+      const savedSelectedBot = localStorage.getItem("selectedBot");
+
+      if (savedGameState) {
         try {
-          const gameState = JSON.parse(saved);
-          setActiveGameDifficulty(gameState.difficulty || null);
-          return true;
-        } catch {
-          localStorage.removeItem(GAME_STATE_STORAGE_KEY); // Clear corrupted data
-          setActiveGameDifficulty(null);
-          return false;
+          const gameState = JSON.parse(savedGameState);
+          const isActive = gameState.fen && gameState.fen !== DEFAULT_STATE.fen; // More robust check for active
+
+          if (isActive) {
+            setActiveGameDifficulty(
+              gameState.difficulty?.toLowerCase() || null
+            );
+
+            if (savedSelectedBot) {
+              try {
+                const selectedBot: Bot & { difficulty?: string } =
+                  JSON.parse(savedSelectedBot);
+                // Ensure the selectedBot's context matches the active game's difficulty
+                let botContextualDifficulty =
+                  gameState.difficulty?.toLowerCase();
+
+                // If selectedBot itself has a difficulty field, prefer it for more direct match
+                if (selectedBot.difficulty) {
+                  botContextualDifficulty =
+                    selectedBot.difficulty.toLowerCase();
+                }
+
+                if (
+                  botContextualDifficulty ===
+                  gameState.difficulty?.toLowerCase()
+                ) {
+                  setActiveGameSpecificBotId(selectedBot.id);
+                  setActiveGameSpecificBotDifficulty(
+                    gameState.difficulty?.toLowerCase() || null
+                  );
+                } else {
+                  // Mismatch, so no specific bot game is active despite selectedBot existing
+                  setActiveGameSpecificBotId(null);
+                  setActiveGameSpecificBotDifficulty(null);
+                }
+              } catch (e) {
+                console.error("Error parsing selectedBot:", e);
+                setActiveGameSpecificBotId(null);
+                setActiveGameSpecificBotDifficulty(null);
+              }
+            } else {
+              setActiveGameSpecificBotId(null);
+              setActiveGameSpecificBotDifficulty(null);
+            }
+            return true;
+          } else {
+            // Game state exists but isn't truly active
+            localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+            localStorage.removeItem("selectedBot");
+          }
+        } catch (e) {
+          console.error("Error parsing gameState:", e);
+          localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+          localStorage.removeItem("selectedBot");
         }
       }
+      // Reset all if no active game state
       setActiveGameDifficulty(null);
+      setActiveGameSpecificBotId(null);
+      setActiveGameSpecificBotDifficulty(null);
       return false;
     };
     setIsGameActive(checkActiveGame());
@@ -245,12 +303,36 @@ export function HomePageClient({
   const handleNavigationAttempt = (
     e: React.MouseEvent<HTMLAnchorElement>,
     targetHref: string,
+    targetType: "difficulty" | "botChallenge",
     targetName?: string
   ) => {
     if (isGameActive) {
-      e.preventDefault();
-      setPendingNavigationTarget({ href: targetHref, name: targetName });
-      setShowGameInProgressDialog(true);
+      let shouldShowDialog = false;
+
+      if (targetType === "difficulty") {
+        // Only show dialog if clicking a *different* difficulty
+        if (activeGameDifficulty?.toLowerCase() !== targetName?.toLowerCase()) {
+          shouldShowDialog = true;
+        }
+      } else if (targetType === "botChallenge") {
+        if (
+          nextBot &&
+          activeGameSpecificBotId === nextBot.id &&
+          activeGameSpecificBotDifficulty === nextBot.difficulty.toLowerCase()
+        ) {
+          shouldShowDialog = false;
+        } else {
+          shouldShowDialog = true;
+        }
+      }
+
+      if (shouldShowDialog) {
+        e.preventDefault();
+        setPendingNavigationTarget({ href: targetHref, name: targetName });
+        setShowGameInProgressDialog(true);
+      } else {
+        router.push(targetHref);
+      }
     } else {
       router.push(targetHref); // Proceed with navigation if no active game
     }
@@ -259,8 +341,11 @@ export function HomePageClient({
   const handleConfirmNavigation = () => {
     if (pendingNavigationTarget) {
       localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+      localStorage.removeItem("selectedBot");
       setIsGameActive(false);
       setActiveGameDifficulty(null);
+      setActiveGameSpecificBotId(null);
+      setActiveGameSpecificBotDifficulty(null);
       router.push(pendingNavigationTarget.href);
     }
     setShowGameInProgressDialog(false);
@@ -336,7 +421,12 @@ export function HomePageClient({
                 key={level.name}
                 href={level.href}
                 onClick={(e) =>
-                  handleNavigationAttempt(e, level.href, level.name)
+                  handleNavigationAttempt(
+                    e,
+                    level.href,
+                    "difficulty",
+                    level.name
+                  )
                 }
                 className={`relative p-5 rounded-xl border border-border/50 bg-gradient-to-br ${level.gradient} ${level.hoverGradient} backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group overflow-hidden animate-fadeIn flex flex-col`}
                 onMouseEnter={() => {
@@ -614,6 +704,17 @@ export function HomePageClient({
                             Beat this bot to progress
                           </p>
                         </div>
+                        {isGameActive &&
+                          activeGameSpecificBotId === nextBot.id &&
+                          activeGameSpecificBotDifficulty ===
+                            nextBot.difficulty.toLowerCase() && (
+                            <Badge
+                              variant="secondary"
+                              className="ml-auto bg-green-500 animate-pulse"
+                            >
+                              In Progress
+                            </Badge>
+                          )}
                       </div>
 
                       {/* Next Bot Card */}
@@ -627,7 +728,8 @@ export function HomePageClient({
                             `/play/${nextBot.difficulty.toLowerCase()}/${
                               nextBot.id
                             }`,
-                            `Challenge ${nextBot.name}`
+                            "botChallenge",
+                            nextBot.name
                           )
                         }
                         className="block p-4 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors"

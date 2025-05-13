@@ -59,6 +59,7 @@ import { type GameHistory } from "@/lib/game-service";
 import { clearUserGameHistoryAction } from "@/lib/actions/game.actions";
 import { Session } from "next-auth";
 import Link from "next/link";
+import { DEFAULT_STATE } from "@/config/game";
 
 interface GameStats {
   totalGames: number;
@@ -82,6 +83,7 @@ interface HistoryPageClientProps {
 
 // Constant for game state in localStorage
 const GAME_STATE_STORAGE_KEY = "chess-game-state";
+const SELECTED_BOT_STORAGE_KEY = "selectedBot";
 
 export const HistoryPageClient = ({
   session,
@@ -107,6 +109,15 @@ export const HistoryPageClient = ({
     string | null
   >(null);
 
+  // State for tracking the specific active bot game
+  const [activeBotGameId, setActiveBotGameId] = useState<
+    string | number | null
+  >(null);
+  const [activeBotGameDifficulty, setActiveBotGameDifficulty] = useState<
+    string | null
+  >(null);
+  const [isAnyGameActive, setIsAnyGameActive] = useState<boolean>(false);
+
   // Get the default tab from URL parameters
   const [defaultTab, setDefaultTab] = useState("history");
 
@@ -117,6 +128,67 @@ export const HistoryPageClient = ({
       const tabParam = params.get("tab");
       if (tabParam && ["history", "stats", "bots"].includes(tabParam)) {
         setDefaultTab(tabParam);
+      }
+
+      // Check for active game state
+      const savedGameState = localStorage.getItem(GAME_STATE_STORAGE_KEY);
+      const savedSelectedBot = localStorage.getItem(SELECTED_BOT_STORAGE_KEY);
+      let gameIsActive = false;
+
+      if (savedGameState) {
+        try {
+          const gameState = JSON.parse(savedGameState);
+          if (gameState.fen && gameState.fen !== DEFAULT_STATE.fen) {
+            gameIsActive = true;
+            if (savedSelectedBot) {
+              try {
+                const selectedBot: Bot = JSON.parse(savedSelectedBot);
+                let botOriginalDifficulty: string | undefined = undefined;
+                for (const diffKey in BOTS_BY_DIFFICULTY) {
+                  const foundBot = BOTS_BY_DIFFICULTY[
+                    diffKey as keyof typeof BOTS_BY_DIFFICULTY
+                  ].find((b) => b.id === selectedBot.id);
+                  if (foundBot) {
+                    botOriginalDifficulty = diffKey.toLowerCase();
+                    break;
+                  }
+                }
+
+                if (
+                  botOriginalDifficulty === gameState.difficulty?.toLowerCase()
+                ) {
+                  setActiveBotGameId(selectedBot.id);
+                  setActiveBotGameDifficulty(
+                    gameState.difficulty?.toLowerCase() || null
+                  );
+                } else {
+                  setActiveBotGameId(null);
+                  setActiveBotGameDifficulty(null);
+                }
+              } catch (e) {
+                console.error("Error parsing selectedBot for history page:", e);
+                setActiveBotGameId(null);
+                setActiveBotGameDifficulty(null);
+              }
+            } else {
+              setActiveBotGameId(null);
+              setActiveBotGameDifficulty(null);
+            }
+          } else {
+            // Game state exists but not active, clear associated selectedBot if any
+            localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
+          }
+        } catch (e) {
+          console.error("Error parsing gameState for history page:", e);
+          localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
+        }
+      }
+      setIsAnyGameActive(gameIsActive);
+      if (!gameIsActive) {
+        // Ensure specific bot game state is also cleared if no general game is active
+        setActiveBotGameId(null);
+        setActiveBotGameDifficulty(null);
+        localStorage.removeItem(SELECTED_BOT_STORAGE_KEY); // Belt and braces
       }
     }
   }, []);
@@ -173,29 +245,36 @@ export const HistoryPageClient = ({
     return gameStats.beatenBots.some((bot) => bot.name === botName);
   };
 
-  const isGameActiveFromStorage = (): boolean => {
-    if (typeof window === "undefined") return false;
-    const gameState = localStorage.getItem(GAME_STATE_STORAGE_KEY);
-    // Consider game active if any state exists, as starting a new one would overwrite it.
-    return gameState !== null;
-  };
-
   const handleBotCardClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
+    href: string,
+    clickedBotId: number,
+    clickedBotDifficulty: string
   ) => {
-    if (isGameActiveFromStorage()) {
-      e.preventDefault();
-      setPendingNavigationHref(href);
-      setShowStartNewGameDialog(true);
+    const lowerClickedBotDifficulty = clickedBotDifficulty.toLowerCase();
+    if (isAnyGameActive) {
+      if (
+        activeBotGameId === clickedBotId &&
+        activeBotGameDifficulty === lowerClickedBotDifficulty
+      ) {
+        router.push(href);
+      } else {
+        e.preventDefault();
+        setPendingNavigationHref(href);
+        setShowStartNewGameDialog(true);
+      }
     } else {
-      router.push(href); // Or allow default Link behavior
+      router.push(href);
     }
   };
 
   const handleConfirmStartNewGame = () => {
     if (pendingNavigationHref) {
       localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+      localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
+      setIsAnyGameActive(false);
+      setActiveBotGameId(null);
+      setActiveBotGameDifficulty(null);
       router.push(pendingNavigationHref);
     }
     setShowStartNewGameDialog(false);
@@ -728,59 +807,81 @@ export const HistoryPageClient = ({
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {BOTS_BY_DIFFICULTY[
                           difficulty as keyof typeof BOTS_BY_DIFFICULTY
-                        ].map((bot) => (
-                          <Link
-                            key={bot.name}
-                            href={`/play/${difficulty}/${bot.id}`}
-                            onClick={(e) =>
-                              handleBotCardClick(
-                                e,
-                                `/play/${difficulty}/${bot.id}`
-                              )
-                            }
-                            className={cn(
-                              "block",
-                              isBotBeaten(bot.name)
-                                ? "cursor-pointer"
-                                : "cursor-pointer"
-                            )}
-                          >
-                            <Card
-                              className={cn(
-                                "border transition-all hover:shadow-md",
-                                isBotBeaten(bot.name) &&
-                                  "border-green-500 bg-green-50 dark:bg-green-950/20"
-                              )}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-12 w-12">
-                                    <AvatarImage
-                                      src={bot.image}
-                                      alt={bot.name}
-                                    />
-                                    <AvatarFallback>
-                                      {bot.name.charAt(0)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1">
-                                    <div className="font-semibold">
-                                      {bot.name}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                      {bot.description}
-                                    </div>
-                                  </div>
-                                  {isBotBeaten(bot.name) ? (
-                                    <CheckCircle2 className="h-6 w-6 text-green-500" />
-                                  ) : (
-                                    <div className="h-6 w-6 rounded-full border-2 border-dashed border-muted-foreground/50" />
+                        ].map((bot) => {
+                          const botDifficultyStr = difficulty.toLowerCase();
+                          const isCurrentActiveBot =
+                            isAnyGameActive &&
+                            activeBotGameId === bot.id &&
+                            activeBotGameDifficulty === botDifficultyStr;
+                          return (
+                            <div key={bot.name} className="relative">
+                              <Link
+                                href={`/play/${difficulty}/${bot.id}`}
+                                onClick={(e) =>
+                                  handleBotCardClick(
+                                    e,
+                                    `/play/${difficulty}/${bot.id}`,
+                                    bot.id,
+                                    difficulty
+                                  )
+                                }
+                                className={cn(
+                                  "block",
+                                  isBotBeaten(bot.name)
+                                    ? "cursor-pointer"
+                                    : "cursor-pointer"
+                                )}
+                              >
+                                <Card
+                                  className={cn(
+                                    "border transition-all hover:shadow-md",
+                                    isBotBeaten(bot.name) &&
+                                      "border-green-500 bg-green-50 dark:bg-green-950/20",
+                                    isCurrentActiveBot &&
+                                      "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-background"
                                   )}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </Link>
-                        ))}
+                                >
+                                  <CardContent className="p-4">
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-12 w-12">
+                                        <AvatarImage
+                                          src={bot.image}
+                                          alt={bot.name}
+                                        />
+                                        <AvatarFallback>
+                                          {bot.name.charAt(0)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1">
+                                        <div className="font-semibold">
+                                          {bot.name}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {bot.description}
+                                        </div>
+                                      </div>
+                                      {isBotBeaten(bot.name) ? (
+                                        <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
+                                      ) : !isCurrentActiveBot ? (
+                                        <div className="h-6 w-6 rounded-full border-2 border-dashed border-muted-foreground/50 flex-shrink-0" />
+                                      ) : (
+                                        <div className="w-6 h-6 flex-shrink-0" />
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </Link>
+                              {isCurrentActiveBot && (
+                                <Badge
+                                  variant="secondary"
+                                  className="absolute top-2 right-2 bg-green-500 text-white animate-pulse"
+                                >
+                                  In Progress
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
