@@ -165,7 +165,7 @@ const Navbar = () => {
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20",
-      eloRange: "800-1000",
+      eloRange: "200-300",
       playStyle: "Random",
     },
     {
@@ -175,7 +175,7 @@ const Navbar = () => {
       color: "text-green-500",
       bgColor: "bg-green-500/10",
       borderColor: "border-green-500/20",
-      eloRange: "1000-1200",
+      eloRange: "320-400",
       playStyle: "Aggressive",
     },
     {
@@ -185,7 +185,7 @@ const Navbar = () => {
       color: "text-cyan-500",
       bgColor: "bg-cyan-500/10",
       borderColor: "border-cyan-500/20",
-      eloRange: "1200-1400",
+      eloRange: "450-600",
       playStyle: "Balanced",
     },
     {
@@ -195,7 +195,7 @@ const Navbar = () => {
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20",
-      eloRange: "1400-1600",
+      eloRange: "650-800",
       playStyle: "Positional",
     },
     {
@@ -205,7 +205,7 @@ const Navbar = () => {
       color: "text-violet-500",
       bgColor: "bg-violet-500/10",
       borderColor: "border-violet-500/20",
-      eloRange: "1600-1800",
+      eloRange: "850-1000",
       playStyle: "Tactical",
     },
     {
@@ -215,7 +215,7 @@ const Navbar = () => {
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
       borderColor: "border-purple-500/20",
-      eloRange: "1800-2000",
+      eloRange: "1100-1600",
       playStyle: "Dynamic",
     },
     {
@@ -225,7 +225,7 @@ const Navbar = () => {
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
       borderColor: "border-orange-500/20",
-      eloRange: "2000-2200",
+      eloRange: "1700-2300",
       playStyle: "Strategic",
     },
     {
@@ -235,7 +235,7 @@ const Navbar = () => {
       color: "text-red-500",
       bgColor: "bg-red-500/10",
       borderColor: "border-red-500/20",
-      eloRange: "2200-2400",
+      eloRange: "2400-3000",
       playStyle: "Universal",
     },
   ];
