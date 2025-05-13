@@ -873,45 +873,45 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   };
 
   // ** TEMPORARY TEST BUTTON - HIDE LATER
-  const handleForceWinForTesting = () => {
-    // Player is white for this specific test scenario
+  // const handleForceWinForTesting = () => {
+  //   // Player is white for this specific test scenario
 
-    game.reset();
-    // Black King a8, White Queen h7, White King a6. White to move. Qb7# is mate.
-    const testFEN = "k7/7Q/K7/8/8/8/8/8 w - - 0 1";
-    console.log("[ForceWinTest] FEN before move:", testFEN);
-    game.load(testFEN);
-    setBoard(game.board());
+  //   game.reset();
+  //   // Black King a8, White Queen h7, White King a6. White to move. Qb7# is mate.
+  //   const testFEN = "k7/7Q/K7/8/8/8/8/8 w - - 0 1";
+  //   console.log("[ForceWinTest] FEN before move:", testFEN);
+  //   game.load(testFEN);
+  //   setBoard(game.board());
 
-    // Make the winning move
-    const winningMove = game.move({ from: "h7", to: "b7" }); // Qb7#
+  //   // Make the winning move
+  //   const winningMove = game.move({ from: "h7", to: "b7" }); // Qb7#
 
-    if (winningMove) {
-      setLastMove({ from: winningMove.from, to: winningMove.to });
-      const newFen = game.fen();
-      setHistory(() => [
-        { fen: testFEN, lastMove: null },
-        {
-          fen: newFen,
-          lastMove: { from: winningMove.from, to: winningMove.to },
-        },
-      ]);
-      setCurrentMove(2);
-      setBoard(game.board());
+  //   if (winningMove) {
+  //     setLastMove({ from: winningMove.from, to: winningMove.to });
+  //     const newFen = game.fen();
+  //     setHistory(() => [
+  //       { fen: testFEN, lastMove: null },
+  //       {
+  //         fen: newFen,
+  //         lastMove: { from: winningMove.from, to: winningMove.to },
+  //       },
+  //     ]);
+  //     setCurrentMove(2);
+  //     setBoard(game.board());
 
-      if (!gameStarted) {
-        setGameStarted(true);
-      }
-      console.log("Forced win: Checkmate?", game.isCheckmate());
-    } else {
-      console.error("Failed to make the forced winning move for testing.");
-    }
-  };
+  //     if (!gameStarted) {
+  //       setGameStarted(true);
+  //     }
+  //     console.log("Forced win: Checkmate?", game.isCheckmate());
+  //   } else {
+  //     console.error("Failed to make the forced winning move for testing.");
+  //   }
+  // };
 
   return (
     <div className="flex flex-col h-full w-full">
       {/* TEMPORARY TEST BUTTON - HIDE LATER */}
-      <button
+      {/* <button
         onClick={handleForceWinForTesting}
         style={{
           backgroundColor: "rgba(220, 38, 38, 0.8)",
@@ -930,7 +930,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         }}
       >
         EZ (Test)
-      </button>
+      </button> */}
       {/* END TEMPORARY TEST BUTTON */}
 
       <main className="flex flex-col w-full items-center justify-start">
