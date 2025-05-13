@@ -63,45 +63,74 @@ const PreMadeMove = ({
     onPossibleMovesChange(isPreMadePossibleMove);
   }, [isPreMadePossibleMove, onPossibleMovesChange]);
 
-  // Execute the pre-made move when the turn changes to the player's turn
+  // Execute or cancel pre-made move based on turn changes
   useEffect(() => {
     const currentTurn = game.turn();
+    const previousTurn = prevTurnRef.current; // Value from before this effect ran
 
-    // Check if the turn has changed to the player's turn and we have a pre-made move
+    let timerId: NodeJS.Timeout | undefined;
+
+    // Scenario 1: Turn just switched to Player, and a COMPLETE pre-made move exists. Execute it.
     if (
       currentTurn === playerColor &&
-      prevTurnRef.current !== playerColor &&
+      previousTurn !== playerColor &&
       preMadeMove &&
+      preMadeMove.from &&
       preMadeMove.to &&
       !executionAttemptedRef.current
     ) {
       executionAttemptedRef.current = true;
-
-      // Use a small delay to ensure the board is updated
-      const timer = setTimeout(() => {
+      timerId = setTimeout(() => {
         const result = executePreMadeMove();
         if (!result) {
-          // If execution failed, cancel the pre-made move to clear highlights
-          cancelPreMadeMove();
+          cancelPreMadeMove(); // If execution failed, cancel to clear highlights
         }
-        executionAttemptedRef.current = false;
+        executionAttemptedRef.current = false; // Reset after attempt
       }, 300);
-
-      return () => clearTimeout(timer);
     }
-
-    // Reset execution attempted flag when turn changes
-    if (prevTurnRef.current !== currentTurn) {
+    // Scenario 2: Turn just switched to Player, but only a PARTIAL pre-made move exists. Cancel it.
+    else if (
+      currentTurn === playerColor &&
+      previousTurn !== playerColor &&
+      preMadeMove &&
+      preMadeMove.from &&
+      !preMadeMove.to
+    ) {
+      cancelPreMadeMove();
+    }
+    // Scenario 3: Turn just switched AWAY from Player, and ANY pre-made move was active. Cancel it.
+    else if (
+      previousTurn === playerColor &&
+      currentTurn !== playerColor &&
+      preMadeMove &&
+      preMadeMove.from
+    ) {
+      cancelPreMadeMove();
+      // If a premove was pending execution and turn switched away, ensure execution flag is reset
       executionAttemptedRef.current = false;
     }
 
-    // Update the previous turn ref
+    // If the turn genuinely changed, reset the executionAttempted flag.
+    // This is important if, for example, a premove was attempted, turn changed,
+    // then changed back, allowing another attempt.
+    if (previousTurn !== currentTurn) {
+      executionAttemptedRef.current = false;
+    }
+
+    // Update prevTurnRef for the next run of this effect.
     prevTurnRef.current = currentTurn;
+
+    // Cleanup function for the timer
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
   }, [
     game.turn(),
     playerColor,
-    executePreMadeMove,
     preMadeMove,
+    executePreMadeMove,
     cancelPreMadeMove,
   ]);
 
