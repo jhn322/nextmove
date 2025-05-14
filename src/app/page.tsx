@@ -1,13 +1,9 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/options";
-import { HomePageClient } from "./home-page-client"; // Import the new client component
+import { HomePageClient } from "./home-page-client";
 import { getUserGameStats } from "@/lib/game-service";
 import { BOTS_BY_DIFFICULTY, Bot } from "@/components/game/data/bots";
-
-interface GameStats {
-  beatenBots: Array<{ name: string; difficulty: string }>;
-  totalGames: number;
-}
+import { type GameStats } from "@/types/stats";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);

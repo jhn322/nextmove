@@ -62,18 +62,7 @@ import { clearUserGameHistoryAction } from "@/lib/actions/game.actions";
 import { Session } from "next-auth";
 import Link from "next/link";
 import { DEFAULT_STATE } from "@/config/game";
-
-interface GameStats {
-  totalGames: number;
-  wins: number;
-  losses: number;
-  draws: number;
-  resigns: number;
-  winRate: number;
-  averageMovesPerGame: number;
-  averageGameTime: number;
-  beatenBots: Array<{ name: string; difficulty: string; id: number }>;
-}
+import { type GameStats } from "@/types/stats";
 
 interface HistoryPageClientProps {
   session: Session | null;

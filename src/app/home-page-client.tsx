@@ -47,28 +47,29 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/constants/site";
 import { DEFAULT_STATE } from "@/config/game";
+import { type GameStats } from "@/types/stats";
 
-// ** Define the Learn Chess Card ** //
-const learnChessCard = {
-  name: "Learn Chess",
-  href: "/learn", // Link to the new learn section
+// ** Chess Wordle Card ** //
+const chessWordleCard = {
+  name: "Chess Wordle",
+  href: "/play/chess-wordle",
   description:
-    "Master the rules of chess, from basic piece movements to advanced strategies. Your journey to chess mastery starts here.",
-  color: "bg-sky-500/30 hover:bg-sky-500/20 border-sky-500/50", // A distinct color
-  textColor: "text-sky-500",
-  icon: BookOpen, // Using an existing imported icon
-  gradient: "from-sky-500/20 to-sky-500/5",
-  hoverGradient: "hover:from-sky-500/30 hover:to-sky-500/10",
-  eloRange: "All Levels", // Not an ELO-based card
-  eloValue: 0, // Placeholder, not directly applicable
-  playStyle: "Study & Practice", // Descriptive text
-  styleIcon: Brain, // Can reuse an icon or choose another like GraduationCap if available
-  isLearnCard: true, // Custom flag to potentially style it differently if needed
+    "Guess the secret chess term! A fun, Wordle-style puzzle to test your chess vocabulary and knowledge.",
+  color: "bg-amber-500/30 hover:bg-amber-500/20 border-amber-500/50",
+  textColor: "text-amber-500",
+  icon: Brain,
+  gradient: "from-amber-500/20 to-amber-500/5",
+  hoverGradient: "hover:from-amber-500/30 hover:to-amber-500/10",
+  eloRange: "Fun Puzzle",
+  eloValue: 0,
+  playStyle: "Word Puzzle",
+  styleIcon: Sparkles,
+  isWordleCard: true,
 };
 
-// Copied from page.tsx, should be defined centrally if used elsewhere
+// ** Difficulty Levels ** //
 const difficultyLevels = [
-  learnChessCard, // ** Prepend the Learn Chess card ** //
+  chessWordleCard,
   {
     name: "Beginner",
     href: "/play/beginner",
@@ -190,15 +191,6 @@ const difficultyLevels = [
     styleIcon: Swords,
   },
 ];
-
-interface GameStats {
-  beatenBots: Array<{ name: string; difficulty: string; id?: number }>;
-  totalGames: number;
-  wins: number;
-  losses: number;
-  draws: number;
-  winRate: number;
-}
 
 interface HomePageClientProps {
   session: Session | null;

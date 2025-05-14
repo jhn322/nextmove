@@ -5,19 +5,7 @@ import { BOTS_BY_DIFFICULTY, Bot } from "@/components/game/data/bots";
 import { HistoryPageClient } from "./history-page-client";
 import React from "react";
 import { redirect } from "next/navigation";
-
-// Define GameStats interface here or import if defined centrally
-interface GameStats {
-  totalGames: number;
-  wins: number;
-  losses: number;
-  draws: number;
-  resigns: number;
-  winRate: number;
-  averageMovesPerGame: number;
-  averageGameTime: number;
-  beatenBots: Array<{ name: string; difficulty: string; id: number }>;
-}
+import { type GameStats } from "@/types/stats";
 
 const calculateGameStats = (history: GameHistory[]): GameStats | null => {
   if (!history || history.length === 0) {
