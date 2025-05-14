@@ -23,6 +23,9 @@ import {
   Medal,
   PartyPopper,
   Loader2,
+  ToyBrick,
+  SpellCheck,
+  Hash,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -46,30 +49,48 @@ import { Session } from "next-auth";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/constants/site";
-import { DEFAULT_STATE } from "@/config/game";
 import { type GameStats } from "@/types/stats";
+import { DEFAULT_STATE } from "@/config/game";
+
+// ** Type Difficulty Cards ** //
+interface GameCardConfig {
+  name: string;
+  href: string;
+  description: string;
+  color: string;
+  textColor: string;
+  icon: React.ElementType;
+  gradient: string;
+  hoverGradient: string;
+  playStyle: string;
+  styleIcon: React.ElementType;
+  displayPlayTypeLabel?: string;
+  eloRange?: string;
+  eloValue?: number;
+  isWordleCard?: boolean;
+  statType?: "wordleWins";
+}
 
 // ** Chess Wordle Card ** //
-const chessWordleCard = {
+const chessWordleCard: GameCardConfig = {
   name: "Chess Wordle",
   href: "/play/chess-wordle",
   description:
-    "Guess the secret chess term! A fun, Wordle-style puzzle to test your chess vocabulary and knowledge.",
-  color: "bg-amber-500/30 hover:bg-amber-500/20 border-amber-500/50",
-  textColor: "text-amber-500",
-  icon: Brain,
-  gradient: "from-amber-500/20 to-amber-500/5",
-  hoverGradient: "hover:from-amber-500/30 hover:to-amber-500/10",
-  eloRange: "Fun Puzzle",
-  eloValue: 0,
+    "Guess the secret chess term! A fun, Wordle-style puzzle to test your chess vocabulary. Unlike traditional Wordle, you can play as many times as you like!",
+  color: "bg-amber-600/40 hover:bg-amber-600/30 border-amber-500/60",
+  textColor: "text-amber-400",
+  icon: ToyBrick,
+  gradient: "from-amber-600/30 to-amber-600/10",
+  hoverGradient: "hover:from-amber-600/40 hover:to-amber-600/15",
   playStyle: "Word Puzzle",
-  styleIcon: Sparkles,
+  styleIcon: Hash,
+  displayPlayTypeLabel: "Word Puzzle",
   isWordleCard: true,
+  statType: "wordleWins",
 };
 
 // ** Difficulty Levels ** //
-const difficultyLevels = [
-  chessWordleCard,
+const difficultyLevels: GameCardConfig[] = [
   {
     name: "Beginner",
     href: "/play/beginner",
@@ -190,6 +211,7 @@ const difficultyLevels = [
     playStyle: "Universal",
     styleIcon: Swords,
   },
+  chessWordleCard,
 ];
 
 interface HomePageClientProps {
@@ -231,6 +253,7 @@ export function HomePageClient({
     useState<string | null>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [isBotProgressionLoading, setIsBotProgressionLoading] = useState(false);
+  const [currentWordleWins, setCurrentWordleWins] = useState<number>(0);
 
   // Track mouse position for spotlight effect
   useEffect(() => {
@@ -248,13 +271,14 @@ export function HomePageClient({
   useEffect(() => {
     const checkActiveGame = () => {
       if (typeof window === "undefined") return false;
+
       const savedGameState = localStorage.getItem(GAME_STATE_STORAGE_KEY);
       const savedSelectedBot = localStorage.getItem("selectedBot");
 
       if (savedGameState) {
         try {
           const gameState = JSON.parse(savedGameState);
-          const isActive = gameState.fen && gameState.fen !== DEFAULT_STATE.fen; // More robust check for active
+          const isActive = gameState.fen && gameState.fen !== DEFAULT_STATE.fen;
 
           if (isActive) {
             setActiveGameDifficulty(
@@ -266,6 +290,7 @@ export function HomePageClient({
                 const selectedBot: Bot & { difficulty?: string } =
                   JSON.parse(savedSelectedBot);
                 // Ensure the selectedBot's context matches the active game's difficulty
+
                 let botContextualDifficulty =
                   gameState.difficulty?.toLowerCase();
 
@@ -285,6 +310,7 @@ export function HomePageClient({
                   );
                 } else {
                   // Mismatch, so no specific bot game is active despite selectedBot existing
+
                   setActiveGameSpecificBotId(null);
                   setActiveGameSpecificBotDifficulty(null);
                 }
@@ -315,7 +341,15 @@ export function HomePageClient({
       setActiveGameSpecificBotDifficulty(null);
       return false;
     };
+
+    // The result of checkActiveGame directly sets isGameActive
     setIsGameActive(checkActiveGame());
+
+    // Load Wordle wins from localStorage
+    const storedWordleWins = localStorage.getItem("chessWordleWinsCount");
+    if (storedWordleWins) {
+      setCurrentWordleWins(parseInt(storedWordleWins, 10));
+    }
   }, []);
 
   const handleNavigationAttempt = (
@@ -455,7 +489,11 @@ export function HomePageClient({
                     level.name
                   )
                 }
-                className={`relative p-5 rounded-xl border border-border/50 bg-gradient-to-br ${level.gradient} ${level.hoverGradient} backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group overflow-hidden animate-fadeIn flex flex-col`}
+                className={`relative p-5 rounded-xl border ${
+                  level.isWordleCard
+                    ? "border-2 border-amber-500/80"
+                    : "border-border/50"
+                } bg-gradient-to-br ${level.gradient} ${level.hoverGradient} backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group overflow-hidden animate-fadeIn flex flex-col`}
                 onMouseEnter={() => {
                   setHoveredCard(level.name);
                 }}
@@ -473,10 +511,28 @@ export function HomePageClient({
                 {/* Spotlight effect */}
                 {hoveredCard === level.name && (
                   <div
-                    className="absolute inset-0 pointer-events-none transition-opacity"
+                    className={cn(
+                      "absolute inset-0 rounded-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100",
+                      level.hoverGradient,
+                      level.isWordleCard &&
+                        "ring-4 ring-amber-500/70 shadow-2xl shadow-amber-500/30"
+                    )}
                     style={{
-                      background: `radial-gradient(circle 100px at ${mousePosition.x}px ${mousePosition.y}px, rgba(255, 255, 255, 0.15), transparent 70%)`,
-                      zIndex: 1,
+                      background: `radial-gradient(600px circle at ${
+                        mousePosition.x -
+                        (document
+                          .getElementById(`card-${level.name}`)
+                          ?.getBoundingClientRect().left || 0)
+                      }px ${
+                        mousePosition.y -
+                        (document
+                          .getElementById(`card-${level.name}`)
+                          ?.getBoundingClientRect().top || 0)
+                      }px, ${
+                        level.isWordleCard
+                          ? "rgba(0, 128, 128, 0.25)"
+                          : "rgba(180, 180, 180, 0.15)"
+                      }, transparent 80%)`,
                     }}
                   />
                 )}
@@ -494,9 +550,10 @@ export function HomePageClient({
                 <div className="flex flex-col h-full z-10 relative">
                   <div className="flex items-start gap-4 mb-3">
                     <div
-                      className={`p-2.5 rounded-lg ${
-                        level.color.split(" ")[0]
-                      } bg-opacity-30 backdrop-blur-sm transform transition-transform group-hover:rotate-3 duration-300`}
+                      className={cn(
+                        "p-2.5 rounded-lg transform transition-transform group-hover:rotate-3 duration-300",
+                        `${level.color.split(" ")[0]} bg-opacity-30 backdrop-blur-sm`
+                      )}
                     >
                       <level.icon
                         className={`h-6 w-6 ${level.textColor} group-hover:scale-110 transition-transform`}
@@ -537,7 +594,8 @@ export function HomePageClient({
                         <span
                           className={`text-xs font-medium ${level.textColor}`}
                         >
-                          {level.playStyle} Style
+                          {level.displayPlayTypeLabel ||
+                            `${level.playStyle} Style`}
                         </span>
                       </div>
                     </div>
@@ -572,17 +630,23 @@ export function HomePageClient({
 
                     {/* ELO Rating Bar */}
                     <div className="mt-4 space-y-1.5">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-medium">ELO Rating</span>
-                        <span className={`${level.textColor} font-medium`}>
-                          {level.eloRange}
-                        </span>
-                      </div>
-                      <Progress
-                        value={level.eloValue}
-                        className="h-1.5"
-                        indicatorClassName={level.color.split(" ")[0]}
-                      />
+                      {level.statType === "wordleWins" ? (
+                        <>
+                          <div className="flex items-center">
+                            <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
+                            <span className="text-xs font-medium text-amber-300">
+                              Words Guessed: {currentWordleWins}
+                            </span>
+                          </div>
+                        </>
+                      ) : level.eloRange ? (
+                        <div className="flex items-center">
+                          <Target className="w-4 h-4 mr-1.5 text-gray-400" />
+                          <span className="text-xs font-medium text-gray-300">
+                            Elo: {level.eloRange}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
 
                     {/* Play button for expanded mobile view */}
@@ -611,19 +675,32 @@ export function HomePageClient({
                       {level.description}
                     </p>
 
-                    {/* ELO Rating Bar */}
+                    {/* ELO Rating Bar or Wordle Stats for Desktop */}
                     <div className="mt-4 space-y-1.5">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-medium">ELO Rating</span>
-                        <span className={`${level.textColor} font-medium`}>
-                          {level.eloRange}
-                        </span>
-                      </div>
-                      <Progress
-                        value={level.eloValue}
-                        className="h-1.5"
-                        indicatorClassName={level.color.split(" ")[0]}
-                      />
+                      {level.statType === "wordleWins" ? (
+                        <>
+                          <div className="flex items-center">
+                            <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
+                            <span className="text-sm font-medium text-amber-300">
+                              Words Guessed: {currentWordleWins}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="font-medium">ELO Rating</span>
+                            <span className={`${level.textColor} font-medium`}>
+                              {level.eloRange}
+                            </span>
+                          </div>
+                          <Progress
+                            value={level.eloValue}
+                            className="h-1.5"
+                            indicatorClassName={level.color.split(" ")[0]}
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -634,12 +711,21 @@ export function HomePageClient({
                     } mt-2 mb-1`}
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium">
-                        ELO:{" "}
-                        <span className={`${level.textColor}`}>
-                          {level.eloRange}
+                      {level.statType === "wordleWins" ? (
+                        <span className="font-medium text-amber-300">
+                          Words:{" "}
+                          <span className={level.textColor}>
+                            {currentWordleWins}
+                          </span>
                         </span>
-                      </span>
+                      ) : (
+                        <span className="font-medium">
+                          ELO:{" "}
+                          <span className={`${level.textColor}`}>
+                            {level.eloRange}
+                          </span>
+                        </span>
+                      )}
                       {navigatingTo === level.name ? (
                         <Loader2
                           className={`h-3 w-3 animate-spin ${level.textColor}`}

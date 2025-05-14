@@ -38,6 +38,10 @@ import {
   Flag,
   Loader2,
   Activity,
+  ToyBrick,
+  TrendingUp,
+  Award,
+  PieChart,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -75,6 +79,13 @@ interface HistoryPageClientProps {
 // Constant for game state in localStorage
 const GAME_STATE_STORAGE_KEY = "chess-game-state";
 const SELECTED_BOT_STORAGE_KEY = "selectedBot";
+const WORDLE_WINS_STORAGE_KEY = "chessWordleWinsCount";
+const WORDLE_TOTAL_PLAYS_KEY = "chessWordleTotalPlays";
+const WORDLE_CURRENT_STREAK_KEY = "chessWordleCurrentStreak";
+const WORDLE_LONGEST_STREAK_KEY = "chessWordleLongestStreak";
+const WORDLE_GUESS_DISTRIBUTION_KEY = "chessWordleGuessDistribution";
+const WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY =
+  "chessWordleTotalGuessesInWonGames";
 
 export const HistoryPageClient = ({
   session,
@@ -115,6 +126,16 @@ export const HistoryPageClient = ({
     null
   );
 
+  const [wordleTotalWins, setWordleTotalWins] = useState<number>(0);
+  const [wordleTotalPlays, setWordleTotalPlays] = useState<number>(0);
+  const [wordleCurrentStreak, setWordleCurrentStreak] = useState<number>(0);
+  const [wordleLongestStreak, setWordleLongestStreak] = useState<number>(0);
+  const [wordleGuessDistribution, setWordleGuessDistribution] = useState<
+    Record<number, number>
+  >({});
+  const [wordleTotalGuessesInWonGames, setWordleTotalGuessesInWonGames] =
+    useState<number>(0);
+
   // Get the default tab from URL parameters
   const [defaultTab, setDefaultTab] = useState("history");
 
@@ -123,7 +144,10 @@ export const HistoryPageClient = ({
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get("tab");
-      if (tabParam && ["history", "stats", "bots"].includes(tabParam)) {
+      if (
+        tabParam &&
+        ["history", "stats", "bots", "wordle-stats"].includes(tabParam)
+      ) {
         setDefaultTab(tabParam);
       }
 
@@ -187,8 +211,59 @@ export const HistoryPageClient = ({
         setActiveBotGameDifficulty(null);
         localStorage.removeItem(SELECTED_BOT_STORAGE_KEY); // Belt and braces
       }
+
+      // Load Wordle wins
+      const storedWordleWins = localStorage.getItem(WORDLE_WINS_STORAGE_KEY);
+      if (storedWordleWins) {
+        setWordleTotalWins(parseInt(storedWordleWins, 10));
+      }
+      // Load detailed Wordle stats
+      const storedWordleTotalPlays = localStorage.getItem(
+        WORDLE_TOTAL_PLAYS_KEY
+      );
+      if (storedWordleTotalPlays)
+        setWordleTotalPlays(parseInt(storedWordleTotalPlays, 10));
+
+      const storedWordleCurrentStreak = localStorage.getItem(
+        WORDLE_CURRENT_STREAK_KEY
+      );
+      if (storedWordleCurrentStreak)
+        setWordleCurrentStreak(parseInt(storedWordleCurrentStreak, 10));
+
+      const storedWordleLongestStreak = localStorage.getItem(
+        WORDLE_LONGEST_STREAK_KEY
+      );
+      if (storedWordleLongestStreak)
+        setWordleLongestStreak(parseInt(storedWordleLongestStreak, 10));
+
+      const storedWordleGuessDistribution = localStorage.getItem(
+        WORDLE_GUESS_DISTRIBUTION_KEY
+      );
+      if (storedWordleGuessDistribution)
+        setWordleGuessDistribution(JSON.parse(storedWordleGuessDistribution));
+      else setWordleGuessDistribution({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 });
+
+      const storedWordleTotalGuessesInWonGames = localStorage.getItem(
+        WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY
+      );
+      if (storedWordleTotalGuessesInWonGames)
+        setWordleTotalGuessesInWonGames(
+          parseInt(storedWordleTotalGuessesInWonGames, 10)
+        );
     }
   }, []);
+
+  // Calculate average guesses
+  const averageGuesses =
+    wordleTotalWins > 0
+      ? (wordleTotalGuessesInWonGames / wordleTotalWins).toFixed(2)
+      : "N/A";
+
+  // Calculate Wordle Win Percentage
+  const wordleWinPercentage =
+    wordleTotalPlays > 0
+      ? ((wordleTotalWins / wordleTotalPlays) * 100).toFixed(1)
+      : "0.0";
 
   // Check if user should be redirected based on initial state
   useEffect(() => {
@@ -403,27 +478,42 @@ export const HistoryPageClient = ({
   return (
     <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8">
       <Tabs defaultValue={defaultTab} value={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger
             value="history"
             className="flex items-center gap-2"
             onClick={() => setDefaultTab("history")}
           >
-            <History className="h-4 w-4" /> Game History
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">Game History</span>
+            <span className="sm:hidden">History</span>
           </TabsTrigger>
           <TabsTrigger
             value="stats"
             className="flex items-center gap-2"
             onClick={() => setDefaultTab("stats")}
           >
-            <BarChart3 className="h-4 w-4" /> Statistics
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Statistics</span>
+            <span className="sm:hidden">Stats</span>
           </TabsTrigger>
           <TabsTrigger
             value="bots"
             className="flex items-center gap-2"
             onClick={() => setDefaultTab("bots")}
           >
-            <Brain className="h-4 w-4" /> Bot Challenges
+            <Brain className="h-4 w-4" />
+            <span className="hidden sm:inline">Bot Challenges</span>
+            <span className="sm:hidden">Challenge</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="wordle-stats"
+            className="flex items-center gap-2"
+            onClick={() => setDefaultTab("wordle-stats")}
+          >
+            <ToyBrick className="h-4 w-4" />
+            <span className="hidden sm:inline">Wordle Statistics</span>
+            <span className="sm:hidden">Wordle</span>
           </TabsTrigger>
         </TabsList>
 
@@ -570,7 +660,7 @@ export const HistoryPageClient = ({
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                         <Gamepad2 className="h-4 w-4 text-primary" />
-                        Games Played
+                        Total Games Played
                       </div>
                       <div className="text-3xl font-bold">
                         {gameStats.totalGames}
@@ -910,6 +1000,134 @@ export const HistoryPageClient = ({
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Wordle Stats Tab */}
+        <TabsContent value="wordle-stats">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <ToyBrick className="h-6 w-6 text-amber-500" /> Chess Wordle
+                Statistics
+              </CardTitle>
+              <CardDescription>
+                Track your performance in the Chess Wordle puzzles.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {wordleTotalPlays > 0 ? (
+                <>
+                  {/* Wordle Stats Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <StatCardItem
+                      icon={Gamepad2}
+                      label="Total Games Played"
+                      value={wordleTotalPlays}
+                      color="text-primary"
+                    />
+                    <StatCardItem
+                      icon={Trophy}
+                      label="Words Guessed Correctly"
+                      value={wordleTotalWins}
+                      color="text-yellow-500"
+                    />
+                    <StatCardItem
+                      icon={Activity}
+                      label="Average Guesses (Wins)"
+                      value={averageGuesses}
+                      color="text-blue-500"
+                    />
+                    <StatCardItem
+                      icon={PieChart}
+                      label="Win Percentage"
+                      value={`${wordleWinPercentage}%`}
+                      color="text-orange-500"
+                    />
+                    <StatCardItem
+                      icon={TrendingUp}
+                      label="Current Winning Streak"
+                      value={wordleCurrentStreak}
+                      color="text-violet-500"
+                    />
+                    <StatCardItem
+                      icon={Award}
+                      label="Longest Winning Streak"
+                      value={wordleLongestStreak}
+                      color="text-sky-500"
+                    />
+                  </div>
+
+                  {/* Guess Distribution */}
+                  <div className="pt-4 border-t border-border/20">
+                    <h3 className="text-xl font-semibold flex items-center gap-2 mb-4">
+                      <BarChart3 className="h-5 w-5 text-primary" /> Guess
+                      Distribution
+                    </h3>
+                    {Object.keys(wordleGuessDistribution).length > 0 &&
+                    Object.values(wordleGuessDistribution).some(
+                      (v) => v > 0
+                    ) ? (
+                      <ul className="space-y-2">
+                        {Object.entries(wordleGuessDistribution)
+                          .sort(
+                            ([keyA], [keyB]) => parseInt(keyA) - parseInt(keyB)
+                          )
+                          .map(([guesses, count]) => {
+                            if (count > 0) {
+                              // Only display if count > 0
+                              return (
+                                <li
+                                  key={guesses}
+                                  className="flex justify-between items-center p-2 bg-background rounded-md border border-border/50 text-sm"
+                                >
+                                  <span>
+                                    Won in {guesses} guess
+                                    {parseInt(guesses) > 1 ? "es" : ""}:
+                                  </span>
+                                  <span className="font-semibold text-primary">
+                                    {count} time{count > 1 ? "s" : ""}
+                                  </span>
+                                </li>
+                              );
+                            }
+                            return null;
+                          })}
+                      </ul>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-4">
+                        No guess distribution data available. Play some games!
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Play Again Button Area */}
+                  <div className="pt-6 border-t border-border/20 text-center">
+                    <Link href="/play/chess-wordle" passHref legacyBehavior>
+                      <Button className="bg-amber-600/30 hover:bg-amber-600/40 text-amber-400 border-amber-500/60">
+                        <Gamepad2 className="mr-2 h-5 w-5" /> Play Chess Wordle
+                      </Button>
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <ToyBrick className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium mb-2">
+                    No Chess Wordle statistics available yet.
+                  </p>
+                  <p className="text-muted-foreground mb-6">
+                    Play some Chess Wordle puzzles to see your stats here!
+                  </p>
+                  <Link href="/play/chess-wordle" passHref legacyBehavior>
+                    <Button className="bg-amber-600/30 hover:bg-amber-600/40 text-amber-400 border-amber-500/60 ">
+                      <Gamepad2 className="mr-2 h-4 w-4" /> Start Playing Chess
+                      Wordle
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {renderClearHistoryButton()}
@@ -944,3 +1162,19 @@ export const HistoryPageClient = ({
     </div>
   );
 };
+
+// Helper component for individual stat cards for better reusability and cleaner look
+const StatCardItem: React.FC<{
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  color?: string;
+}> = ({ icon: Icon, label, value, color = "text-primary" }) => (
+  <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
+    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+      <Icon className={cn("h-4 w-4", color)} />
+      {label}
+    </div>
+    <div className="text-3xl font-bold">{value}</div>
+  </div>
+);

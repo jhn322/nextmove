@@ -19,6 +19,13 @@ import { CHESS_WORDLE } from "@/lib/constants/site";
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 const VALID_KEYS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const WORDLE_WINS_STORAGE_KEY = "chessWordleWinsCount";
+const WORDLE_TOTAL_PLAYS_KEY = "chessWordleTotalPlays";
+const WORDLE_CURRENT_STREAK_KEY = "chessWordleCurrentStreak";
+const WORDLE_LONGEST_STREAK_KEY = "chessWordleLongestStreak";
+const WORDLE_GUESS_DISTRIBUTION_KEY = "chessWordleGuessDistribution";
+const WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY =
+  "chessWordleTotalGuessesInWonGames";
 
 // ** Types and Interfaces ** //
 interface Guess {
@@ -44,6 +51,15 @@ export function ChessWordleClient() {
     useState<KeyboardLetterStatus>({});
   const [isMounted, setIsMounted] = useState(false);
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
+  const [wordleWinsCount, setWordleWinsCount] = useState<number>(0);
+  const [totalPlays, setTotalPlays] = useState<number>(0);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [longestStreak, setLongestStreak] = useState<number>(0);
+  const [guessDistribution, setGuessDistribution] = useState<
+    Record<number, number>
+  >({});
+  const [totalGuessesInWonGames, setTotalGuessesInWonGames] =
+    useState<number>(0);
 
   // ** Game Initialization and Reset ** //
   const initializeGame = useCallback(() => {
@@ -135,16 +151,51 @@ export function ChessWordleClient() {
 
     if (currentGuess === targetWord) {
       setGameStatus("won");
+      const newWins = wordleWinsCount + 1;
+      setWordleWinsCount(newWins);
+
+      const newTotalPlays = totalPlays + 1;
+      setTotalPlays(newTotalPlays);
+
+      const newCurrentStreak = currentStreak + 1;
+      setCurrentStreak(newCurrentStreak);
+      if (newCurrentStreak > longestStreak) {
+        setLongestStreak(newCurrentStreak);
+      }
+
+      const winningGuessIndex = newGuesses.findIndex(
+        (g) => g.word === targetWord
+      );
+      const actualGuessesTaken = winningGuessIndex + 1;
+
+      setGuessDistribution((prev) => ({
+        ...prev,
+        [actualGuessesTaken]: (prev[actualGuessesTaken] || 0) + 1,
+      }));
+      setTotalGuessesInWonGames((prev) => prev + actualGuessesTaken);
     } else if (activeGuessIndex === MAX_GUESSES - 1) {
       setGameStatus("lost");
       setTimeout(
         () => toast.error(`Game Over! The word was ${targetWord}.`),
         500
       );
+      const newTotalPlays = totalPlays + 1;
+      setTotalPlays(newTotalPlays);
+      setCurrentStreak(0);
     }
 
     setCurrentGuess("");
-  }, [currentGuess, guesses, gameStatus, targetWord, keyboardStatuses]);
+  }, [
+    currentGuess,
+    guesses,
+    gameStatus,
+    targetWord,
+    keyboardStatuses,
+    wordleWinsCount,
+    totalPlays,
+    currentStreak,
+    longestStreak,
+  ]);
 
   const handleVirtualKeyClick = useCallback(
     (key: string) => {
@@ -167,8 +218,62 @@ export function ChessWordleClient() {
   // ** Effects ** //
   useEffect(() => {
     setIsMounted(true);
+    // Load stats from localStorage on mount
+    const storedWins = localStorage.getItem(WORDLE_WINS_STORAGE_KEY);
+    if (storedWins) setWordleWinsCount(parseInt(storedWins, 10));
+
+    const storedTotalPlays = localStorage.getItem(WORDLE_TOTAL_PLAYS_KEY);
+    if (storedTotalPlays) setTotalPlays(parseInt(storedTotalPlays, 10));
+
+    const storedCurrentStreak = localStorage.getItem(WORDLE_CURRENT_STREAK_KEY);
+    if (storedCurrentStreak)
+      setCurrentStreak(parseInt(storedCurrentStreak, 10));
+
+    const storedLongestStreak = localStorage.getItem(WORDLE_LONGEST_STREAK_KEY);
+    if (storedLongestStreak)
+      setLongestStreak(parseInt(storedLongestStreak, 10));
+
+    const storedGuessDistribution = localStorage.getItem(
+      WORDLE_GUESS_DISTRIBUTION_KEY
+    );
+    if (storedGuessDistribution)
+      setGuessDistribution(JSON.parse(storedGuessDistribution));
+    else setGuessDistribution({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }); // Initialize if not found
+
+    const storedTotalGuessesInWonGames = localStorage.getItem(
+      WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY
+    );
+    if (storedTotalGuessesInWonGames)
+      setTotalGuessesInWonGames(parseInt(storedTotalGuessesInWonGames, 10));
+
     initializeGame();
   }, [initializeGame]);
+
+  // Save stats to localStorage on change
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem(WORDLE_WINS_STORAGE_KEY, wordleWinsCount.toString());
+      localStorage.setItem(WORDLE_TOTAL_PLAYS_KEY, totalPlays.toString());
+      localStorage.setItem(WORDLE_CURRENT_STREAK_KEY, currentStreak.toString());
+      localStorage.setItem(WORDLE_LONGEST_STREAK_KEY, longestStreak.toString());
+      localStorage.setItem(
+        WORDLE_GUESS_DISTRIBUTION_KEY,
+        JSON.stringify(guessDistribution)
+      );
+      localStorage.setItem(
+        WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY,
+        totalGuessesInWonGames.toString()
+      );
+    }
+  }, [
+    wordleWinsCount,
+    totalPlays,
+    currentStreak,
+    longestStreak,
+    guessDistribution,
+    totalGuessesInWonGames,
+    isMounted,
+  ]);
 
   useEffect(() => {
     if (gameStatus !== "playing" || isInstructionsModalOpen) return;
@@ -348,6 +453,10 @@ export function ChessWordleClient() {
             <hr className="border-border/50 my-4" />
             <p className="text-center text-muted-foreground italic pt-2">
               A new puzzle is available each day!
+            </p>
+            <p className="text-center text-muted-foreground font-semibold pt-2">
+              Unlike traditional Wordle, you can play new words as many times as
+              you like by clicking &quot;Play Again&quot;!
             </p>
           </div>
           <DialogClose asChild></DialogClose>
