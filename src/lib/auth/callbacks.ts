@@ -108,6 +108,7 @@ export const configureCallbacks = () => ({
         session.user.role = userFromDb.role;
         session.user.name = userFromDb.name;
         session.user.email = userFromDb.email;
+        session.user.image = userFromDb.image;
         session.user.countryFlag = userFromDb.countryFlag;
         session.user.flair = userFromDb.flair;
         session.user.pieceSet = userFromDb.pieceSet;
