@@ -577,7 +577,6 @@ export const HistoryPageClient = ({
             <CardContent className="space-y-8">
               {gameStats && gameStats.totalGames > 0 ? (
                 <>
-                  {/* Key Metrics Grid - adjusted to be more flexible, potentially lg:grid-cols-3 or 2 based on content flow */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">

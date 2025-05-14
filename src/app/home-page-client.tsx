@@ -48,8 +48,27 @@ import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/constants/site";
 import { DEFAULT_STATE } from "@/config/game";
 
+// ** Define the Learn Chess Card ** //
+const learnChessCard = {
+  name: "Learn Chess",
+  href: "/learn", // Link to the new learn section
+  description:
+    "Master the rules of chess, from basic piece movements to advanced strategies. Your journey to chess mastery starts here.",
+  color: "bg-sky-500/30 hover:bg-sky-500/20 border-sky-500/50", // A distinct color
+  textColor: "text-sky-500",
+  icon: BookOpen, // Using an existing imported icon
+  gradient: "from-sky-500/20 to-sky-500/5",
+  hoverGradient: "hover:from-sky-500/30 hover:to-sky-500/10",
+  eloRange: "All Levels", // Not an ELO-based card
+  eloValue: 0, // Placeholder, not directly applicable
+  playStyle: "Study & Practice", // Descriptive text
+  styleIcon: Brain, // Can reuse an icon or choose another like GraduationCap if available
+  isLearnCard: true, // Custom flag to potentially style it differently if needed
+};
+
 // Copied from page.tsx, should be defined centrally if used elsewhere
 const difficultyLevels = [
+  learnChessCard, // ** Prepend the Learn Chess card ** //
   {
     name: "Beginner",
     href: "/play/beginner",
@@ -173,8 +192,12 @@ const difficultyLevels = [
 ];
 
 interface GameStats {
-  beatenBots: Array<{ name: string; difficulty: string }>;
+  beatenBots: Array<{ name: string; difficulty: string; id?: number }>;
   totalGames: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
 }
 
 interface HomePageClientProps {
@@ -215,6 +238,7 @@ export function HomePageClient({
   const [activeGameSpecificBotDifficulty, setActiveGameSpecificBotDifficulty] =
     useState<string | null>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [isBotProgressionLoading, setIsBotProgressionLoading] = useState(false);
 
   // Track mouse position for spotlight effect
   useEffect(() => {
@@ -411,15 +435,14 @@ export function HomePageClient({
         <div className="flex flex-col items-center text-center space-y-4 pt-6 sm:pt-4">
           <div className="relative inline-block">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
-              Welcome to <span className="text-primary">{APP_NAME}</span>
+              <span className="text-primary">{APP_NAME}</span>
             </h1>
             <div className="absolute -top-6 sm:-top-6 sm:-right-6 right-0 text-primary">
               <Sparkles className="h-8 w-8 animate-pulse" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl">
-            Master your chess skills against increasingly challenging bot
-            opponents
+            Master your chess skills against increasingly difficult opponents
           </p>
           <div className="h-1 w-20 bg-gradient-to-r from-primary/50 to-primary rounded-full mt-4"></div>
         </div>
@@ -663,7 +686,15 @@ export function HomePageClient({
           {/* Right Side Content */}
           <div className="lg:row-span-1 space-y-6">
             {/* Player Profile Card */}
-            <PlayerProfile className="mb-6" />
+            <PlayerProfile
+              className="mb-6"
+              totalGames={gameStats?.totalGames}
+              winRate={gameStats?.winRate}
+              wins={gameStats?.wins}
+              losses={gameStats?.losses}
+              draws={gameStats?.draws}
+              beatenBotsCount={gameStats?.beatenBots?.length}
+            />
 
             {/* Challenge Description */}
             <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 sticky top-6 shadow-lg">
@@ -675,9 +706,8 @@ export function HomePageClient({
               </div>
 
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Can you conquer all eight categories of bot opponents? With a
-                total of 48 unique bots, your journey begins at the beginner
-                level and progresses toward the formidable Grandmaster bot.
+                Can you conquer all eight bot categories? Play against 48 unique
+                opponents, from Beginner to Grandmaster level.
               </p>
 
               {/* Progress Link */}
@@ -686,6 +716,7 @@ export function HomePageClient({
                   href="/history?tab=bots"
                   className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors mb-6 group"
                   scroll={false}
+                  onClick={() => setIsBotProgressionLoading(true)}
                 >
                   <div className="bg-primary/10 p-2 rounded-full">
                     <History className="h-5 w-5 text-primary" />
@@ -693,11 +724,20 @@ export function HomePageClient({
                   <div className="flex-1">
                     <h3 className="font-medium flex items-center gap-2">
                       Bot Progression
-                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      {!isBotProgressionLoading && (
+                        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      )}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Track your victories and challenges
-                    </p>
+                    {isBotProgressionLoading ? (
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Track your victories and challenges
+                      </p>
+                    )}
                   </div>
                   {gameStats && (
                     <Badge variant="secondary" className="ml-2">
