@@ -43,6 +43,7 @@ model User {
   updatedAt     DateTime   @updatedAt
   passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken model
   emailVerificationTokens EmailVerificationToken[] // Relation to EmailVerificationToken model
+  wordleAttempts WordleAttempt[] // Relation to WordleAttempt model
 }
 
 // NextAuth required models
@@ -125,6 +126,19 @@ model Game {
   createdAt    DateTime @default(now()) @map("date") // Use createdAt to represent the game date
 
   @@index([userId, createdAt]) // Index for fetching user game history efficiently
+}
+
+// Model for tracking Chess Wordle attempts
+model WordleAttempt {
+  id           String   @id @default(cuid()) @map("_id")
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetWord   String   @map("target_word")
+  guessesTaken Int      @map("guesses_taken")
+  isWin        Boolean  @map("is_win")
+  playedAt     DateTime @default(now()) @map("played_at")
+
+  @@index([userId, playedAt]) // Index for fetching user Wordle history
 }
 
 

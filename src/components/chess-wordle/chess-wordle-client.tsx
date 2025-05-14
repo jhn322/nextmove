@@ -88,8 +88,13 @@ export function ChessWordleClient() {
     setCurrentGuess("");
     setGameStatus("playing");
     setKeyboardStatuses({});
-    setIsInstructionsModalOpen(true);
-  }, []);
+  }, [
+    setTargetWord,
+    setGuesses,
+    setCurrentGuess,
+    setGameStatus,
+    setKeyboardStatuses,
+  ]);
 
   // ** Game Logic Functions ** //
   const handleSubmitGuess = useCallback(() => {
@@ -222,8 +227,14 @@ export function ChessWordleClient() {
     const storedWins = localStorage.getItem(WORDLE_WINS_STORAGE_KEY);
     if (storedWins) setWordleWinsCount(parseInt(storedWins, 10));
 
+    let loadedTotalPlays = 0;
     const storedTotalPlays = localStorage.getItem(WORDLE_TOTAL_PLAYS_KEY);
-    if (storedTotalPlays) setTotalPlays(parseInt(storedTotalPlays, 10));
+    if (storedTotalPlays) {
+      loadedTotalPlays = parseInt(storedTotalPlays, 10);
+      setTotalPlays(loadedTotalPlays);
+    } else {
+      setTotalPlays(0);
+    }
 
     const storedCurrentStreak = localStorage.getItem(WORDLE_CURRENT_STREAK_KEY);
     if (storedCurrentStreak)
@@ -247,7 +258,24 @@ export function ChessWordleClient() {
       setTotalGuessesInWonGames(parseInt(storedTotalGuessesInWonGames, 10));
 
     initializeGame();
-  }, [initializeGame]);
+
+    // Conditionally open the instructions modal only on the first play
+    if (loadedTotalPlays === 0) {
+      setIsInstructionsModalOpen(true);
+    } else {
+      setIsInstructionsModalOpen(false);
+    }
+  }, [
+    initializeGame,
+    setIsInstructionsModalOpen,
+    setWordleWinsCount,
+    setTotalPlays,
+    setCurrentStreak,
+    setLongestStreak,
+    setGuessDistribution,
+    setTotalGuessesInWonGames,
+    setIsMounted,
+  ]);
 
   // Save stats to localStorage on change
   useEffect(() => {

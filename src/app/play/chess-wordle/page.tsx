@@ -3,6 +3,9 @@
 // * ==========================================================================
 import { ChessWordleClient } from "@/components/chess-wordle/chess-wordle-client";
 import { Suspense } from "react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth/options";
+import { redirect } from "next/navigation";
 
 // ** Page Metadata (Optional but Recommended) ** //
 export const metadata = {
@@ -20,7 +23,13 @@ const ChessWordleLoading = () => {
   );
 };
 
-export default function ChessWordlePage() {
+export default async function ChessWordlePage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/auth/login?callbackUrl=/play/chess-wordle");
+  }
+
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col items-center">
       <Suspense fallback={<ChessWordleLoading />}>

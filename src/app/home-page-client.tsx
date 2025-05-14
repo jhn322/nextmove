@@ -26,6 +26,7 @@ import {
   ToyBrick,
   SpellCheck,
   Hash,
+  Lock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -255,6 +256,8 @@ export function HomePageClient({
   const [isBotProgressionLoading, setIsBotProgressionLoading] = useState(false);
   const [currentWordleWins, setCurrentWordleWins] = useState<number>(0);
 
+  const isUserLoggedIn = !!session;
+
   // Track mouse position for spotlight effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -477,288 +480,359 @@ export function HomePageClient({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Difficulty Grid */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-            {difficultyLevels.map((level) => (
-              <Link
-                key={level.name}
-                href={level.href}
-                onClick={(e) =>
-                  handleNavigationAttempt(
-                    e,
-                    level.href,
-                    "difficulty",
-                    level.name
-                  )
-                }
-                className={`relative p-5 rounded-xl border ${
-                  level.isWordleCard
-                    ? "border-2 border-amber-500/80"
-                    : "border-border/50"
-                } bg-gradient-to-br ${level.gradient} ${level.hoverGradient} backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group overflow-hidden animate-fadeIn flex flex-col`}
-                onMouseEnter={() => {
-                  setHoveredCard(level.name);
-                }}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  setMousePosition({ x, y });
-                }}
-                onMouseLeave={() => setHoveredCard(null)}
-                style={{
-                  animationDelay: `${difficultyLevels.indexOf(level) * 100}ms`,
-                }}
-              >
-                {/* Spotlight effect */}
-                {hoveredCard === level.name && (
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100",
-                      level.hoverGradient,
-                      level.isWordleCard &&
-                        "ring-4 ring-amber-500/70 shadow-2xl shadow-amber-500/30"
-                    )}
-                    style={{
-                      background: `radial-gradient(600px circle at ${
-                        mousePosition.x -
-                        (document
-                          .getElementById(`card-${level.name}`)
-                          ?.getBoundingClientRect().left || 0)
-                      }px ${
-                        mousePosition.y -
-                        (document
-                          .getElementById(`card-${level.name}`)
-                          ?.getBoundingClientRect().top || 0)
-                      }px, ${
-                        level.isWordleCard
-                          ? "rgba(0, 128, 128, 0.25)"
-                          : "rgba(180, 180, 180, 0.15)"
-                      }, transparent 80%)`,
-                    }}
-                  />
-                )}
+            {difficultyLevels.map((level) => {
+              const isChessWordleCard = level.isWordleCard;
+              let currentCardHref = level.href;
+              let currentCardOnClick:
+                | ((e: React.MouseEvent<HTMLAnchorElement>) => void)
+                | undefined = (e) =>
+                handleNavigationAttempt(
+                  e,
+                  level.href,
+                  "difficulty",
+                  level.name
+                );
+              let showLockOverlay = false;
+              let cardClasses = `relative p-5 rounded-xl border ${
+                level.isWordleCard
+                  ? "border-2 border-amber-500/80"
+                  : "border-border/50"
+              } bg-gradient-to-br ${level.gradient} ${level.hoverGradient} backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group overflow-hidden animate-fadeIn flex flex-col`;
 
-                {/* Saved game badge - only visible on sm and larger screens */}
-                {isGameActive &&
-                  activeGameDifficulty?.toLowerCase() ===
-                    level.name.toLowerCase() && (
-                    <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse hidden sm:block">
-                      In Progress
+              if (isChessWordleCard && !isUserLoggedIn) {
+                currentCardHref = "/auth/login?callbackUrl=/play/chess-wordle";
+                currentCardOnClick = undefined;
+                showLockOverlay = true;
+                cardClasses = cn(cardClasses, "brightness-75 opacity-80");
+              }
+
+              return (
+                <Link
+                  key={level.name}
+                  href={currentCardHref}
+                  onClick={currentCardOnClick}
+                  className={cardClasses}
+                  onMouseEnter={() => {
+                    if (showLockOverlay) return;
+                    setHoveredCard(level.name);
+                  }}
+                  onMouseMove={(e) => {
+                    if (showLockOverlay) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    setMousePosition({ x, y });
+                  }}
+                  onMouseLeave={() => {
+                    if (showLockOverlay) return;
+                    setHoveredCard(null);
+                  }}
+                  style={{
+                    animationDelay: `${difficultyLevels.indexOf(level) * 100}ms`,
+                  }}
+                  aria-disabled={showLockOverlay}
+                  tabIndex={showLockOverlay ? -1 : 0}
+                >
+                  {/* Spotlight effect */}
+                  {hoveredCard === level.name && !showLockOverlay && (
+                    <div
+                      className={cn(
+                        "absolute inset-0 rounded-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100",
+                        level.hoverGradient,
+                        level.isWordleCard &&
+                          "ring-4 ring-amber-500/70 shadow-2xl shadow-amber-500/30"
+                      )}
+                      style={{
+                        background: `radial-gradient(600px circle at ${
+                          mousePosition.x -
+                          (document
+                            .getElementById(`card-${level.name}`)
+                            ?.getBoundingClientRect().left || 0)
+                        }px ${
+                          mousePosition.y -
+                          (document
+                            .getElementById(`card-${level.name}`)
+                            ?.getBoundingClientRect().top || 0)
+                        }px, ${
+                          level.isWordleCard
+                            ? "rgba(0, 128, 128, 0.25)"
+                            : "rgba(180, 180, 180, 0.15)"
+                        }, transparent 80%)`,
+                      }}
+                    />
+                  )}
+
+                  {/* Overlay for Wordle Card if not logged in */}
+                  {showLockOverlay && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl rounded-xl z-20 p-4 text-center pointer-events-none">
+                      <Lock className="w-10 h-10 text-white mb-3" />
+                      <h3 className="text-lg font-semibold text-white mb-1 [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]">
+                        Login to Play
+                      </h3>
+                      <p className="text-md text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]">
+                        This feature is only available for logged-in users.
+                      </p>
                     </div>
                   )}
 
-                {/* Card content */}
-                <div className="flex flex-col h-full z-10 relative">
-                  <div className="flex items-start gap-4 mb-3">
-                    <div
-                      className={cn(
-                        "p-2.5 rounded-lg transform transition-transform group-hover:rotate-3 duration-300",
-                        `${level.color.split(" ")[0]} bg-opacity-30 backdrop-blur-sm`
-                      )}
-                    >
-                      <level.icon
-                        className={`h-6 w-6 ${level.textColor} group-hover:scale-110 transition-transform`}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-bold">{level.name}</h2>
-                        {/* Save icon for mobile */}
-                        {isGameActive &&
-                          activeGameDifficulty?.toLowerCase() ===
-                            level.name.toLowerCase() && (
-                            <div
-                              className="relative sm:hidden"
-                              title="Game In Progress"
-                            >
+                  {/* Saved game badge - only visible on sm and larger screens */}
+                  {isGameActive &&
+                    activeGameDifficulty?.toLowerCase() ===
+                      level.name.toLowerCase() && (
+                      <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse hidden sm:block">
+                        In Progress
+                      </div>
+                    )}
+
+                  {/* Card content */}
+                  <div className="flex flex-col h-full z-10 relative">
+                    <div className="flex items-start gap-4 mb-3">
+                      <div
+                        className={cn(
+                          "p-2.5 rounded-lg transform transition-transform duration-300",
+                          `${level.color.split(" ")[0]} bg-opacity-30 backdrop-blur-sm`,
+                          !showLockOverlay && "group-hover:rotate-3"
+                        )}
+                      >
+                        <level.icon
+                          className={cn(
+                            `h-6 w-6 ${level.textColor} transition-transform`,
+                            !showLockOverlay && "group-hover:scale-110"
+                          )}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-xl font-bold">{level.name}</h2>
+                          {/* Save icon for mobile */}
+                          {isGameActive &&
+                            activeGameDifficulty?.toLowerCase() ===
+                              level.name.toLowerCase() && (
                               <div
-                                className={`${
-                                  level.color.split(" ")[0]
-                                } px-2 py-1 rounded-full animate-pulse flex items-center gap-1.5`}
+                                className="relative sm:hidden"
+                                title="Game In Progress"
                               >
-                                <Save
-                                  className={`h-4 w-4 ${level.textColor}`}
-                                />
-                                <span
-                                  className={`text-xs font-medium ${level.textColor}`}
+                                <div
+                                  className={`${
+                                    level.color.split(" ")[0]
+                                  } px-2 py-1 rounded-full animate-pulse flex items-center gap-1.5`}
                                 >
-                                  In Progress
+                                  <Save
+                                    className={`h-4 w-4 ${level.textColor}`}
+                                  />
+                                  <span
+                                    className={`text-xs font-medium ${level.textColor}`}
+                                  >
+                                    In Progress
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <level.styleIcon
+                            className={`h-3.5 w-3.5 ${level.textColor}`}
+                          />
+                          <span
+                            className={`text-xs font-medium ${level.textColor}`}
+                          >
+                            {level.displayPlayTypeLabel ||
+                              `${level.playStyle} Style`}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => toggleCardExpansion(e, level.name)}
+                        className={`sm:hidden p-1.5 rounded-full ${
+                          level.color.split(" ")[0]
+                        } ${level.textColor} transition-transform duration-300 ${
+                          expandedCards[level.name] ? "rotate-180" : "rotate-0"
+                        }`}
+                        aria-label={
+                          expandedCards[level.name]
+                            ? "Collapse details"
+                            : "Expand details"
+                        }
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Mobile collapsible content */}
+                    <div
+                      className={`sm:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+                        expandedCards[level.name]
+                          ? "max-h-96 opacity-100 mb-4"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <p className="text-muted-foreground text-sm">
+                        {level.description}
+                      </p>
+
+                      {/* ELO Rating Bar */}
+                      <div className="mt-4 space-y-1.5">
+                        {level.statType === "wordleWins" ? (
+                          <>
+                            {isUserLoggedIn ? (
+                              <div className="flex items-center">
+                                <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
+                                <span className="text-xs font-medium text-amber-300">
+                                  Words Guessed: {currentWordleWins}
                                 </span>
                               </div>
+                            ) : (
+                              <div className="flex items-center opacity-50">
+                                <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400/70" />
+                                <span className="text-xs font-medium text-amber-300/70">
+                                  Words Guessed: N/A
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        ) : level.eloRange ? (
+                          <div className="flex items-center">
+                            <Target className="w-4 h-4 mr-1.5 text-gray-400" />
+                            <span className="text-xs font-medium text-gray-300">
+                              Elo: {level.eloRange}
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* Play button for expanded mobile view */}
+                      <div className="flex justify-end mt-4">
+                        {navigatingTo === level.name ? (
+                          <div
+                            className={`${level.textColor} flex items-center gap-1 text-sm font-medium`}
+                          >
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Loading...
+                          </div>
+                        ) : (
+                          <div
+                            className={`${level.textColor} flex items-center gap-1 text-sm font-medium`}
+                          >
+                            Play now{" "}
+                            <ChevronRight className="h-4 w-4 animate-bounceX" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Desktop always visible content */}
+                    <div className="hidden sm:block">
+                      <p className="text-muted-foreground text-sm min-h-[4.5rem]">
+                        {level.description}
+                      </p>
+
+                      {/* ELO Rating Bar or Wordle Stats for Desktop */}
+                      <div className="mt-4 space-y-1.5">
+                        {level.statType === "wordleWins" ? (
+                          <>
+                            {isUserLoggedIn ? (
+                              <div className="flex items-center">
+                                <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
+                                <span className="text-sm font-medium text-amber-300">
+                                  Words Guessed: {currentWordleWins}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center opacity-50">
+                                <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400/70" />
+                                <span className="text-sm font-medium text-amber-300/70">
+                                  Words Guessed: N/A
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="font-medium">ELO Rating</span>
+                              <span
+                                className={`${level.textColor} font-medium`}
+                              >
+                                {level.eloRange}
+                              </span>
                             </div>
-                          )}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <level.styleIcon
-                          className={`h-3.5 w-3.5 ${level.textColor}`}
-                        />
-                        <span
-                          className={`text-xs font-medium ${level.textColor}`}
-                        >
-                          {level.displayPlayTypeLabel ||
-                            `${level.playStyle} Style`}
-                        </span>
+                            <Progress
+                              value={level.eloValue}
+                              className="h-1.5"
+                              indicatorClassName={level.color.split(" ")[0]}
+                            />
+                          </>
+                        )}
                       </div>
                     </div>
-                    <button
-                      onClick={(e) => toggleCardExpansion(e, level.name)}
-                      className={`sm:hidden p-1.5 rounded-full ${
-                        level.color.split(" ")[0]
-                      } ${level.textColor} transition-transform duration-300 ${
-                        expandedCards[level.name] ? "rotate-180" : "rotate-0"
-                      }`}
-                      aria-label={
-                        expandedCards[level.name]
-                          ? "Collapse details"
-                          : "Expand details"
-                      }
+
+                    {/* Mobile ELO summary when collapsed */}
+                    <div
+                      className={`sm:hidden ${
+                        expandedCards[level.name] ? "hidden" : "block"
+                      } mt-2 mb-1`}
                     >
-                      <ChevronDown className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {/* Mobile collapsible content */}
-                  <div
-                    className={`sm:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-                      expandedCards[level.name]
-                        ? "max-h-96 opacity-100 mb-4"
-                        : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    <p className="text-muted-foreground text-sm">
-                      {level.description}
-                    </p>
-
-                    {/* ELO Rating Bar */}
-                    <div className="mt-4 space-y-1.5">
-                      {level.statType === "wordleWins" ? (
-                        <>
-                          <div className="flex items-center">
-                            <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
-                            <span className="text-xs font-medium text-amber-300">
-                              Words Guessed: {currentWordleWins}
-                            </span>
-                          </div>
-                        </>
-                      ) : level.eloRange ? (
-                        <div className="flex items-center">
-                          <Target className="w-4 h-4 mr-1.5 text-gray-400" />
-                          <span className="text-xs font-medium text-gray-300">
-                            Elo: {level.eloRange}
+                      <div className="flex items-center justify-between text-xs">
+                        {level.statType === "wordleWins" ? (
+                          <span className="font-medium text-amber-300">
+                            {isUserLoggedIn ? (
+                              <>
+                                Words:{" "}
+                                <span className={level.textColor}>
+                                  {currentWordleWins}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="opacity-50">Words: N/A</span>
+                            )}
                           </span>
-                        </div>
-                      ) : null}
-                    </div>
-
-                    {/* Play button for expanded mobile view */}
-                    <div className="flex justify-end mt-4">
-                      {navigatingTo === level.name ? (
-                        <div
-                          className={`${level.textColor} flex items-center gap-1 text-sm font-medium`}
-                        >
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Loading...
-                        </div>
-                      ) : (
-                        <div
-                          className={`${level.textColor} flex items-center gap-1 text-sm font-medium`}
-                        >
-                          Play now{" "}
-                          <ChevronRight className="h-4 w-4 animate-bounceX" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Desktop always visible content */}
-                  <div className="hidden sm:block">
-                    <p className="text-muted-foreground text-sm min-h-[4.5rem]">
-                      {level.description}
-                    </p>
-
-                    {/* ELO Rating Bar or Wordle Stats for Desktop */}
-                    <div className="mt-4 space-y-1.5">
-                      {level.statType === "wordleWins" ? (
-                        <>
-                          <div className="flex items-center">
-                            <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
-                            <span className="text-sm font-medium text-amber-300">
-                              Words Guessed: {currentWordleWins}
-                            </span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="font-medium">ELO Rating</span>
-                            <span className={`${level.textColor} font-medium`}>
+                        ) : (
+                          <span className="font-medium">
+                            ELO:{" "}
+                            <span className={`${level.textColor}`}>
                               {level.eloRange}
                             </span>
-                          </div>
-                          <Progress
-                            value={level.eloValue}
-                            className="h-1.5"
-                            indicatorClassName={level.color.split(" ")[0]}
+                          </span>
+                        )}
+                        {navigatingTo === level.name ? (
+                          <Loader2
+                            className={`h-3 w-3 animate-spin ${level.textColor}`}
                           />
+                        ) : (
+                          <div
+                            className={`sm:hidden ${level.textColor} flex items-center gap-1 text-xs font-medium`}
+                          >
+                            Play{" "}
+                            <ChevronRight className="h-3 w-3 animate-bounceX" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "mt-auto pt-3 self-end",
+                        level.textColor,
+                        "sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1 text-sm font-medium transform sm:group-hover:translate-x-0 sm:-translate-x-2",
+                        showLockOverlay && "!opacity-0 !hidden"
+                      )}
+                    >
+                      {navigatingTo === level.name ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          Play now{" "}
+                          <ChevronRight className="h-4 w-4 animate-bounceX" />
                         </>
                       )}
                     </div>
                   </div>
-
-                  {/* Mobile ELO summary when collapsed */}
-                  <div
-                    className={`sm:hidden ${
-                      expandedCards[level.name] ? "hidden" : "block"
-                    } mt-2 mb-1`}
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      {level.statType === "wordleWins" ? (
-                        <span className="font-medium text-amber-300">
-                          Words:{" "}
-                          <span className={level.textColor}>
-                            {currentWordleWins}
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="font-medium">
-                          ELO:{" "}
-                          <span className={`${level.textColor}`}>
-                            {level.eloRange}
-                          </span>
-                        </span>
-                      )}
-                      {navigatingTo === level.name ? (
-                        <Loader2
-                          className={`h-3 w-3 animate-spin ${level.textColor}`}
-                        />
-                      ) : (
-                        <div
-                          className={`sm:hidden ${level.textColor} flex items-center gap-1 text-xs font-medium`}
-                        >
-                          Play{" "}
-                          <ChevronRight className="h-3 w-3 animate-bounceX" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div
-                    className={`mt-auto pt-3 self-end ${level.textColor} sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1 text-sm font-medium transform sm:group-hover:translate-x-0 sm:-translate-x-2`}
-                  >
-                    {navigatingTo === level.name ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        Play now{" "}
-                        <ChevronRight className="h-4 w-4 animate-bounceX" />
-                      </>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Right Side Content */}
