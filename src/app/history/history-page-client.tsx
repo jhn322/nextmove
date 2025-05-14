@@ -37,6 +37,7 @@ import {
   Trash2,
   Flag,
   Loader2,
+  Activity,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -573,73 +574,31 @@ export const HistoryPageClient = ({
                 View your performance metrics and game analytics
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-8">
               {gameStats && gameStats.totalGames > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Game Count Stats */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Gamepad2 className="h-5 w-5 text-primary" /> Games
-                        Played
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold mb-4">
+                <>
+                  {/* Key Metrics Grid - adjusted to be more flexible, potentially lg:grid-cols-3 or 2 based on content flow */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Gamepad2 className="h-4 w-4 text-primary" />
+                        Games Played
+                      </div>
+                      <div className="text-3xl font-bold">
                         {gameStats.totalGames}
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-center">
-                        <div className="flex flex-col items-center">
-                          <div className="text-xl font-semibold text-yellow-500">
-                            {gameStats.wins}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Wins
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="text-xl font-semibold text-red-500">
-                            {gameStats.losses}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Losses
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="text-xl font-semibold text-blue-500">
-                            {gameStats.draws}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Draws
-                          </div>
-                        </div>
-                        {/* Add Resigns Count */}
-                        <div className="flex flex-col items-center mt-2 col-span-3">
-                          <div className="text-lg font-semibold text-orange-500">
-                            {gameStats.resigns}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Resigns
-                          </div>
-                        </div>
+                    </div>
+                    <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                        Win Rate
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Win Rate */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Trophy className="h-5 w-5 text-yellow-500" /> Win Rate
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold mb-4">
+                      <div className="text-3xl font-bold">
                         {gameStats.winRate.toFixed(1)}%
                       </div>
                       <Progress
                         value={gameStats.winRate}
-                        className="h-2"
+                        className="h-1.5 mt-2"
                         indicatorClassName={cn(
                           gameStats.winRate >= 60
                             ? "bg-green-500"
@@ -648,117 +607,162 @@ export const HistoryPageClient = ({
                               : "bg-red-500"
                         )}
                       />
-                    </CardContent>
-                  </Card>
-
-                  {/* Average Moves */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Swords className="h-5 w-5 text-blue-500" /> Average
-                        Moves
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                    </div>
+                    <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Swords className="h-4 w-4 text-blue-500" />
+                        Average Moves
+                      </div>
                       <div className="text-3xl font-bold">
                         {gameStats.averageMovesPerGame.toFixed(1)}
                       </div>
-                      <div className="text-sm text-muted-foreground mt-2">
-                        Moves per game
+                    </div>
+                    <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Timer className="h-4 w-4 text-orange-500" />
+                        Average Time
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Average Time */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Timer className="h-5 w-5 text-orange-500" /> Average
-                        Time
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
                       <div className="text-3xl font-bold">
                         {formatTime(Math.round(gameStats.averageGameTime))}
                       </div>
-                      <div className="text-sm text-muted-foreground mt-2">
-                        Time per game
+                    </div>
+                    <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Brain className="h-4 w-4 text-purple-500" />
+                        Bots Beaten
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="text-3xl font-bold">
+                        {gameStats.beatenBots.length} / {allBots.length}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Activity className="h-4 w-4 text-sky-500" />
+                        Total Play Time
+                      </div>
+                      <div className="text-3xl font-bold">
+                        {((): string => {
+                          const totalSeconds = Math.round(
+                            gameStats.averageGameTime * gameStats.totalGames
+                          );
+                          const hours = Math.floor(totalSeconds / 3600);
+                          const minutes = Math.floor(
+                            (totalSeconds % 3600) / 60
+                          );
+                          if (hours > 0) {
+                            return `${hours}h ${minutes}m`;
+                          }
+                          return `${minutes}m`;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* Recent Activity */}
-                  <Card className="md:col-span-2">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-purple-500" /> Recent
-                        Activity
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {gameHistory.slice(0, 5).map((game) => (
-                          <div
-                            key={game.id}
-                            className="flex items-center justify-between"
-                          >
-                            <div className="flex items-center gap-3">
-                              {getResultIcon(game.result)}
-                              <div>
-                                <div className="font-medium">
-                                  {game.opponent}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {format(
-                                    new Date(game.createdAt),
-                                    "MMM d, yyyy • h:mm a"
-                                  )}
-                                </div>
+                  {/* Wins/Losses/Draws/Resigns Breakdown */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center pt-4 border-t border-border/20">
+                    <div>
+                      <div className="text-2xl font-semibold text-yellow-500">
+                        {gameStats.wins}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Wins
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-semibold text-red-500">
+                        {gameStats.losses}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Losses
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-semibold text-blue-500">
+                        {gameStats.draws}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Draws
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-semibold text-orange-500">
+                        {gameStats.resigns}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Resigns
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recent Activity Section */}
+                  <div className="pt-4 border-t border-border/20">
+                    <h3 className="text-xl font-semibold flex items-center gap-2 mb-4">
+                      <Calendar className="h-5 w-5 text-primary" /> Recent
+                      Activity
+                    </h3>
+                    <div className="space-y-4">
+                      {gameHistory.slice(0, 5).map((game) => (
+                        <div
+                          key={game.id}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            {getResultIcon(game.result)}
+                            <div>
+                              <div className="font-medium">{game.opponent}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(
+                                  new Date(game.createdAt),
+                                  "MMM d, yyyy • h:mm a"
+                                )}
                               </div>
                             </div>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "font-medium",
-                                game.difficulty === "beginner" &&
-                                  "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-                                game.difficulty === "easy" &&
-                                  "bg-green-500/10 text-green-500 border-green-500/20",
-                                game.difficulty === "intermediate" &&
-                                  "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-                                game.difficulty === "advanced" &&
-                                  "bg-blue-500/10 text-blue-500 border-blue-500/20",
-                                game.difficulty === "hard" &&
-                                  "bg-violet-500/10 text-violet-500 border-violet-500/20",
-                                game.difficulty === "expert" &&
-                                  "bg-purple-500/10 text-purple-500 border-purple-500/20",
-                                game.difficulty === "master" &&
-                                  "bg-orange-500/10 text-orange-500 border-orange-500/20",
-                                game.difficulty === "grandmaster" &&
-                                  "bg-red-500/10 text-red-500 border-red-500/20"
-                              )}
-                            >
-                              {game.difficulty.charAt(0).toUpperCase() +
-                                game.difficulty.slice(1)}
-                            </Badge>
                           </div>
-                        ))}
-                      </div>
-                      {gameHistory.length > 5 && (
-                        <Button
-                          variant="link"
-                          className="mt-4 w-full"
-                          onClick={() => setDefaultTab("history")}
-                        >
-                          View All History
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "font-medium text-xs px-1.5 py-0.5", // Smaller badge
+                              game.difficulty === "beginner" &&
+                                "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                              game.difficulty === "easy" &&
+                                "bg-green-500/10 text-green-500 border-green-500/20",
+                              game.difficulty === "intermediate" &&
+                                "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                              game.difficulty === "advanced" &&
+                                "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                              game.difficulty === "hard" &&
+                                "bg-violet-500/10 text-violet-500 border-violet-500/20",
+                              game.difficulty === "expert" &&
+                                "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                              game.difficulty === "master" &&
+                                "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                              game.difficulty === "grandmaster" &&
+                                "bg-red-500/10 text-red-500 border-red-500/20"
+                            )}
+                          >
+                            {game.difficulty.charAt(0).toUpperCase() +
+                              game.difficulty.slice(1)}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                    {gameHistory.length > 5 && (
+                      <Button
+                        variant="link"
+                        className="mt-4 w-full text-primary hover:text-primary/80"
+                        onClick={() => setDefaultTab("history")}
+                      >
+                        View All History
+                      </Button>
+                    )}
+                  </div>
+                </>
               ) : (
-                <div className="text-center py-8">
-                  <p className="mb-4">No statistics available yet.</p>
+                <div className="text-center py-12">
+                  <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium mb-2">
+                    No statistics available yet.
+                  </p>
                   <p className="text-muted-foreground">
                     Play some games to see your statistics here!
                   </p>

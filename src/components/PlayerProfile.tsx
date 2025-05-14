@@ -13,17 +13,44 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, Pencil } from "lucide-react";
+import {
+  Check,
+  Pencil,
+  BarChart3,
+  Gamepad2,
+  TrendingUp,
+  Trophy,
+  ShieldX,
+  MinusSquare,
+  Brain,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
 import HoverText from "@/components/ui/hover-text";
 import { getCharacterNameFromPath } from "@/lib/utils";
+import Link from "next/link";
 
 interface PlayerProfileProps {
   className?: string;
+  totalGames?: number;
+  winRate?: number;
+  wins?: number;
+  losses?: number;
+  draws?: number;
+  beatenBotsCount?: number;
 }
 
-export default function PlayerProfile({ className }: PlayerProfileProps) {
+export default function PlayerProfile({
+  className,
+  totalGames,
+  winRate,
+  wins,
+  losses,
+  draws,
+  beatenBotsCount,
+}: PlayerProfileProps) {
   const { session, status, refreshSession } = useAuth();
   const [playerName, setPlayerName] = useState<string>("Player");
   const [isEditing, setIsEditing] = useState(false);
@@ -34,6 +61,7 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isNavigatingToHistory, setIsNavigatingToHistory] = useState(false);
 
   // Load player data from session
   useEffect(() => {
@@ -383,16 +411,122 @@ export default function PlayerProfile({ className }: PlayerProfileProps) {
               )}
             </div>
             <div className="text-sm text-muted-foreground mt-1">
-              Choose your player name to appear during games
+              Customize your in-game avatar and name.
             </div>
           </div>
         </div>
 
-        <div className="bg-primary/10 rounded-lg p-3 text-sm">
-          <p className="font-medium text-primary">Game Progress</p>
-          <p className="text-muted-foreground mt-1">
-            Your game progress and settings are saved automatically
-          </p>
+        {(typeof totalGames === "number" ||
+          typeof winRate === "number" ||
+          typeof beatenBotsCount === "number" ||
+          typeof wins === "number" ||
+          typeof losses === "number" ||
+          typeof draws === "number") &&
+          session &&
+          status === "authenticated" && (
+            <div className="mt-6 pt-4 border-t border-border/20">
+              <div className="flex items-center gap-2 mb-3 text-muted-foreground">
+                <BarChart3 className="h-4 w-4" />
+                <h4 className="text-sm font-semibold tracking-wide">
+                  Quick Stats
+                </h4>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                {[
+                  {
+                    icon: Gamepad2,
+                    label: "Games",
+                    value: totalGames,
+                    color: "text-primary",
+                  },
+                  {
+                    icon: TrendingUp,
+                    label: "Win Rate",
+                    value:
+                      winRate !== undefined
+                        ? `${winRate.toFixed(0)}%`
+                        : undefined,
+                    color:
+                      winRate !== undefined
+                        ? winRate >= 60
+                          ? "text-green-500"
+                          : winRate >= 40
+                            ? "text-yellow-500"
+                            : "text-red-500"
+                        : "text-muted-foreground",
+                  },
+                  {
+                    icon: Trophy,
+                    label: "Wins",
+                    value: wins,
+                    color: "text-yellow-500",
+                  },
+                  {
+                    icon: ShieldX,
+                    label: "Losses",
+                    value: losses,
+                    color: "text-red-500",
+                  },
+                  {
+                    icon: MinusSquare,
+                    label: "Draws",
+                    value: draws,
+                    color: "text-gray-500 dark:text-gray-400",
+                  },
+                  {
+                    icon: Brain,
+                    label: "Bots Beaten",
+                    value:
+                      beatenBotsCount !== undefined
+                        ? `${beatenBotsCount} / 48`
+                        : undefined,
+                    color: "text-purple-500",
+                  },
+                ]
+                  .filter((stat) => typeof stat.value !== "undefined")
+                  .map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <stat.icon className={`h-3.5 w-3.5 ${stat.color}`} />
+                        <span>{stat.label}:</span>
+                      </div>
+                      <span className={`font-semibold ${stat.color}`}>
+                        {stat.value}
+                      </span>
+                    </div>
+                  ))}
+                {typeof totalGames === "undefined" && // Show a message if stats are not loaded yet but user is logged in
+                  status === "authenticated" &&
+                  !isLoading && (
+                    <p className="col-span-2 text-xs text-muted-foreground text-center py-2">
+                      Play some games to see your stats.
+                    </p>
+                  )}
+              </div>
+            </div>
+          )}
+
+        <div className="text-sm text-muted-foreground">
+          <Link
+            href="/history?tab=history"
+            onClick={() => setIsNavigatingToHistory(true)}
+            className="group mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            {isNavigatingToHistory ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                View Game History
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </>
+            )}
+          </Link>
         </div>
       </CardContent>
     </Card>
