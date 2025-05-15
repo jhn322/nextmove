@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { CHESS_WORDLE_WORDS } from "@/lib/chess-wordle-words";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,12 +61,16 @@ export function ChessWordleClient() {
   const [totalGuessesInWonGames, setTotalGuessesInWonGames] =
     useState<number>(0);
 
+  // ** Valid Words ** //
+  const validFiveLetterWords = useMemo(() => {
+    return CHESS_WORDLE_WORDS.filter((word) => word.length === WORD_LENGTH).map(
+      (word) => word.toUpperCase()
+    );
+  }, []);
+
   // ** Game Initialization and Reset ** //
   const initializeGame = useCallback(() => {
-    const validWords = CHESS_WORDLE_WORDS.filter(
-      (word) => word.length === WORD_LENGTH
-    );
-    if (validWords.length === 0) {
+    if (validFiveLetterWords.length === 0) {
       toast.error(
         "No valid words of the required length found. Please check word list."
       );
@@ -75,7 +79,9 @@ export function ChessWordleClient() {
       return;
     }
     const newWord =
-      validWords[Math.floor(Math.random() * validWords.length)].toUpperCase();
+      validFiveLetterWords[
+        Math.floor(Math.random() * validFiveLetterWords.length)
+      ].toUpperCase();
     setTargetWord(newWord);
     setGuesses(
       Array(MAX_GUESSES)
@@ -94,11 +100,18 @@ export function ChessWordleClient() {
     setCurrentGuess,
     setGameStatus,
     setKeyboardStatuses,
+    validFiveLetterWords,
   ]);
 
   // ** Game Logic Functions ** //
   const handleSubmitGuess = useCallback(() => {
     if (currentGuess.length !== WORD_LENGTH) {
+      toast.warning(`Word must be ${WORD_LENGTH} letters long.`);
+      return;
+    }
+
+    if (!validFiveLetterWords.includes(currentGuess.toUpperCase())) {
+      toast.warning("Not in word list");
       return;
     }
 
@@ -178,15 +191,21 @@ export function ChessWordleClient() {
         [actualGuessesTaken]: (prev[actualGuessesTaken] || 0) + 1,
       }));
       setTotalGuessesInWonGames((prev) => prev + actualGuessesTaken);
+      toast.success("You Won!", {
+        description: `The word was: ${targetWord}. You guessed it in ${actualGuessesTaken} tries.`,
+        icon: <CheckCircle className="w-5 h-5" />,
+        duration: 5000,
+      });
     } else if (activeGuessIndex === MAX_GUESSES - 1) {
       setGameStatus("lost");
-      setTimeout(
-        () => toast.error(`Game Over! The word was ${targetWord}.`),
-        500
-      );
       const newTotalPlays = totalPlays + 1;
       setTotalPlays(newTotalPlays);
       setCurrentStreak(0);
+      toast.error("Game Over!", {
+        description: `The word was: ${targetWord}.`,
+        icon: <AlertCircle className="w-5 h-5" />,
+        duration: 5000,
+      });
     }
 
     setCurrentGuess("");
@@ -200,6 +219,7 @@ export function ChessWordleClient() {
     totalPlays,
     currentStreak,
     longestStreak,
+    validFiveLetterWords,
   ]);
 
   const handleVirtualKeyClick = useCallback(
@@ -275,6 +295,7 @@ export function ChessWordleClient() {
     setGuessDistribution,
     setTotalGuessesInWonGames,
     setIsMounted,
+    validFiveLetterWords,
   ]);
 
   // Save stats to localStorage on change
@@ -301,6 +322,7 @@ export function ChessWordleClient() {
     guessDistribution,
     totalGuessesInWonGames,
     isMounted,
+    validFiveLetterWords,
   ]);
 
   useEffect(() => {
@@ -331,6 +353,7 @@ export function ChessWordleClient() {
     targetWord,
     handleSubmitGuess,
     isInstructionsModalOpen,
+    validFiveLetterWords,
   ]);
 
   // ** UI Rendering ** //
@@ -381,7 +404,7 @@ export function ChessWordleClient() {
           <div
             key={index}
             className={cn(
-              "w-10 h-10 sm:w-11 sm:h-11 border-2 rounded flex items-center justify-center text-lg sm:text-xl font-bold uppercase",
+              "w-8 h-8 sm:w-10 sm:h-10 border rounded flex items-center justify-center text-base sm:text-lg font-bold uppercase",
               statuses[letter] === "correct" &&
                 "bg-green-500 border-green-600 text-white",
               statuses[letter] === "present" &&
@@ -395,7 +418,7 @@ export function ChessWordleClient() {
           </div>
         ))}
       </div>
-      <p className="text-sm text-muted-foreground leading-snug">
+      <p className="text-xs sm:text-sm text-muted-foreground leading-snug">
         <strong
           className={cn(
             statuses[Object.keys(statuses)[0]] === "correct" &&
@@ -423,8 +446,9 @@ export function ChessWordleClient() {
           variant="outline"
           aria-label="Show instructions"
           onClick={() => setIsInstructionsModalOpen(true)}
+          className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm"
         >
-          <Info className="w-5 h-5 mr-0 sm:mr-2" />
+          <Info className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
           <div>
             <span className="hidden sm:inline">How to Play</span>
             <span className="sm:hidden">Instructions</span>
@@ -437,18 +461,18 @@ export function ChessWordleClient() {
         open={isInstructionsModalOpen}
         onOpenChange={setIsInstructionsModalOpen}
       >
-        <DialogContent className="max-w-md sm:max-w-lg bg-card/95 backdrop-blur-sm text-foreground p-0">
-          <DialogHeader className="p-6 pb-4">
-            <DialogTitle className="text-2xl font-bold text-center text-primary">
+        <DialogContent className="w-[90vw] max-w-lg sm:max-w-md bg-card/95 backdrop-blur-sm text-foreground p-0 rounded-lg">
+          <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-primary">
               How To Play
             </DialogTitle>
           </DialogHeader>
-          <div className="px-6 pb-6 space-y-4 text-sm sm:text-base">
+          <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4 text-xs sm:text-sm">
             <p>
               Guess the <strong className="text-primary">{CHESS_WORDLE}</strong>{" "}
               in {MAX_GUESSES} tries.
             </p>
-            <ul className="list-disc list-outside pl-5 space-y-1.5 text-muted-foreground">
+            <ul className="list-disc list-outside pl-4 sm:pl-5 space-y-1 sm:space-y-1.5 text-muted-foreground">
               <li>
                 Each guess must be a valid {WORD_LENGTH}-letter chess-related
                 word.
@@ -496,7 +520,7 @@ export function ChessWordleClient() {
         {guesses.map((guess, rowIndex) => (
           <div
             key={rowIndex}
-            className={`grid grid-cols-${WORD_LENGTH} gap-1.5`}
+            className={`grid grid-cols-${WORD_LENGTH} gap-1 sm:gap-1.5`}
           >
             {Array.from({ length: WORD_LENGTH }).map((_, letterIndex) => {
               const letter =
@@ -512,7 +536,7 @@ export function ChessWordleClient() {
                   key={letterIndex}
                   aria-label={`Letter ${letterIndex + 1} of guess ${rowIndex + 1}: ${letter || "empty"}, status: ${status}`}
                   className={cn(
-                    "w-16 h-16 sm:w-20 sm:h-20 border-2 rounded flex items-center justify-center text-2xl sm:text-3xl font-bold uppercase transition-all duration-300",
+                    "w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 border-2 rounded flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold uppercase transition-all duration-300",
                     status === "correct" &&
                       "bg-green-500 border-green-600 text-white rotate-[360deg]",
                     status === "present" &&
@@ -534,17 +558,17 @@ export function ChessWordleClient() {
       </div>
 
       {/* On-screen Keyboard */}
-      <div className="w-full space-y-2">
+      <div className="w-full space-y-1.5 sm:space-y-2">
         {["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"].map((row, KbdRowIndex) => (
           <div
             key={KbdRowIndex}
-            className={`flex justify-center gap-1.5 sm:gap-2 w-full`}
+            className={`flex justify-center gap-1 sm:gap-1.5 w-full`}
           >
             {KbdRowIndex === 2 && (
               <Button
                 onClick={() => handleVirtualKeyClick("ENTER")}
                 aria-label="Submit guess"
-                className="h-12 text-xs font-semibold px-3 sm:px-4 flex-1 sm:flex-none sm:w-20 bg-primary/80 hover:bg-primary text-primary-foreground"
+                className="h-12 sm:h-14 text-[10px] sm:text-xs font-semibold px-2 sm:px-3 flex-[1.5] sm:flex-none sm:min-w-[4rem] md:min-w-[5rem] bg-primary/80 hover:bg-primary text-primary-foreground"
                 disabled={
                   gameStatus !== "playing" ||
                   currentGuess.length !== WORD_LENGTH
@@ -562,7 +586,8 @@ export function ChessWordleClient() {
                   aria-label={`Keyboard key ${key}`}
                   variant="outline"
                   className={cn(
-                    "h-12 w-auto aspect-square text-sm sm:text-base font-bold flex-1 max-w-[3rem] sm:max-w-[3.5rem] p-0",
+                    "h-12 sm:h-14 text-xs sm:text-sm font-bold flex-1 p-0",
+                    "max-w-[2.5rem] sm:max-w-[3rem] md:max-w-[3.5rem]",
                     keyStatus === "correct" &&
                       "bg-green-500 border-green-600 text-white hover:bg-green-600",
                     keyStatus === "present" &&
@@ -582,7 +607,7 @@ export function ChessWordleClient() {
                 onClick={() => handleVirtualKeyClick("BACKSPACE")}
                 variant="outline"
                 aria-label="Backspace or delete last letter"
-                className="h-12 px-3 sm:px-4 flex-1 sm:flex-none sm:w-20"
+                className="h-12 sm:h-14 px-2 sm:px-3 flex-[1.5] sm:flex-none sm:min-w-[4rem] md:min-w-[5rem] text-lg sm:text-xl"
                 disabled={gameStatus !== "playing"}
               >
                 ⌫
@@ -594,34 +619,10 @@ export function ChessWordleClient() {
 
       {/* Game Status / Play Again */}
       {(gameStatus === "won" || gameStatus === "lost") && (
-        <div className="mt-6 sm:mt-8 text-center p-4 sm:p-6 bg-card border border-border/50 rounded-lg shadow-md w-full">
-          {gameStatus === "won" && (
-            <div className="flex flex-col items-center">
-              <CheckCircle className="w-12 h-12 text-green-500 mb-3" />
-              <h2 className="text-2xl font-semibold mb-2">You Won!</h2>
-              <p className="text-muted-foreground mb-1">
-                The word was:{" "}
-                <strong className="text-primary">{targetWord}</strong>
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                You guessed it in{" "}
-                {guesses.findIndex((g) => g.word === targetWord) + 1} tries.
-              </p>
-            </div>
-          )}
-          {gameStatus === "lost" && (
-            <div className="flex flex-col items-center">
-              <AlertCircle className="w-12 h-12 text-destructive mb-3" />
-              <h2 className="text-2xl font-semibold mb-2">Game Over!</h2>
-              <p className="text-muted-foreground mb-4">
-                The word was:{" "}
-                <strong className="text-primary">{targetWord}</strong>
-              </p>
-            </div>
-          )}
+        <div className="mt-6 sm:mt-8 text-center w-full flex justify-center">
           <Button
             onClick={initializeGame}
-            className="w-full sm:w-auto mt-2"
+            className="w-full sm:w-auto max-w-xs"
             size="lg"
             aria-label="Play Again"
           >
