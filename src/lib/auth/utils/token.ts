@@ -264,8 +264,6 @@ export const generateAndSaveVerificationToken = async (
       `Failed to generate or save verification token for ${email}:`,
       error
     );
-    // Ensure a more generic error is thrown to the caller if needed,
-    // or let specific errors propagate if handled upstream.
     throw new Error("Could not process verification token.");
   }
 };
