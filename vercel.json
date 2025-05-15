@@ -10,7 +10,7 @@
   "crons": [
     {
       "path": "/api/internal/trigger-cleanup",
-      "schedule": "*/1 * * * *"
+      "schedule": "0 0 * * *"
     }
   ],
   "rewrites": [{ "source": "/api/auth/(.*)", "destination": "/api/auth/$1" }],

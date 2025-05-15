@@ -183,10 +183,11 @@ export async function consumeVerificationToken(
 }
 
 // For Production: Verification tokens expire in 7 days.
-// const VERIFICATION_TOKEN_EXPIRES_IN_DAYS = 7;
+const VERIFICATION_TOKEN_EXPIRES_IN_DAYS = 7;
 
 // For testing (e.g., 1-5 minutes):
-const VERIFICATION_TOKEN_EXPIRES_IN_MINUTES = 1;
+// const VERIFICATION_TOKEN_EXPIRES_IN_MINUTES = 1;
+// Note: If testing with very short expiration, ensure your cron job schedule in vercel.json
 
 /**
  * Calculates the expiration date for a verification token.
@@ -195,12 +196,10 @@ const VERIFICATION_TOKEN_EXPIRES_IN_MINUTES = 1;
 const getVerificationTokenExpires = (): Date => {
   const expires = new Date();
   // For production (e.g., 7 days)
-  // expires.setDate(expires.getDate() + VERIFICATION_TOKEN_EXPIRES_IN_DAYS);
+  expires.setDate(expires.getDate() + VERIFICATION_TOKEN_EXPIRES_IN_DAYS);
 
   // For testing with minutes:
-  expires.setMinutes(
-    expires.getMinutes() + VERIFICATION_TOKEN_EXPIRES_IN_MINUTES
-  );
+  // expires.setMinutes(expires.getMinutes() + VERIFICATION_TOKEN_EXPIRES_IN_MINUTES);
   return expires;
 };
 
