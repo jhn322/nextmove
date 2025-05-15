@@ -4,12 +4,20 @@ A modern chess application built with Next.js, TypeScript, TailwindCSS, Shadcn, 
 
 ## Features
 
-- Play chess against AI opponents of varying difficulty levels
+- Play chess against AI opponents of varying difficulty levels (beginner to Grandmaster equivalent ELO)
+- Game history tracking and statistics for traditional chess
+- **New Game Mode:** Chess-themed Wordle game (accessible as the 9th card on the home page)
+  - History tracking and statistics for Wordle game mode
 - User authentication with NextAuth.js (Google & Email/Password)
-- Game history tracking and statistics
+  - Email verification with option to resend verification email
+  - Secure password reset functionality (link valid for 24 hours)
+  - Graceful UX handling for Google OAuth users attempting password reset
+  - Automatic deletion of unverified accounts and associated tokens after 7 days for enhanced security
+- Game history tracking and statistics for traditional chess
 - Customizable user settings
 - Sound effects and animations
 - Responsive design for desktop and mobile
+- Loading states on interactive buttons for improved user feedback and skeletons
 
 ## Tech Stack
 
@@ -105,10 +113,16 @@ Refer to `prisma/schema.prisma` for understanding the data models.
 
 The application uses NextAuth.js with the Prisma adapter for authentication, connecting to a MongoDB database. It supports:
 
-- Email and password-based sign-up and sign-in.
 - OAuth Google provider.
+- Email and password-based sign-up and sign-in, featuring:
+  - Mandatory email verification (new users must verify their email).
+  - Ability to resend verification emails.
+  - Unverified accounts are automatically deleted after 7 days if not verified.
+- Secure password reset mechanism for email/password accounts (links expire after 24 hours).
+- OAuth Google provider (password reset not applicable/handled gracefully).
+- User-friendly notifications for authentication events (e.g., when a Google user tries to reset a password).
 
-User sessions are managed by NextAuth.js, and user data is stored in the MongoDB database as defined in the `prisma/schema.prisma` file. Key models include `User`, `Account`, `Session`, and `VerificationToken`.
+User sessions are managed by NextAuth.js, and user data is stored in the MongoDB database as defined in the `prisma/schema.prisma` file. Key models include `User`, `Account`, `Session`, `VerificationToken`, and `PasswordResetToken`.
 
 ## Database Schema
 
