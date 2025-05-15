@@ -181,3 +181,91 @@ export async function consumeVerificationToken(
     return false;
   }
 }
+
+// For Production: Verification tokens expire in 7 days.
+// const VERIFICATION_TOKEN_EXPIRES_IN_DAYS = 7;
+
+// For testing (e.g., 1-5 minutes):
+const VERIFICATION_TOKEN_EXPIRES_IN_MINUTES = 1;
+
+/**
+ * Calculates the expiration date for a verification token.
+ * @returns Date object representing the expiration time.
+ */
+const getVerificationTokenExpires = (): Date => {
+  const expires = new Date();
+  // For production (e.g., 7 days)
+  // expires.setDate(expires.getDate() + VERIFICATION_TOKEN_EXPIRES_IN_DAYS);
+
+  // For testing with minutes:
+  expires.setMinutes(
+    expires.getMinutes() + VERIFICATION_TOKEN_EXPIRES_IN_MINUTES
+  );
+  return expires;
+};
+
+/**
+ * Generates a secure random token string.
+ * Typically used for email verification or password resets before hashing.
+ * @returns A random hex string.
+ */
+export function generateRawToken(): string {
+  const token = randomBytes(32).toString("hex");
+  // console.log(`Generated new raw token starting with: ${token.substring(0, 10)}...`); // Optional: for debugging
+  return token;
+}
+
+/**
+ * Generates a unique verification token, deletes any existing tokens for the
+ * specified email, saves the new token to the database, and returns the token.
+ * This stores the *raw* token, suitable for email verification links.
+ *
+ * @param email - The email address (identifier) for which to generate the token.
+ * @returns The generated verification token string.
+ * @throws Will throw an error if database operations fail.
+ */
+export const generateAndSaveVerificationToken = async (
+  email: string
+): Promise<string> => {
+  // * 1. Generate a secure raw token
+  const token = generateRawToken();
+  const expires = getVerificationTokenExpires();
+
+  console.log(
+    `Generating new verification token for ${email} (expires: ${expires.toISOString()})`
+  );
+
+  try {
+    // * 2. Delete any existing verification tokens for this email
+    // This ensures only the latest verification link is valid for this purpose.
+    const deleteResult = await prisma.verificationToken.deleteMany({
+      where: { identifier: email },
+    });
+    if (deleteResult.count > 0) {
+      console.log(
+        `Deleted ${deleteResult.count} existing verification token(s) for ${email}`
+      );
+    }
+
+    // * 3. Save the new verification token
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token: token, // Store the raw token
+        expires,
+      },
+    });
+    console.log(`Successfully saved new verification token for ${email}`);
+
+    // * 4. Return the generated token
+    return token;
+  } catch (error) {
+    console.error(
+      `Failed to generate or save verification token for ${email}:`,
+      error
+    );
+    // Ensure a more generic error is thrown to the caller if needed,
+    // or let specific errors propagate if handled upstream.
+    throw new Error("Could not process verification token.");
+  }
+};

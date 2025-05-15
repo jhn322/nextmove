@@ -2,8 +2,17 @@
   "functions": {
     "src/app/api/auth/**/*": {
       "maxDuration": 60
+    },
+    "src/app/api/internal/**/*": {
+      "maxDuration": 60
     }
   },
+  "crons": [
+    {
+      "path": "/api/internal/trigger-cleanup",
+      "schedule": "*/1 * * * *"
+    }
+  ],
   "rewrites": [{ "source": "/api/auth/(.*)", "destination": "/api/auth/$1" }],
   "headers": [
     {
