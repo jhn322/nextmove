@@ -37,16 +37,50 @@ export async function POST(req: Request) {
       where: { email },
     });
 
-    // ** Important: Only allow password reset for users with a password set (not OAuth users)
-    // Also, check if email is verified
-    if (!user || !user.password) {
-      // Return a generic message to avoid disclosing whether an email exists
+    // If no user is found, return a generic message to avoid email enumeration
+    if (!user) {
       return NextResponse.json(
         {
           message:
             "If an account with this email exists and uses password login, a reset link has been sent.",
         },
         { status: 200 }
+      );
+    }
+
+    // If user exists but has no password (aka an OAuth account)
+    if (!user.password) {
+      return NextResponse.json(
+        {
+          message:
+            "This email address is associated with an account using Google Sign-In. Please try logging in directly with that method. No password reset is required for this account type.",
+          isOAuthAccount: true,
+        },
+        { status: 200 }
+      );
+    }
+
+    // Check for recent password reset requests (e.g., within the last 24 hours)
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentToken = await db.passwordResetToken.findFirst({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: twentyFourHoursAgo,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (recentToken) {
+      return NextResponse.json(
+        {
+          message:
+            "You have already requested a password reset recently. Please try again later or check your email for the existing link.",
+        },
+        { status: 429 } // Too Many Requests
       );
     }
 
@@ -70,6 +104,7 @@ export async function POST(req: Request) {
       {
         message:
           "If an account with this email exists and uses password login, a reset link has been sent.",
+        isOAuthAccount: false, // Explicitly set for non-OAuth successful password reset
       },
       { status: 200 }
     );

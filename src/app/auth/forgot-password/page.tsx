@@ -19,12 +19,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { forgotPasswordSchema } from "@/lib/validations/auth/forgot-password";
+import { AUTH_PATHS } from "@/lib/constants/routes";
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isSuccess, setIsSuccess] = React.useState<boolean>(false);
+  const [pageError, setPageError] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(
+    null
+  );
+  const [isOAuthAccount, setIsOAuthAccount] = React.useState<boolean>(false);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -35,6 +41,11 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
+    setIsSuccess(false);
+    setPageError(null);
+    setSuccessMessage(null);
+    setIsOAuthAccount(false);
+
     try {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
@@ -44,21 +55,32 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify(data),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || "Failed to send password reset email."
-        );
+        const message =
+          responseData.message || "Failed to send password reset email.";
+        setPageError(message);
+        if (response.status !== 429) {
+          toast.error(message);
+        }
+        return;
       }
 
+      setSuccessMessage(responseData.message);
+      setIsOAuthAccount(responseData.isOAuthAccount || false);
       setIsSuccess(true);
-      toast.success("Password reset email sent. Please check your inbox.");
+      if (!responseData.isOAuthAccount) {
+        toast.success("Password reset link sent. Please check your inbox.");
+      } else {
+        toast.info("Please see the information message for more information.");
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "An unexpected error occurred.";
-      console.error("Forgot password error:", errorMessage);
+          : "An unexpected network error occurred.";
+      setPageError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -84,22 +106,38 @@ export default function ForgotPasswordPage() {
                 </span>
               </div>
             </Link>
-            <h2 className="mt-4 text-2xl font-bold leading-9 tracking-tight text-foreground sm:text-3xl">
-              Forgot Your Password?
-            </h2>
-            <p className="mt-2 text-md leading-6 text-muted-foreground">
-              Enter your email below to receive a reset link.
-            </p>
+            {!isSuccess && (
+              <>
+                <h2 className="mt-4 text-2xl font-bold leading-9 tracking-tight text-foreground sm:text-3xl">
+                  Forgot Your Password?
+                </h2>
+                <p className="mt-2 text-md leading-6 text-muted-foreground">
+                  Enter your email below to receive a reset link.
+                </p>
+              </>
+            )}
           </div>
 
           <div className="mt-10">
+            {pageError && !isSuccess && (
+              <div className="mb-6 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-center text-sm text-destructive dark:border-destructive dark:bg-destructive/20 dark:text-red-400">
+                <p>{pageError}</p>
+              </div>
+            )}
+
             {isSuccess ? (
-              <div className="space-y-4 text-center">
-                <p className="text-green-600">
-                  Check your email for the reset link!
+              <div className="space-y-6 text-center">
+                <h2 className="text-2xl font-bold leading-9 tracking-tight text-foreground sm:text-3xl">
+                  {isOAuthAccount ? "Information" : "Reset Link Sent"}
+                </h2>
+                <p className="text-muted-foreground">
+                  {successMessage ||
+                    (isOAuthAccount
+                      ? "This account uses Google Sign-In. No password reset is needed."
+                      : "Check your email for the reset link!")}
                 </p>
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/auth/login">Back to Login</Link>
+                  <Link href={AUTH_PATHS.LOGIN}>Back to Login</Link>
                 </Button>
               </div>
             ) : (
@@ -137,7 +175,7 @@ export default function ForgotPasswordPage() {
             {!isSuccess && (
               <div className="mt-6 text-center text-sm">
                 <Link
-                  href="/auth/login"
+                  href={AUTH_PATHS.LOGIN}
                   className="font-medium text-primary hover:text-primary/90"
                 >
                   Remembered your password? Sign in
