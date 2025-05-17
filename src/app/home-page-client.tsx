@@ -977,7 +977,7 @@ export function HomePageClient({
                             <div className="text-xs text-muted-foreground truncate">
                               {nextBot.description}
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-2 mt-1.5">
                               <Badge
                                 variant="outline"
                                 className={cn(
@@ -1009,8 +1009,8 @@ export function HomePageClient({
                                 {nextBot.difficulty.charAt(0).toUpperCase() +
                                   nextBot.difficulty.slice(1).toLowerCase()}
                               </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                Rating: {nextBot.rating}
+                              <span className="text-xs px-2 py-0.5 bg-amber-500/15 text-amber-400 rounded-full">
+                                {nextBot.rating} ELO
                               </span>
                             </div>
                           </div>

@@ -496,9 +496,9 @@ const VictoryModal = ({
                           <Button
                             onClick={handlePlayNextBot}
                             variant="default"
-                            className="w-full text-sm sm:text-base py-2 h-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-medium"
+                            className="w-full text-sm sm:text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg transition-all duration-300 font-semibold flex items-center justify-center gap-2"
                           >
-                            <TrendingUp className="h-5 w-5 mr-2" />
+                            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                             Next Challenge
                           </Button>
                         </TooltipTrigger>
@@ -519,10 +519,10 @@ const VictoryModal = ({
                       <TooltipTrigger asChild>
                         <Button
                           onClick={handleRematch}
-                          variant="secondary"
-                          className="flex-1 text-sm sm:text-base py-2 h-auto"
+                          variant="outline"
+                          className="flex-1 text-sm sm:text-base py-2 h-auto border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400 font-medium flex items-center justify-center gap-2"
                         >
-                          <HandshakeIcon className="h-5 w-5 mr-2" />
+                          <HandshakeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           Rematch
                         </Button>
                       </TooltipTrigger>
@@ -538,9 +538,9 @@ const VictoryModal = ({
                         <Button
                           onClick={handleNewBot}
                           variant="outline"
-                          className="flex-1 text-sm sm:text-base py-2 h-auto"
+                          className="flex-1 text-sm sm:text-base py-2 h-auto font-medium flex items-center justify-center gap-2"
                         >
-                          <UserPlus className="h-5 w-5 mr-2" />
+                          <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
                           New Bot
                         </Button>
                       </TooltipTrigger>
