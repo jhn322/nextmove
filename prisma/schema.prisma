@@ -30,7 +30,7 @@ model User {
   games         Game[]     // Add relation to Game model
   timezone      String?    @default("UTC") // User's selected timezone (e.g., "Europe/London")
   clockFormat   String?    @default("24")  // User's selected clock format ("12" or "24")
-  elo Int? @default(1000) // User's ELO rating
+  elo Int @default(600) // User's ELO rating
   firstName           String? // User's first name
   lastName            String? // User's last name
   location            String? // User's location

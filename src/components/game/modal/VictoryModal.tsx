@@ -83,7 +83,9 @@ const VictoryModal = ({
   const [playerName, setPlayerName] = useState(defaultPlayerName);
   const [playerAvatar, setPlayerAvatar] = useState("/default-pfp.png");
   const [resultSaved, setResultSaved] = useState(false);
-  const { session } = useAuth();
+  const { session, refreshSession } = useAuth();
+  const [gameEloDelta, setGameEloDelta] = useState<number | null>(null);
+  const [gameNewElo, setGameNewElo] = useState<number | null>(null);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -135,108 +137,130 @@ const VictoryModal = ({
       } else {
         // Reset resultSaved when viewing a new game state
         setResultSaved(false);
+        setGameEloDelta(null);
+        setGameNewElo(null);
       }
     }
-  }, [game, gameStateId]);
+  }, [game, gameStateId, isOpen]);
 
   const renderWinnerText = useCallback(() => {
+    let baseMessageText: string;
+    let eloDisplay: React.ReactNode = null;
+
     if (isResignation) {
-      return "Are you sure you want to resign?";
+      baseMessageText = "Are you sure you want to resign?";
+    } else if (game.isDraw()) {
+      if (game.isStalemate()) baseMessageText = "Stalemate - game is a draw!";
+      else if (game.isThreefoldRepetition())
+        baseMessageText = "Draw by repetition!";
+      else if (game.isInsufficientMaterial())
+        baseMessageText = "Draw by insufficient material!";
+      else baseMessageText = "Game is a draw!";
+    } else if (game.isCheckmate() || (game.isResigned && !isResignation)) {
+      // Handle checkmate or bot resignation
+      const isWinner = isPlayerWinner();
+      const winnerName = isWinner ? "You" : selectedBot?.name || "Bot";
+      const endMessage = isWinner ? victoryMessage : defeatMessage;
+      baseMessageText = `${winnerName} won! ${endMessage}`;
+    } else {
+      // Player initiated resignation (after confirm), or other unhandled game end states
+      baseMessageText = `${selectedBot?.name || "Bot"} won by resignation!`;
     }
-    if (game.isDraw()) {
-      if (game.isStalemate()) return "Stalemate - game is a draw!";
-      if (game.isThreefoldRepetition()) return "Draw by repetition!";
-      if (game.isInsufficientMaterial())
-        return "Draw by insufficient material!";
-      return "Game is a draw!";
-    }
-    if (game.isCheckmate()) {
-      const losingColor = game.turn() === "w" ? "w" : "b";
-      const winningColor = losingColor === "w" ? "b" : "w";
-      const isPlayerWon = winningColor === playerColor;
-      const winnerName = isPlayerWon ? "You" : selectedBot?.name || "Bot";
-      return (
+
+    if (typeof gameEloDelta === "number" && gameEloDelta !== 0) {
+      const eloChangeString =
+        gameEloDelta > 0 ? `+${gameEloDelta}` : `${gameEloDelta}`;
+      const eloColor = gameEloDelta > 0 ? "text-green-500" : "text-red-500";
+      eloDisplay = (
         <>
-          <span className={isPlayerWon ? "text-blue-400" : "text-red-400"}>
-            {winnerName}
-          </span>{" "}
-          won!
           <br />
-          {isPlayerWon ? (
-            <span className="text-green-500">{victoryMessage}</span>
-          ) : (
-            <span className="text-yellow-500">{defeatMessage}</span>
+          <span className={`font-semibold ${eloColor}`}>
+            ELO Change: {eloChangeString}
+          </span>
+          {typeof gameNewElo === "number" && (
+            <span className="block text-sm text-muted-foreground mt-0.5">
+              New ELO: {gameNewElo}
+            </span>
           )}
         </>
       );
     }
+
     return (
       <>
-        <span className="text-red-400">{selectedBot?.name || "Bot"}</span> won
-        by resignation!
+        {baseMessageText}
+        {eloDisplay}
       </>
     );
   }, [
     game,
     isResignation,
-    playerColor,
     selectedBot,
     victoryMessage,
     defeatMessage,
+    gameEloDelta,
+    gameNewElo,
+    isPlayerWinner,
   ]);
 
-  // Save game result to database
+  // Save game result to database and update ELO state
   useEffect(() => {
-    const saveResult = async () => {
+    const saveResultAndUpdateEloInternal = async () => {
       if (
         isOpen &&
         session?.user?.id &&
         !resultSaved &&
-        (game.isGameOver() || isResignation || game.isResigned) &&
+        (game.isGameOver() || isResignation) &&
         gameStateId
       ) {
         try {
-          // Check one more time if this game has already been saved
-          const savedGameId = localStorage.getItem("last-saved-game-id");
-          const savedGameFen = localStorage.getItem("last-saved-game-fen");
-
-          if (savedGameId === gameStateId && savedGameFen === game.fen()) {
-            setResultSaved(true);
-            return;
-          }
-
-          // Call the server action instead of the direct service
-          await saveGameAction({
+          const gameSaveResponse = await saveGameAction({
             userId: session.user.id,
-            fen: game.fen(), // Pass FEN string
-            pgnHistory: game.history({ verbose: false }), // Explicitly get SAN strings
+            fen: game.fen(),
+            pgnHistory: game.history({ verbose: false }),
             difficulty,
             playerColor,
             selectedBot,
             gameTime,
             movesCount,
-            isResignation: isResignation || game.isResigned,
+            // Determine if it's a player resignation for the save action
+            isResignation: isResignation && game.turn() === playerColor,
           });
 
-          setResultSaved(true);
+          if (gameSaveResponse) {
+            setResultSaved(true);
+            localStorage.setItem("last-saved-game-id", gameStateId);
+            localStorage.setItem("last-saved-game-fen", game.fen());
+            localStorage.setItem(
+              "last-saved-game-result",
+              gameSaveResponse.result
+            );
 
-          // Store both the state ID and FEN to prevent duplicate saves
-          localStorage.setItem("last-saved-game-id", gameStateId);
-          localStorage.setItem("last-saved-game-fen", game.fen());
+            setGameEloDelta(gameSaveResponse.eloDelta);
+            setGameNewElo(gameSaveResponse.newElo);
 
-          // Store the specific result too for additional verification
-          localStorage.setItem(
-            "last-saved-game-result",
-            isPlayerWinner() ? "win" : game.isDraw() ? "draw" : "loss"
-          );
+            await refreshSession();
+          } else {
+            console.error(
+              "VictoryModal: Failed to save game or get ELO update from action."
+            );
+          }
         } catch (error) {
-          console.error("Error saving game result:", error);
+          console.error("Error saving game result and updating ELO:", error);
         }
-      } else {
       }
     };
 
-    saveResult();
+    // Call this effect only when the game is definitively over and the modal is open.
+    // isResignation prop indicates the modal is in "confirm resign" mode OR player has just resigned.
+    if (isOpen && (game.isGameOver() || (isResignation && resultSaved))) {
+      // ensure save happens after resignation confirmation
+      if (!resultSaved) saveResultAndUpdateEloInternal();
+    } else if (isOpen && isResignation && !resultSaved) {
+      // This case is for when the modal is open for resignation confirmation, but game not yet saved.
+      // Don't save yet, wait for user to click "Confirm Resignation" button.
+      // The `onConfirmResign` prop will handle the actual game update and then this effect might re-run.
+    }
   }, [
     isOpen,
     isResignation,
@@ -249,7 +273,7 @@ const VictoryModal = ({
     gameTime,
     movesCount,
     gameStateId,
-    isPlayerWinner,
+    refreshSession, // Removed isPlayerWinner, rely on game.isGameOver()
   ]);
 
   useEffect(() => {

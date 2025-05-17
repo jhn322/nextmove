@@ -2,8 +2,12 @@
 
 import { Chess } from "chess.js";
 import { type Bot } from "@/components/game/data/bots";
-import { saveGameResult, type GameHistory } from "@/lib/game-service"; // Assuming GameHistory is exported
-import { clearUserGameHistory } from "@/lib/game-service"; // Assuming clearUserGameHistory is exported
+import { saveGameResult, type GameHistory } from "@/lib/game-service";
+import { clearUserGameHistory } from "@/lib/game-service";
+import prisma from "@/lib/prisma";
+import { calculateNewElo } from "@/lib/elo";
+
+const DEFAULT_START_ELO = 600; // Fallback, though Prisma schema default should handle new users
 
 // Interface for the parameters of saveGameAction, mirroring SaveGameResultParams
 // but ensuring serializability for server action arguments.
@@ -21,6 +25,11 @@ interface SaveGameActionParams {
   isResignation?: boolean;
 }
 
+interface SaveGameResultWithElo extends GameHistory {
+  eloDelta: number;
+  newElo: number;
+}
+
 export const saveGameAction = async ({
   userId,
   fen,
@@ -31,7 +40,7 @@ export const saveGameAction = async ({
   gameTime,
   movesCount,
   isResignation,
-}: SaveGameActionParams): Promise<GameHistory | null> => {
+}: SaveGameActionParams): Promise<SaveGameResultWithElo | null> => {
   if (!userId || !selectedBot) {
     console.error("saveGameAction: Missing userId or selectedBot");
     return null;
@@ -40,21 +49,77 @@ export const saveGameAction = async ({
   const serverGame = new Chess();
   serverGame.load(fen);
 
+  let actualGameResult: "win" | "loss" | "draw" | "resign";
+
+  if (isResignation) {
+    actualGameResult = "resign";
+  } else if (serverGame.isCheckmate()) {
+    const winningColor = serverGame.turn() === "w" ? "b" : "w";
+    actualGameResult = winningColor === playerColor ? "win" : "loss";
+  } else if (serverGame.isDraw()) {
+    actualGameResult = "draw";
+  } else {
+    console.warn("saveGameAction: Game is not over but action was called.");
+    return null;
+  }
+
   try {
-    const result = await saveGameResult({
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      console.error(`saveGameAction: User with id ${userId} not found.`);
+      return null;
+    }
+
+    let eloDelta = 0;
+    let newElo = user.elo ?? DEFAULT_START_ELO; // Use current ELO or default
+
+    // Calculate ELO only for wins or losses (including resignations as losses)
+    if (
+      actualGameResult === "win" ||
+      actualGameResult === "loss" ||
+      actualGameResult === "resign"
+    ) {
+      const gameResultForElo: 1 | 0 = actualGameResult === "win" ? 1 : 0;
+      const eloCalculation = calculateNewElo(
+        user.elo ?? DEFAULT_START_ELO, // Ensure we pass a number or null/undefined
+        selectedBot.rating,
+        gameResultForElo
+      );
+      eloDelta = eloCalculation.eloDelta;
+      newElo = eloCalculation.newElo;
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { elo: newElo },
+      });
+    }
+
+    // Save the game outcome to the Game model (this determines result string "win", "loss", etc.)
+    const savedGame = await saveGameResult({
       userId,
-      game: serverGame,
+      game: serverGame, // Pass the loaded Chess instance
       difficulty,
       playerColor,
       selectedBot,
       gameTime,
       movesCount,
-      isResignation,
+      isResignation: actualGameResult === "resign", // Explicitly pass based on determined result
+      // actualGameResult can be passed to saveGameResult if it accepts it to set the result string
     });
-    return result;
+
+    if (!savedGame) {
+      console.error("saveGameAction: Failed to save game result via service.");
+      // Potentially roll back ELO change if game save fails? For now, ELO is updated first.
+      return null;
+    }
+
+    return {
+      ...savedGame,
+      eloDelta,
+      newElo,
+    };
   } catch (error) {
-    console.error("Error in saveGameAction calling saveGameResult:", error);
-    // Consider returning a more specific error object if needed by the client
+    console.error("Error in saveGameAction:", error);
     return null;
   }
 };

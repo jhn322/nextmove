@@ -400,10 +400,7 @@ export default function PlayerProfile({
                       </span>
                     )}
                   </div>
-                  <EloBadge
-                    elo={typeof winRate === "number" ? winRate : undefined}
-                    className="mt-1"
-                  />
+                  <EloBadge elo={session?.user?.elo} className="mt-1" />
                   <Button
                     variant="ghost"
                     size="sm"

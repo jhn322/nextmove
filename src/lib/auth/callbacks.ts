@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 // Assuming constants are in lib/auth/constants/auth.ts
 import { USER_ROLES } from "@/lib/auth/constants/auth";
 
+const DEFAULT_ELO = 600;
+
 // * Callback configuration for NextAuth
 
 export const configureCallbacks = () => ({
@@ -71,23 +73,83 @@ export const configureCallbacks = () => ({
   async jwt({
     token,
     user,
+    // account, // We can use account to check if it's a new OAuth sign-in
   }: {
     token: JWT;
-    user?: User;
+    user?: User; // User object is available on initial sign-in
     _account?: Account | null;
   }) {
-    if (user) {
-      // Ensure the token gets the correct role, especially after account linking
-      // Fetch the user from DB again to be sure to get the correct role
-      const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+    // On initial sign-in (user object is present)
+    if (user && user.id) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+      });
+
       if (dbUser) {
+        token.id = dbUser.id;
         token.role = dbUser.role;
+        token.name = dbUser.name;
+        token.email = dbUser.email;
+        token.picture = dbUser.image;
+        token.elo = dbUser.elo ?? DEFAULT_ELO; // Provide default if null
+        token.countryFlag = dbUser.countryFlag;
+        token.flair = dbUser.flair;
+        token.pieceSet = dbUser.pieceSet;
+        token.timezone = dbUser.timezone;
+        token.clockFormat = dbUser.clockFormat;
+        token.firstName = dbUser.firstName;
+        token.lastName = dbUser.lastName;
+        token.location = dbUser.location;
+        token.preferredDifficulty = dbUser.preferredDifficulty;
+        token.soundEnabled = dbUser.soundEnabled;
+        token.whitePiecesBottom = dbUser.whitePiecesBottom;
+        token.showCoordinates = dbUser.showCoordinates;
+        token.enableAnimations = dbUser.enableAnimations;
+        token.enableConfetti = dbUser.enableConfetti;
       } else {
-        // Fallback if the user is not found for some reason
+        token.id = user.id; // Use user.id if dbUser not found
         token.role = USER_ROLES.USER;
+        token.elo = DEFAULT_ELO;
         console.error(
-          `AUTH: User with id ${user.id} not found in JWT callback`
+          `AUTH: User with id ${user.id} not found in JWT callback during initial sign-in. Using defaults.`
         );
+      }
+    } else if (token.sub) {
+      // For subsequent JWT creations (user object is not present, token.sub has user ID)
+      // Refresh user data from DB to ensure token is up-to-date
+      const dbUser = await prisma.user.findUnique({
+        where: { id: token.sub },
+      });
+      if (dbUser) {
+        token.id = dbUser.id; // Ensure id is set even on refresh
+        token.role = dbUser.role;
+        token.name = dbUser.name;
+        token.email = dbUser.email;
+        token.picture = dbUser.image;
+        token.elo = dbUser.elo ?? DEFAULT_ELO; // Provide default if null
+        token.countryFlag = dbUser.countryFlag;
+        token.flair = dbUser.flair;
+        token.pieceSet = dbUser.pieceSet;
+        token.timezone = dbUser.timezone;
+        token.clockFormat = dbUser.clockFormat;
+        token.firstName = dbUser.firstName;
+        token.lastName = dbUser.lastName;
+        token.location = dbUser.location;
+        token.preferredDifficulty = dbUser.preferredDifficulty;
+        token.soundEnabled = dbUser.soundEnabled;
+        token.whitePiecesBottom = dbUser.whitePiecesBottom;
+        token.showCoordinates = dbUser.showCoordinates;
+        token.enableAnimations = dbUser.enableAnimations;
+        token.enableConfetti = dbUser.enableConfetti;
+      } else {
+        console.error(
+          `AUTH: User with id ${token.sub} not found in JWT callback during refresh. Token may be stale.`
+        );
+        // Keep existing token.id if dbUser not found, but other fields might be stale
+        // If token.id is not set, try token.sub
+        token.id = token.id || token.sub || "";
+        token.role = token.role || USER_ROLES.USER;
+        token.elo = token.elo || DEFAULT_ELO;
       }
     }
     return token;
@@ -97,52 +159,28 @@ export const configureCallbacks = () => ({
    * Session callback runs every time a session is used or updated
    */
   async session({ session, token }: { session: Session; token: JWT }) {
-    if (session.user && token.sub) {
-      // Fetch the full user object from DB to include all necessary fields
-      const userFromDb = await prisma.user.findUnique({
-        where: { id: token.sub },
-      });
-
-      if (userFromDb) {
-        session.user.id = userFromDb.id;
-        session.user.role = userFromDb.role;
-        session.user.name = userFromDb.name;
-        session.user.email = userFromDb.email;
-        session.user.image = userFromDb.image;
-        session.user.countryFlag = userFromDb.countryFlag;
-        session.user.flair = userFromDb.flair;
-        session.user.pieceSet = userFromDb.pieceSet;
-        session.user.timezone = userFromDb.timezone;
-        session.user.clockFormat = userFromDb.clockFormat;
-        session.user.firstName = userFromDb.firstName;
-        session.user.lastName = userFromDb.lastName;
-        session.user.location = userFromDb.location;
-        session.user.preferredDifficulty = userFromDb.preferredDifficulty;
-        session.user.soundEnabled = userFromDb.soundEnabled;
-        session.user.whitePiecesBottom = userFromDb.whitePiecesBottom;
-        session.user.showCoordinates = userFromDb.showCoordinates;
-        session.user.enableAnimations = userFromDb.enableAnimations;
-        session.user.enableConfetti = userFromDb.enableConfetti;
-      } else {
-        // Fallback or error handling if user not found in DB
-        console.error(
-          `AUTH: User with id ${token.sub} not found in session callback`
-        );
-        // Keep basic info from token if possible
-        session.user.id = token.sub;
-        if (token.role) {
-          session.user.role = token.role as string;
-        }
-        if (token.name) {
-          session.user.name = token.name;
-        }
-        if (token.picture) {
-          session.user.image = token.picture;
-        }
-        if (token.email) {
-          session.user.email = token.email;
-        }
-      }
+    // The token argument here is the JWT object from the jwt callback
+    if (session.user) {
+      session.user.id = token.id; // Use token.id which is set from dbUser.id
+      session.user.role = token.role;
+      session.user.name = token.name;
+      session.user.email = token.email;
+      session.user.image = token.picture;
+      session.user.elo = token.elo ?? DEFAULT_ELO; // Provide default if null/undefined from token
+      session.user.countryFlag = token.countryFlag;
+      session.user.flair = token.flair;
+      session.user.pieceSet = token.pieceSet;
+      session.user.timezone = token.timezone;
+      session.user.clockFormat = token.clockFormat;
+      session.user.firstName = token.firstName;
+      session.user.lastName = token.lastName;
+      session.user.location = token.location;
+      session.user.preferredDifficulty = token.preferredDifficulty;
+      session.user.soundEnabled = token.soundEnabled;
+      session.user.whitePiecesBottom = token.whitePiecesBottom;
+      session.user.showCoordinates = token.showCoordinates;
+      session.user.enableAnimations = token.enableAnimations;
+      session.user.enableConfetti = token.enableConfetti;
     }
     return session;
   },

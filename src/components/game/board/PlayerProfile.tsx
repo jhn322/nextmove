@@ -218,9 +218,9 @@ const PlayerProfile = ({
                 </span>
               )}
             </div>
-            {/* ELO Badge */}
+            {/* ELO Badge uses 'rating' prop for player, and selectedBot.rating for bot */}
             <EloBadge
-              elo={isBot && selectedBot ? selectedBot.rating : rating}
+              elo={isBot ? selectedBot?.rating : (session?.user?.elo ?? rating)}
               className="mt-0.5"
             />
           </div>
