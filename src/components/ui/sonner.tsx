@@ -8,7 +8,7 @@ export function Toaster() {
 
   return (
     <SonnerToaster
-      position="top-right"
+      position="top-center"
       toastOptions={{
         classNames: {
           toast:

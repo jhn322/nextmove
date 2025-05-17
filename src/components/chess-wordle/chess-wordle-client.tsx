@@ -27,6 +27,9 @@ const WORDLE_GUESS_DISTRIBUTION_KEY = "chessWordleGuessDistribution";
 const WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY =
   "chessWordleTotalGuessesInWonGames";
 
+// Threshold for showing word suggestion
+const INVALID_GUESS_SUGGESTION_THRESHOLD = 5;
+
 // ** Types and Interfaces ** //
 interface Guess {
   word: string;
@@ -60,6 +63,13 @@ export function ChessWordleClient() {
   >({});
   const [totalGuessesInWonGames, setTotalGuessesInWonGames] =
     useState<number>(0);
+  const [isShaking, setIsShaking] = useState<boolean>(false);
+  const [invalidGuessStreak, setInvalidGuessStreak] = useState<number>(0);
+  const [showSuggestionButton, setShowSuggestionButton] =
+    useState<boolean>(false);
+  const [suggestedWordHint, setSuggestedWordHint] = useState<string | null>(
+    null
+  );
 
   // ** Valid Words ** //
   const validFiveLetterWords = useMemo(() => {
@@ -111,9 +121,31 @@ export function ChessWordleClient() {
     }
 
     if (!validFiveLetterWords.includes(currentGuess.toUpperCase())) {
-      toast.warning("Not in word list");
+      toast.warning("Not a valid word");
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+
+      const newStreak = invalidGuessStreak + 1;
+      setInvalidGuessStreak(newStreak);
+
+      if (newStreak >= INVALID_GUESS_SUGGESTION_THRESHOLD) {
+        const possibleHints = validFiveLetterWords.filter(
+          (word) => word !== targetWord
+        );
+        if (possibleHints.length > 0) {
+          const randomHint =
+            possibleHints[Math.floor(Math.random() * possibleHints.length)];
+          setSuggestedWordHint(randomHint);
+          setShowSuggestionButton(true);
+        }
+      }
       return;
     }
+
+    // Reset streak and suggestion if a valid word from the list is submitted
+    setInvalidGuessStreak(0);
+    setShowSuggestionButton(false);
+    setSuggestedWordHint(null);
 
     const activeGuessIndex = guesses.findIndex((g) =>
       g.statuses.every((s) => s === "empty")
@@ -220,6 +252,11 @@ export function ChessWordleClient() {
     currentStreak,
     longestStreak,
     validFiveLetterWords,
+    invalidGuessStreak,
+    setInvalidGuessStreak,
+    setIsShaking,
+    setShowSuggestionButton,
+    setSuggestedWordHint,
   ]);
 
   const handleVirtualKeyClick = useCallback(
@@ -239,6 +276,23 @@ export function ChessWordleClient() {
     },
     [gameStatus, currentGuess.length, handleSubmitGuess]
   );
+
+  // ** Suggestion Logic ** //
+  const handleShowSuggestion = useCallback(() => {
+    if (suggestedWordHint) {
+      setCurrentGuess(suggestedWordHint);
+      setShowSuggestionButton(false);
+      setInvalidGuessStreak(0);
+      setSuggestedWordHint(null);
+      // Optionally, focus the input or allow immediate submission if desired
+    }
+  }, [
+    suggestedWordHint,
+    setCurrentGuess,
+    setShowSuggestionButton,
+    setInvalidGuessStreak,
+    setSuggestedWordHint,
+  ]);
 
   // ** Effects ** //
   useEffect(() => {
@@ -516,7 +570,12 @@ export function ChessWordleClient() {
       </Dialog>
 
       {/* Game Board */}
-      <div className="grid gap-1.5 mb-6 sm:mb-8">
+      <div
+        className={cn(
+          "grid gap-1.5 mb-6 sm:mb-8",
+          isShaking && "animate-shake" // Apply shake animation
+        )}
+      >
         {guesses.map((guess, rowIndex) => (
           <div
             key={rowIndex}
@@ -616,6 +675,20 @@ export function ChessWordleClient() {
           </div>
         ))}
       </div>
+
+      {/* Suggestion Button */}
+      {showSuggestionButton && suggestedWordHint && (
+        <div className="mt-4 sm:mt-6 text-center w-full flex justify-center">
+          <Button
+            onClick={handleShowSuggestion}
+            variant="outline"
+            className="w-full sm:w-auto max-w-xs border-primary text-primary hover:bg-primary/10"
+            aria-label={`Get a hint: ${suggestedWordHint}`}
+          >
+            Need a hint? Try: {suggestedWordHint}
+          </Button>
+        </div>
+      )}
 
       {/* Game Status / Play Again */}
       {(gameStatus === "won" || gameStatus === "lost") && (
