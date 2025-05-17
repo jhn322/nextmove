@@ -688,7 +688,7 @@ export const HistoryPageClient = ({
                     </div>
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Swords className="h-4 w-4 text-blue-500" />
+                        <Swords className="h-4 w-4 text-cyan-500" />
                         Average Moves
                       </div>
                       <div className="text-3xl font-bold">
@@ -1034,7 +1034,7 @@ export const HistoryPageClient = ({
                       icon={Activity}
                       label="Average Guesses (Wins)"
                       value={averageGuesses}
-                      color="text-blue-500"
+                      color="text-cyan-500"
                     />
                     <StatCardItem
                       icon={PieChart}

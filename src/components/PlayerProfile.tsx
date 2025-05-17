@@ -22,9 +22,9 @@ import {
   Trophy,
   ShieldX,
   MinusSquare,
-  Brain,
   ChevronRight,
   Loader2,
+  Flag,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
@@ -39,7 +39,7 @@ interface PlayerProfileProps {
   wins?: number;
   losses?: number;
   draws?: number;
-  beatenBotsCount?: number;
+  resigns?: number;
 }
 
 export default function PlayerProfile({
@@ -49,7 +49,7 @@ export default function PlayerProfile({
   wins,
   losses,
   draws,
-  beatenBotsCount,
+  resigns,
 }: PlayerProfileProps) {
   const { session, status, refreshSession } = useAuth();
   const [playerName, setPlayerName] = useState<string>("Player");
@@ -418,10 +418,10 @@ export default function PlayerProfile({
 
         {(typeof totalGames === "number" ||
           typeof winRate === "number" ||
-          typeof beatenBotsCount === "number" ||
           typeof wins === "number" ||
           typeof losses === "number" ||
-          typeof draws === "number") &&
+          typeof draws === "number" ||
+          typeof resigns === "number") &&
           session &&
           status === "authenticated" && (
             <div className="mt-6 pt-4 border-t border-border/20">
@@ -471,16 +471,13 @@ export default function PlayerProfile({
                     icon: MinusSquare,
                     label: "Draws",
                     value: draws,
-                    color: "text-gray-500 dark:text-gray-400",
+                    color: "text-blue-500",
                   },
                   {
-                    icon: Brain,
-                    label: "Bots Beaten",
-                    value:
-                      beatenBotsCount !== undefined
-                        ? `${beatenBotsCount} / 48`
-                        : undefined,
-                    color: "text-purple-500",
+                    icon: Flag,
+                    label: "Resigns",
+                    value: resigns,
+                    color: "text-orange-500",
                   },
                 ]
                   .filter((stat) => typeof stat.value !== "undefined")

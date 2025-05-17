@@ -845,7 +845,7 @@ export function HomePageClient({
               wins={gameStats?.wins}
               losses={gameStats?.losses}
               draws={gameStats?.draws}
-              beatenBotsCount={gameStats?.beatenBots?.length}
+              resigns={gameStats?.resigns}
             />
 
             {/* Challenge Description */}
