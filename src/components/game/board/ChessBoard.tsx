@@ -878,6 +878,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   // * ========================================================================
   const [arrows, setArrows] = useState<Arrow[]>([]);
   const [drawingArrow, setDrawingArrow] = useState<string | null>(null);
+  const rightDragJustFinishedRef = useRef<boolean>(false);
 
   // * Board size calculation for SVG overlay
   const BOARD_SIZE = 560; // px, fallback default
@@ -899,22 +900,30 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   // * Handle right mouse down on a square to start drawing an arrow
   const handleSquareMouseDown = (square: string, event: React.MouseEvent) => {
     if (event.button === 2) {
-      console.log("Arrow DRAG START on square:", square);
       setDrawingArrow(square);
+      rightDragJustFinishedRef.current = false;
     }
   };
 
   // * Handle right mouse up on a square to finish drawing an arrow
   const handleSquareMouseUp = (square: string, event: React.MouseEvent) => {
-    if (event.button === 2 && drawingArrow && drawingArrow !== square) {
-      console.log(`Arrow DRAG END: from ${drawingArrow} to ${square}`);
-      setArrows((prev) => [
-        ...prev,
-        { from: drawingArrow, to: square, color: "rgba(255,170,0,0.7)" },
-      ]);
+    if (event.button === 2) {
+      const arrowDragStartSquare = drawingArrow;
       setDrawingArrow(null);
-    } else if (event.button === 2) {
-      setDrawingArrow(null);
+
+      if (arrowDragStartSquare && arrowDragStartSquare !== square) {
+        setArrows((prev) => [
+          ...prev,
+          {
+            from: arrowDragStartSquare,
+            to: square,
+            color: "rgba(255,170,0,0.7)",
+          },
+        ]);
+        rightDragJustFinishedRef.current = true;
+      } else {
+        rightDragJustFinishedRef.current = false;
+      }
     }
   };
 
@@ -1155,6 +1164,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                             }
                             onContextMenu={(e) => {
                               e.preventDefault();
+                              if (rightDragJustFinishedRef.current) {
+                                rightDragJustFinishedRef.current = false;
+                                return;
+                              }
                               handleRightClick(square, e);
                             }}
                             // Arrow drawing handlers
