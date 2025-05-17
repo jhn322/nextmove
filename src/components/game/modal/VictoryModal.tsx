@@ -206,74 +206,67 @@ const VictoryModal = ({
   // Save game result to database and update ELO state
   useEffect(() => {
     const saveResultAndUpdateEloInternal = async () => {
-      if (
-        isOpen &&
-        session?.user?.id &&
-        !resultSaved &&
-        (game.isGameOver() || isResignation) &&
-        gameStateId
-      ) {
-        try {
-          const gameSaveResponse = await saveGameAction({
-            userId: session.user.id,
-            fen: game.fen(),
-            pgnHistory: game.history({ verbose: false }),
-            difficulty,
-            playerColor,
-            selectedBot,
-            gameTime,
-            movesCount,
-            // Determine if it's a player resignation for the save action
-            isResignation: isResignation && game.turn() === playerColor,
-          });
+      if (isOpen && session?.user?.id && !resultSaved && gameStateId) {
+        const isEffectivelyOver = game.isGameOver() || game.isResigned === true;
 
-          if (gameSaveResponse) {
-            setResultSaved(true);
-            localStorage.setItem("last-saved-game-id", gameStateId);
-            localStorage.setItem("last-saved-game-fen", game.fen());
-            localStorage.setItem(
-              "last-saved-game-result",
-              gameSaveResponse.result
-            );
+        if (isEffectivelyOver) {
+          try {
+            const gameSaveResponse = await saveGameAction({
+              userId: session.user.id,
+              fen: game.fen(),
+              pgnHistory: game.history({ verbose: false }),
+              difficulty,
+              playerColor,
+              selectedBot,
+              gameTime,
+              movesCount,
+              isResignation: game.isResigned === true,
+            });
 
-            setGameEloDelta(gameSaveResponse.eloDelta);
-            setGameNewElo(gameSaveResponse.newElo);
+            if (gameSaveResponse) {
+              setResultSaved(true);
+              localStorage.setItem("last-saved-game-id", gameStateId);
+              localStorage.setItem("last-saved-game-fen", game.fen());
+              localStorage.setItem(
+                "last-saved-game-result",
+                gameSaveResponse.result
+              );
 
-            await refreshSession();
-          } else {
-            console.error(
-              "VictoryModal: Failed to save game or get ELO update from action."
-            );
+              setGameEloDelta(gameSaveResponse.eloDelta);
+              setGameNewElo(gameSaveResponse.newElo);
+
+              await refreshSession();
+
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("chess-game-state");
+                localStorage.removeItem("selectedBot");
+              }
+            } else {
+              console.error(
+                "VictoryModal: Failed to save game or get ELO update from action."
+              );
+            }
+          } catch (error) {
+            console.error("Error saving game result and updating ELO:", error);
           }
-        } catch (error) {
-          console.error("Error saving game result and updating ELO:", error);
         }
       }
     };
 
-    // Call this effect only when the game is definitively over and the modal is open.
-    // isResignation prop indicates the modal is in "confirm resign" mode OR player has just resigned.
-    if (isOpen && (game.isGameOver() || (isResignation && resultSaved))) {
-      // ensure save happens after resignation confirmation
-      if (!resultSaved) saveResultAndUpdateEloInternal();
-    } else if (isOpen && isResignation && !resultSaved) {
-      // This case is for when the modal is open for resignation confirmation, but game not yet saved.
-      // Don't save yet, wait for user to click "Confirm Resignation" button.
-      // The `onConfirmResign` prop will handle the actual game update and then this effect might re-run.
-    }
+    saveResultAndUpdateEloInternal();
   }, [
     isOpen,
-    isResignation,
     session,
     resultSaved,
     game,
+    gameStateId,
     difficulty,
     playerColor,
     selectedBot,
     gameTime,
     movesCount,
-    gameStateId,
-    refreshSession, // Removed isPlayerWinner, rely on game.isGameOver()
+    refreshSession,
+    isResignation,
   ]);
 
   useEffect(() => {
@@ -385,8 +378,6 @@ const VictoryModal = ({
   const handlePlayNextBot = () => {
     game.reset();
     game.isResigned = false;
-
-    onNewBot();
 
     onClose();
 
