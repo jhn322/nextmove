@@ -25,6 +25,8 @@ interface DroppableSquareProps {
   ) => void;
   onClick: () => void;
   onContextMenu?: (event: React.MouseEvent) => void;
+  onMouseDown?: (event: React.MouseEvent) => void;
+  onMouseUp?: (event: React.MouseEvent) => void;
 }
 
 interface DropItem {
@@ -52,6 +54,8 @@ const DroppableSquare = ({
   onDrop,
   onClick,
   onContextMenu,
+  onMouseDown,
+  onMouseUp,
 }: DroppableSquareProps) => {
   const position = `${"abcdefgh"[col]}${8 - row}`;
   const elementRef = useRef<HTMLDivElement>(null);
@@ -76,7 +80,12 @@ const DroppableSquare = ({
   dropRef(elementRef);
 
   return (
-    <div ref={elementRef} className="w-full h-full">
+    <div
+      ref={elementRef}
+      className="w-full h-full"
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+    >
       <Square
         isLight={isLight}
         isSelected={isSelected}
