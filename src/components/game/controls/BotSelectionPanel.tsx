@@ -196,18 +196,19 @@ const BotSelectionPanel = ({
   return (
     <div className="space-y-4 rounded-lg border border-border bg-card p-3 w-full lg:p-4">
       <Card className="border-0 shadow-none">
-        <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-          <CardTitle className="text-lg lg:text-xl">
+        <CardHeader className="p-3 pb-3 lg:p-4 lg:pb-4 border-b border-border/30">
+          <CardTitle className="text-lg lg:text-xl font-semibold">
             Select {grammar} {capitalizedDifficulty} Bot
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3 pt-0 lg:p-4 lg:pt-0">
+        <CardContent className="p-3 pt-3 lg:p-4 lg:pt-4 mt-0">
           {/* Mobile Layout (< 1024px) */}
-          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 py-2">
             {bots.map((bot) => (
               <div
                 key={bot.name}
-                className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors"
+                className="flex items-center gap-2 p-2.5 rounded-md hover:bg-accent/50 transition-colors cursor-pointer"
+                onClick={() => handleBotSelect(bot)}
               >
                 <Avatar className="h-10 w-10 flex-shrink-0">
                   <AvatarImage src={bot.image} alt={bot.name} />
@@ -236,9 +237,13 @@ const BotSelectionPanel = ({
           </div>
 
           {/* Desktop Layout (≥ 1024px) */}
-          <div className="hidden lg:flex flex-col space-y-3">
+          <div className="hidden lg:flex flex-col space-y-1 py-2">
             {bots.map((bot) => (
-              <div key={bot.name} className="flex items-center gap-3">
+              <div
+                key={bot.name}
+                className="flex items-center gap-3 p-2.5 rounded-md hover:bg-accent/50 transition-colors cursor-pointer"
+                onClick={() => handleBotSelect(bot)}
+              >
                 <Avatar className="h-12 w-12 flex-shrink-0">
                   <AvatarImage src={bot.image} alt={bot.name} />
                   <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
@@ -274,9 +279,11 @@ const BotSelectionPanel = ({
       </Card>
 
       {/* Color Selection */}
+      <div className="h-px bg-border/30 my-3 lg:my-4" />
+
       <Card className="border-0 shadow-none">
         <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-          <CardTitle className="flex items-center gap-2 text-md">
+          <CardTitle className="flex items-center gap-2 text-md font-semibold">
             Play As
             <TooltipProvider>
               <Tooltip>
@@ -327,9 +334,11 @@ const BotSelectionPanel = ({
       </Card>
 
       {/* Difficulty Selection */}
+      <div className="h-px bg-border/30 my-3 lg:my-4" />
+
       <Card className="border-0 shadow-none">
         <CardHeader className="p-3 pb-2 lg:p-4 lg:pb-2">
-          <CardTitle className="flex items-center gap-2 text-md">
+          <CardTitle className="flex items-center gap-2 text-md font-semibold">
             Difficulty category
             <TooltipProvider>
               <Tooltip>
@@ -380,8 +389,10 @@ const BotSelectionPanel = ({
       </Card>
 
       {/* Play Button */}
+      <div className="h-px bg-border/30 my-3 lg:my-4" />
+
       <Button
-        className="w-full flex items-center justify-center gap-2 mt-4"
+        className="w-full flex items-center justify-center gap-2 mt-4 text-white bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 shadow-md hover:shadow-lg transition-all duration-300"
         size="lg"
         onClick={handlePlayGame}
         disabled={!selectedBot}
@@ -389,6 +400,12 @@ const BotSelectionPanel = ({
         <Play className="h-4 w-4" />
         <span className="text-lg">Play</span>
       </Button>
+      {selectedBot && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Pressing &apos;Play&apos; will start the game with the selected bot
+          and chosen options.
+        </p>
+      )}
     </div>
   );
 };

@@ -24,6 +24,7 @@ import DraggablePiece from "./DraggablePiece";
 import DroppableSquare from "./DroppableSquare";
 import { Chess } from "chess.js";
 import ChessboardArrows, { Arrow } from "./ChessboardArrows";
+import { LockKeyhole } from "lucide-react";
 
 const GAME_OVER_MODAL_SHOWN_KEY = "chess_gameOverModalShown";
 const GAME_OVER_FEN_KEY = "chess_gameOverFen";
@@ -1057,15 +1058,21 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
               </div>
               {/* New wrapper for the grid and arrows */}
               <div
-                className="relative w-full aspect-square"
+                className="relative w-full aspect-square rounded-lg overflow-hidden"
                 onMouseDown={handleBoardClick}
               >
                 {/* Overlay for bot selection - This was previously inside F, but should be sibling to D or even higher to overlay everything if needed */}
                 {(!selectedBot || showBotSelection) && (
-                  <div className="absolute z-30 inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-4xl">
-                      {/* <CardTitle>Select a Bot to Play</CardTitle> */}
-                    </span>
+                  <div className="absolute z-30 inset-0 bg-black/60 rounded-md flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+                    <LockKeyhole className="h-16 w-16 text-white/90 mb-6" />
+                    <h3 className="text-3xl font-bold text-white mb-3">
+                      Game Not Started
+                    </h3>
+                    <p className="text-lg text-neutral-200 leading-relaxed">
+                      {selectedBot
+                        ? "Press 'Play' in the panel to start the game."
+                        : "Select a bot and difficulty, then press 'Play' to start the game."}
+                    </p>
                   </div>
                 )}
                 <div

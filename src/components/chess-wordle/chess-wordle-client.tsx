@@ -486,7 +486,7 @@ export function ChessWordleClient() {
             </p>
             <p className="text-center text-muted-foreground font-semibold pt-2">
               Unlike traditional Wordle, you can play new words as many times as
-              you like by clicking &quot;Play Again&quot;!
+              you like by pressing &apos;Play Again&apos;!
             </p>
           </div>
           <DialogClose asChild></DialogClose>
