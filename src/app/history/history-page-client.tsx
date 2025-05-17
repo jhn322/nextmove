@@ -927,7 +927,7 @@ export const HistoryPageClient = ({
                                   className={cn(
                                     "border transition-all hover:shadow-md",
                                     isBotBeaten(bot.name) &&
-                                      "border-green-500 bg-green-50 dark:bg-green-950/20",
+                                      "border-accent bg-accent/40 dark:bg-accent/30",
                                     isCurrentActiveBot &&
                                       "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-background"
                                   )}
