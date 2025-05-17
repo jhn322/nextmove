@@ -1,10 +1,12 @@
 // Assuming utils and constants are in lib/auth/utils and lib/auth/constants
 import { getEnvVar } from "@/lib/utils/env";
-import GoogleProvider from "next-auth/providers/google";
+import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { AUTH_MESSAGES, USER_ROLES } from "@/lib/auth/constants/auth";
+import { type TokenSet } from "next-auth";
+import { DEFAULT_START_ELO } from "@/lib/elo";
 
 /**
  * Provider configuration for NextAuth
@@ -13,13 +15,15 @@ export const configureProviders = () => [
   GoogleProvider({
     clientId: getEnvVar("GOOGLE_CLIENT_ID"),
     clientSecret: getEnvVar("GOOGLE_CLIENT_SECRET"),
-    profile(profile) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    profile(profile: GoogleProfile, _tokens: TokenSet) {
       return {
         id: profile.sub,
         name: profile.name,
         email: profile.email,
         image: profile.picture,
         role: USER_ROLES.USER,
+        elo: DEFAULT_START_ELO,
       };
     },
   }),

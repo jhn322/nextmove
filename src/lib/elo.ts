@@ -1,5 +1,5 @@
-const MIN_ELO = 100;
-const DEFAULT_START_ELO = 600; // Though prisma schema default is authoritative for new users
+export const MIN_ELO = 100;
+export const DEFAULT_START_ELO = 600;
 
 /**
  * Determines the K-factor based on the player's current ELO.

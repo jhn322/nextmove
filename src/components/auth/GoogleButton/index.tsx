@@ -8,6 +8,7 @@ import {
   AUTH_MESSAGES,
   DEFAULT_LOGIN_REDIRECT,
 } from "@/lib/auth/constants/auth";
+import { Loader2 } from "lucide-react";
 
 export const GoogleButton = ({
   onSuccess,
@@ -44,8 +45,17 @@ export const GoogleButton = ({
       onClick={handleGoogleSignIn}
       disabled={isLoading}
     >
-      <GoogleIcon />
-      Google
+      {isLoading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Signing in...
+        </>
+      ) : (
+        <>
+          <GoogleIcon />
+          Google
+        </>
+      )}
     </Button>
   );
 };

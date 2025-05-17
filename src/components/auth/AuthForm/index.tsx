@@ -18,6 +18,7 @@ import {
 import type { AuthFormProps, AuthFormData } from "./types";
 import { loginSchema } from "@/lib/validations/auth/login";
 import { registerFormSchema } from "@/lib/validations/auth/register";
+import { Loader2 } from "lucide-react";
 
 const getValidationSchema = (mode: "login" | "register") => {
   return mode === "login" ? loginSchema : registerFormSchema;
@@ -143,11 +144,16 @@ export const AuthForm = ({
           </div>
         )}
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading
-            ? "Processing..."
-            : mode === "login"
-              ? "Sign In"
-              : "Create Account"}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : mode === "login" ? (
+            "Sign In"
+          ) : (
+            "Create Account"
+          )}
         </Button>
       </form>
     </Form>
