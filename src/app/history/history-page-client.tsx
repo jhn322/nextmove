@@ -61,7 +61,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
-import { type GameHistory } from "@/lib/game-service";
+import { type GameHistory as PrismaGameHistory } from "@/lib/game-service";
 import { clearUserGameHistoryAction } from "@/lib/actions/game.actions";
 import { Session } from "next-auth";
 import Link from "next/link";
@@ -71,9 +71,14 @@ import { type UserWordleStats } from "@/types/wordle";
 import { getUserWordleStatsAction } from "@/lib/actions/wordle.actions";
 import EloBadge from "@/components/ui/elo-badge";
 
+interface ExtendedGameHistory extends PrismaGameHistory {
+  eloDelta: number | null;
+  newElo: number | null;
+}
+
 interface HistoryPageClientProps {
   session: Session | null;
-  initialGameHistory: GameHistory[];
+  initialGameHistory: ExtendedGameHistory[];
   initialGameStats: GameStats | null;
   initialError?: string;
   serverMessage?: string;
@@ -91,7 +96,7 @@ export const HistoryPageClient = ({
   serverMessage,
 }: HistoryPageClientProps) => {
   const [gameHistory, setGameHistory] =
-    useState<GameHistory[]>(initialGameHistory);
+    useState<ExtendedGameHistory[]>(initialGameHistory);
   const [gameStats, setGameStats] = useState<GameStats | null>(
     initialGameStats
   );
@@ -555,6 +560,7 @@ export const HistoryPageClient = ({
                         <TableHead>Result</TableHead>
                         <TableHead>Moves</TableHead>
                         <TableHead>Time</TableHead>
+                        <TableHead>ELO Δ</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -616,6 +622,35 @@ export const HistoryPageClient = ({
                               <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                               {formatTime(game.timeTaken)}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            {typeof game.eloDelta === "number" ? (
+                              <span
+                                className={
+                                  game.eloDelta > 0
+                                    ? "text-green-500 font-semibold"
+                                    : game.eloDelta < 0
+                                      ? "text-red-500 font-semibold"
+                                      : "text-muted-foreground"
+                                }
+                                title={
+                                  typeof game.newElo === "number"
+                                    ? `New ELO: ${game.newElo}`
+                                    : undefined
+                                }
+                              >
+                                {game.eloDelta > 0
+                                  ? `+${game.eloDelta}`
+                                  : game.eloDelta}
+                                {typeof game.newElo === "number" && (
+                                  <span className="ml-1 text-xs text-muted-foreground">
+                                    ({game.newElo})
+                                  </span>
+                                )}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}

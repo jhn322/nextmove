@@ -102,6 +102,8 @@ export const saveGameAction = async ({
       gameTime,
       movesCount,
       isResignation: actualGameResult === "resign",
+      eloDelta,
+      newElo,
     });
 
     if (!savedGame) {

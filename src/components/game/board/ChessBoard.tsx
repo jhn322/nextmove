@@ -80,6 +80,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     resetCapturedPieces,
     pendingPromotion,
     setPendingPromotion,
+    setCapturedPieces,
   } = useChessGame(difficulty);
 
   const { getBotMove } = useStockfish(game, selectedBot, makeMove);
@@ -143,52 +144,19 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     // Depend on session user object and status
   }, [status, session?.user]);
 
+  const hasInitialized = useRef(false);
+
+  // Mount-only initialization for game state
   useEffect(() => {
-    if (initialBot) {
-      // Extract just the Bot properties if a bot with difficulty is passed
-      const botWithoutDifficulty: Bot = {
-        id: initialBot.id,
-        name: initialBot.name,
-        image: initialBot.image,
-        rating: initialBot.rating,
-        description: initialBot.description,
-        skillLevel: initialBot.skillLevel,
-        depth: initialBot.depth,
-        moveTime: initialBot.moveTime,
-        flag: initialBot.flag,
-      };
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
 
-      setSelectedBot(botWithoutDifficulty);
-      setShowBotSelection(false);
-      setGameStarted(true);
-
-      if (playerColor === "b") {
-        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-        setBoard(game.board());
-        setHistory([{ fen: game.fen(), lastMove: null }]);
-      }
-
-      localStorage.setItem("selectedBot", JSON.stringify(botWithoutDifficulty));
-    }
-  }, [
-    initialBot,
-    difficulty,
-    game,
-    playerColor,
-    setBoard,
-    setHistory,
-    setSelectedBot,
-    setShowBotSelection,
-    setGameStarted,
-  ]);
-
-  // Handles initial game loading from localStorage
-  useEffect(() => {
     const savedStateJSON = localStorage.getItem(STORAGE_KEY);
     const gameOverModalWasShownPreviously =
       localStorage.getItem(GAME_OVER_MODAL_SHOWN_KEY) === "true";
     const lastKnownGameOverFen = localStorage.getItem(GAME_OVER_FEN_KEY);
 
+    let isActiveGame = false;
     if (savedStateJSON) {
       const savedState = JSON.parse(savedStateJSON);
       let gameStillOverAfterLoad = false;
@@ -202,26 +170,27 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         }
       }
 
+      isActiveGame =
+        savedState.fen &&
+        (savedState.fen !== DEFAULT_STATE.fen ||
+          (savedState.history && savedState.history.length > 1) ||
+          savedState.lastMove !== null);
+
       if (
         gameStillOverAfterLoad &&
         gameOverModalWasShownPreviously &&
         currentFenForCheck === lastKnownGameOverFen
       ) {
-        // Call the existing handleGameReset to ensure all state is cleared consistently
         handleGameReset(false);
-
-        setShowBotSelection(true); // Show bot selection after reset
-        // Ensure playerColor is preserved if it was part of savedState, handleGameReset might reset it based on default
+        setShowBotSelection(true);
         if (savedState.playerColor) setPlayerColor(savedState.playerColor);
-        // game.reset() inside handleGameReset handles board, if playerColor was 'b', it needs to be set again for black's first move if desired
         if (playerColor === "b" && savedState.playerColor === "b") {
           game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-          setBoard(game.board()); // Update board after specific load for black
+          setBoard(game.board());
         }
-
         return;
-      } else {
-        // Load game normally (either ongoing, or game over but modal not yet processed for this load)
+      } else if (isActiveGame) {
+        // Load active game state
         if (savedState.fen) {
           game.load(savedState.fen);
           if (savedState.isResigned === true) game.isResigned = true;
@@ -232,19 +201,50 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         if (savedState.currentMove) setCurrentMove(savedState.currentMove);
         if (savedState.lastMove) setLastMove(savedState.lastMove);
         if (savedState.pieceSet) setPieceSet(savedState.pieceSet);
+        if (savedState.capturedPieces)
+          setCapturedPieces(savedState.capturedPieces);
 
-        setGameStarted(
-          savedState.gameStarted !== undefined ? savedState.gameStarted : true
-        );
+        setGameStarted(true);
+        setShowBotSelection(false);
 
-        // If a game is loaded (ongoing or game_over_not_yet_processed), hide bot selection.
-        if (savedState.fen) {
-          setShowBotSelection(false);
+        // Try to load selectedBot if an active game is resumed
+        const savedBotJson = localStorage.getItem("selectedBot");
+        if (savedBotJson) {
+          try {
+            const parsedBot = JSON.parse(savedBotJson);
+            if (parsedBot && parsedBot.id && parsedBot.name) {
+              setSelectedBot(parsedBot);
+            } else {
+              const currentDifficultyBots =
+                BOTS_BY_DIFFICULTY[difficulty] || [];
+              if (currentDifficultyBots.length > 0) {
+                setSelectedBot(currentDifficultyBots[0]);
+              }
+            }
+          } catch {
+            const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
+            if (currentDifficultyBots.length > 0) {
+              setSelectedBot(currentDifficultyBots[0]);
+            }
+          }
+        } else if (BOTS_BY_DIFFICULTY[difficulty]?.length > 0) {
+          setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
+        }
+      } else {
+        // Not an active game, or FEN is default with no history - treat as new game setup
+        if (!initialBot) {
+          setShowBotSelection(true);
+          setGameStarted(false);
+          if (playerColor === "b") {
+            game.load(
+              "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
+            );
+            setBoard(game.board());
+          }
         }
       }
     } else {
       if (!initialBot) {
-        // Only show bot selection if no initialBot is about to start a game
         setShowBotSelection(true);
         setGameStarted(false);
         if (playerColor === "b") {
@@ -254,22 +254,35 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       }
     }
 
-    // Load selected bot preference (this should run if no initialBot is provided, or after initialBot is processed)
-    if (!initialBot) {
+    if (!initialBot && !isActiveGame) {
       const savedBotJson = localStorage.getItem("selectedBot");
       if (savedBotJson) {
-        const parsedBot = JSON.parse(savedBotJson);
-        const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
-        const isFromCurrentDifficulty = currentDifficultyBots.some(
-          (bot: Bot) => bot.id === parsedBot.id
-        );
-        setSelectedBot(
-          isFromCurrentDifficulty
-            ? parsedBot
-            : currentDifficultyBots.length > 0
-              ? currentDifficultyBots[0]
-              : null
-        );
+        try {
+          const parsedBot = JSON.parse(savedBotJson);
+          if (parsedBot && parsedBot.id && parsedBot.name) {
+            const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
+            const isFromCurrentDifficulty = currentDifficultyBots.some(
+              (bot: Bot) => bot.id === parsedBot.id
+            );
+            setSelectedBot(
+              isFromCurrentDifficulty
+                ? parsedBot
+                : currentDifficultyBots.length > 0
+                  ? currentDifficultyBots[0]
+                  : null
+            );
+          } else {
+            const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
+            if (currentDifficultyBots.length > 0) {
+              setSelectedBot(currentDifficultyBots[0]);
+            }
+          }
+        } catch {
+          const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
+          if (currentDifficultyBots.length > 0) {
+            setSelectedBot(currentDifficultyBots[0]);
+          }
+        }
       } else {
         const currentDifficultyBots = BOTS_BY_DIFFICULTY[difficulty] || [];
         if (currentDifficultyBots.length > 0) {
@@ -277,7 +290,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         }
       }
     }
-  }, [difficulty, initialBot]);
+  }, []); // Only run on mount
 
   const {
     showDifficultyDialog,
@@ -712,8 +725,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
           // If the pre-made move was handled, don't proceed with normal move handling
           return;
         }
-      } catch (error) {
-        console.error("Error handling pre-made move:", error);
+      } catch {
+        console.error("Error handling pre-made move");
       }
     }
 
@@ -972,6 +985,43 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   //   }
   // };
 
+  useEffect(() => {
+    if (initialBot) {
+      const botWithoutDifficulty: Bot = {
+        id: initialBot.id,
+        name: initialBot.name,
+        image: initialBot.image,
+        rating: initialBot.rating,
+        description: initialBot.description,
+        skillLevel: initialBot.skillLevel,
+        depth: initialBot.depth,
+        moveTime: initialBot.moveTime,
+        flag: initialBot.flag,
+      };
+
+      setSelectedBot(botWithoutDifficulty);
+      setShowBotSelection(false);
+      setGameStarted(true);
+
+      if (playerColor === "b") {
+        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        setBoard(game.board());
+        setHistory([{ fen: game.fen(), lastMove: null }]);
+      }
+
+      localStorage.setItem("selectedBot", JSON.stringify(botWithoutDifficulty));
+    }
+  }, [
+    initialBot,
+    game,
+    playerColor,
+    setBoard,
+    setHistory,
+    setSelectedBot,
+    setShowBotSelection,
+    setGameStarted,
+  ]);
+
   return (
     <div className="flex flex-col h-full w-full">
       {/* TEMPORARY TEST BUTTON - HIDE LATER */}
@@ -1062,7 +1112,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                 onMouseDown={handleBoardClick}
               >
                 {/* Overlay for bot selection - This was previously inside F, but should be sibling to D or even higher to overlay everything if needed */}
-                {(!selectedBot || showBotSelection) && (
+                {(!gameStarted || showBotSelection) && (
                   <div className="absolute z-30 inset-0 bg-black/60 rounded-md flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
                     <LockKeyhole className="h-16 w-16 text-white/90 mb-6" />
                     <h3 className="text-3xl font-bold text-white mb-3">

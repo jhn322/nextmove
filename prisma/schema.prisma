@@ -125,6 +125,9 @@ model Game {
   timeTaken    Int      @map("time_taken") // Time in seconds or milliseconds? Assuming seconds for now.
   fen          String   // FEN string of the final position
   createdAt    DateTime @default(now()) @map("date") // Use createdAt to represent the game date
+  eloDelta     Int?     @map("elo_delta")   // ELO change 
+  newElo       Int?     @map("new_elo")     // New ELO 
+
 
   @@index([userId, createdAt]) // Index for fetching user game history efficiently
 }

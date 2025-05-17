@@ -15,6 +15,8 @@ interface SaveGameResultParams {
   gameTime: number;
   movesCount: number;
   isResignation?: boolean;
+  eloDelta?: number;
+  newElo?: number;
 }
 
 /**
@@ -77,6 +79,8 @@ export const saveGameResult = async ({
   gameTime,
   movesCount,
   isResignation = false,
+  eloDelta,
+  newElo,
 }: SaveGameResultParams): Promise<GameHistory | null> => {
   try {
     if (!userId || !selectedBot) {
@@ -100,6 +104,8 @@ export const saveGameResult = async ({
         movesCount: movesCount,
         timeTaken: gameTime,
         fen: game.fen(),
+        eloDelta: eloDelta,
+        newElo: newElo,
       },
     });
 
@@ -132,6 +138,8 @@ export const getUserGameHistory = async (
     return gameHistory.map((game) => ({
       ...game,
       difficulty: normalizeDifficulty(game.difficulty),
+      eloDelta: game.eloDelta,
+      newElo: game.newElo,
     }));
   } catch (error) {
     console.error("Unexpected error fetching game history:", error);
