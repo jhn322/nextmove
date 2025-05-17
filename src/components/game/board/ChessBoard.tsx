@@ -495,16 +495,6 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   }, [showBotSelection]);
 
-  // Game status display
-  const getGameStatus = () => {
-    if (game.isCheckmate())
-      return `Checkmate! ${game.turn() === "w" ? "Black" : "White"} wins!`;
-    if (game.isDraw()) return "Game is a draw!";
-    if (game.isCheck())
-      return `${game.turn() === "w" ? "White" : "Black"} is in check!`;
-    return `${game.turn() === "w" ? "White" : "Black"} turn to move`;
-  };
-
   const handleRematch = () => {
     handleModalClose();
     setTimeout(() => handleGameReset(true), 0);
@@ -1043,166 +1033,162 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
               />
             </div>
 
-            <div className="relative w-full aspect-square">
-              {/* Show overlay when no bot is selected OR when bot selection is showing */}
-              {(!selectedBot || showBotSelection) && (
-                <div className="absolute z-30 inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-4xl">
-                    {/* <CardTitle>Select a Bot to Play</CardTitle> */}
-                  </span>
-                </div>
-              )}
-              <div className="flex flex-col lg:flex-row w-full h-full items-center lg:items-start justify-center gap-4">
-                <div className="hidden lg:flex flex-col justify-between self-stretch">
+            <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4">
+              <div className="hidden lg:flex flex-col justify-between self-stretch">
+                <PlayerProfile
+                  difficulty={difficulty}
+                  isBot={true}
+                  selectedBot={selectedBot}
+                  lastMove={lastMove}
+                  game={game}
+                  playerColor={playerColor}
+                  capturedPieces={capturedPieces}
+                  pieceSet={pieceSet}
+                />
+                <div className="mt-4">
                   <PlayerProfile
                     difficulty={difficulty}
-                    isBot={true}
-                    selectedBot={selectedBot}
-                    lastMove={lastMove}
-                    game={game}
+                    isBot={false}
                     playerColor={playerColor}
                     capturedPieces={capturedPieces}
                     pieceSet={pieceSet}
                   />
-                  <div className="mt-4">
-                    <PlayerProfile
-                      difficulty={difficulty}
-                      isBot={false}
-                      playerColor={playerColor}
-                      capturedPieces={capturedPieces}
-                      pieceSet={pieceSet}
-                    />
-                  </div>
-                </div>
-                {/* New wrapper for the grid and arrows */}
-                <div
-                  className="relative w-full aspect-square"
-                  onMouseDown={handleBoardClick}
-                >
-                  <div
-                    className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden select-none"
-                    ref={boardGridRef}
-                  >
-                    {board.map((row, rowIndex) =>
-                      row.map((_, colIndex) => {
-                        // Determine if we should flip the board based on player color and settings
-                        // By default, always show player's pieces at the bottom
-                        const shouldFlipBoard = whitePiecesBottom
-                          ? playerColor === "b"
-                          : playerColor === "w";
-
-                        const actualRowIndex = shouldFlipBoard
-                          ? 7 - rowIndex
-                          : rowIndex;
-                        const actualColIndex = shouldFlipBoard
-                          ? 7 - colIndex
-                          : colIndex;
-                        const piece = board[actualRowIndex][actualColIndex];
-                        const square = `${"abcdefgh"[actualColIndex]}${
-                          8 - actualRowIndex
-                        }`;
-                        const isKingInCheck =
-                          game.isCheck() &&
-                          piece?.type.toLowerCase() === "k" &&
-                          piece?.color === game.turn();
-                        const isLastMove =
-                          lastMove &&
-                          (square === lastMove.from || square === lastMove.to);
-                        const isHintMove =
-                          hintMove &&
-                          (square === hintMove.from || square === hintMove.to);
-
-                        // Calculate the square color
-                        const isLight =
-                          (actualRowIndex + actualColIndex) % 2 === 1;
-
-                        const isSelected =
-                          selectedPiece &&
-                          selectedPiece.row === actualRowIndex &&
-                          selectedPiece.col === actualColIndex;
-
-                        // Get the coordinates
-                        const shouldShowRank =
-                          showCoordinates && actualColIndex === 0;
-                        const shouldShowFile =
-                          showCoordinates && actualRowIndex === 7;
-                        const coordinate = shouldShowRank
-                          ? `${8 - actualRowIndex}`
-                          : shouldShowFile
-                            ? `${"abcdefgh"[actualColIndex]}`
-                            : undefined;
-
-                        // Determine if the piece can be dragged
-                        const canDragPiece =
-                          piece?.color === playerColor &&
-                          game.turn() === playerColor &&
-                          !game.isGameOver();
-
-                        return (
-                          <DroppableSquare
-                            key={`${actualRowIndex}-${actualColIndex}`}
-                            row={actualRowIndex}
-                            col={actualColIndex}
-                            isLight={isLight}
-                            isSelected={!!isSelected}
-                            isCheck={isKingInCheck}
-                            isLastMove={!!isLastMove}
-                            isPossibleMove={possibleMoves.includes(square)}
-                            isHintMove={!!isHintMove}
-                            isRedHighlighted={isHighlighted(square)}
-                            isPreMadeMove={isPreMadeMove(square)}
-                            isPreMadePossibleMove={isPreMadePossibleMove(
-                              square
-                            )}
-                            coordinate={coordinate}
-                            showRank={shouldShowRank}
-                            showFile={shouldShowFile}
-                            difficulty={difficulty}
-                            onDrop={handleDragMove}
-                            onClick={() =>
-                              handleSquareClick(actualRowIndex, actualColIndex)
-                            }
-                            onContextMenu={(e) => {
-                              e.preventDefault();
-                              if (rightDragJustFinishedRef.current) {
-                                rightDragJustFinishedRef.current = false;
-                                return;
-                              }
-                              handleRightClick(square, e);
-                            }}
-                            // Arrow drawing handlers
-                            onMouseDown={(e: React.MouseEvent) =>
-                              handleSquareMouseDown(square, e)
-                            }
-                            onMouseUp={(e: React.MouseEvent) =>
-                              handleSquareMouseUp(square, e)
-                            }
-                          >
-                            {piece && (
-                              <DraggablePiece
-                                type={piece.type}
-                                color={piece.color}
-                                position={square}
-                                pieceSet={pieceSet}
-                                canDrag={canDragPiece}
-                                onDragStart={handleDragStart}
-                              />
-                            )}
-                          </DroppableSquare>
-                        );
-                      })
-                    )}
-                  </div>
-                  {/* ChessboardArrows moved here, as a sibling to the grid, inside the new relative wrapper */}
-                  <ChessboardArrows
-                    arrows={arrows}
-                    boardSize={boardSize}
-                    squareSize={boardSize / 8}
-                    whitePiecesBottom={whitePiecesBottom}
-                  />
                 </div>
               </div>
+              {/* New wrapper for the grid and arrows */}
+              <div
+                className="relative w-full aspect-square"
+                onMouseDown={handleBoardClick}
+              >
+                {/* Overlay for bot selection - This was previously inside F, but should be sibling to D or even higher to overlay everything if needed */}
+                {(!selectedBot || showBotSelection) && (
+                  <div className="absolute z-30 inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                    <span className="text-white text-4xl">
+                      {/* <CardTitle>Select a Bot to Play</CardTitle> */}
+                    </span>
+                  </div>
+                )}
+                <div
+                  className="w-full h-full grid grid-cols-8 border border-border rounded-lg overflow-hidden select-none"
+                  ref={boardGridRef}
+                >
+                  {board.map((row, rowIndex) =>
+                    row.map((_, colIndex) => {
+                      // Determine if we should flip the board based on player color and settings
+                      // By default, always show player's pieces at the bottom
+                      const shouldFlipBoard = whitePiecesBottom
+                        ? playerColor === "b"
+                        : playerColor === "w";
+
+                      const actualRowIndex = shouldFlipBoard
+                        ? 7 - rowIndex
+                        : rowIndex;
+                      const actualColIndex = shouldFlipBoard
+                        ? 7 - colIndex
+                        : colIndex;
+                      const piece = board[actualRowIndex][actualColIndex];
+                      const square = `${"abcdefgh"[actualColIndex]}${
+                        8 - actualRowIndex
+                      }`;
+                      const isKingInCheck =
+                        game.isCheck() &&
+                        piece?.type.toLowerCase() === "k" &&
+                        piece?.color === game.turn();
+                      const isLastMove =
+                        lastMove &&
+                        (square === lastMove.from || square === lastMove.to);
+                      const isHintMove =
+                        hintMove &&
+                        (square === hintMove.from || square === hintMove.to);
+
+                      // Calculate the square color
+                      const isLight =
+                        (actualRowIndex + actualColIndex) % 2 === 1;
+
+                      const isSelected =
+                        selectedPiece &&
+                        selectedPiece.row === actualRowIndex &&
+                        selectedPiece.col === actualColIndex;
+
+                      // Get the coordinates
+                      const shouldShowRank =
+                        showCoordinates && actualColIndex === 0;
+                      const shouldShowFile =
+                        showCoordinates && actualRowIndex === 7;
+                      const coordinate = shouldShowRank
+                        ? `${8 - actualRowIndex}`
+                        : shouldShowFile
+                          ? `${"abcdefgh"[actualColIndex]}`
+                          : undefined;
+
+                      // Determine if the piece can be dragged
+                      const canDragPiece =
+                        piece?.color === playerColor &&
+                        game.turn() === playerColor &&
+                        !game.isGameOver();
+
+                      return (
+                        <DroppableSquare
+                          key={`${actualRowIndex}-${actualColIndex}`}
+                          row={actualRowIndex}
+                          col={actualColIndex}
+                          isLight={isLight}
+                          isSelected={!!isSelected}
+                          isCheck={isKingInCheck}
+                          isLastMove={!!isLastMove}
+                          isPossibleMove={possibleMoves.includes(square)}
+                          isHintMove={!!isHintMove}
+                          isRedHighlighted={isHighlighted(square)}
+                          isPreMadeMove={isPreMadeMove(square)}
+                          isPreMadePossibleMove={isPreMadePossibleMove(square)}
+                          coordinate={coordinate}
+                          showRank={shouldShowRank}
+                          showFile={shouldShowFile}
+                          difficulty={difficulty}
+                          onDrop={handleDragMove}
+                          onClick={() =>
+                            handleSquareClick(actualRowIndex, actualColIndex)
+                          }
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            if (rightDragJustFinishedRef.current) {
+                              rightDragJustFinishedRef.current = false;
+                              return;
+                            }
+                            handleRightClick(square, e);
+                          }}
+                          // Arrow drawing handlers
+                          onMouseDown={(e: React.MouseEvent) =>
+                            handleSquareMouseDown(square, e)
+                          }
+                          onMouseUp={(e: React.MouseEvent) =>
+                            handleSquareMouseUp(square, e)
+                          }
+                        >
+                          {piece && (
+                            <DraggablePiece
+                              type={piece.type}
+                              color={piece.color}
+                              position={square}
+                              pieceSet={pieceSet}
+                              canDrag={canDragPiece}
+                              onDragStart={handleDragStart}
+                            />
+                          )}
+                        </DroppableSquare>
+                      );
+                    })
+                  )}
+                </div>
+                <ChessboardArrows
+                  arrows={arrows}
+                  boardSize={boardSize}
+                  squareSize={boardSize / 8}
+                  whitePiecesBottom={whitePiecesBottom}
+                />
+              </div>
             </div>
+            {/* MOBILE: profile cards above/below the board */}
             <div className="flex mt-4 lg:hidden">
               <PlayerProfile
                 difficulty={difficulty}
@@ -1235,7 +1221,6 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                 <div className="w-full">
                   <GameControls
                     difficulty={difficulty}
-                    gameStatus={getGameStatus()}
                     onResign={handleResign}
                     onDifficultyChange={handleDifficultyChange}
                     playerColor={playerColor}

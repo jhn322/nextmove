@@ -95,7 +95,7 @@ const ChessboardArrows: React.FC<ChessboardArrowsProps> = ({
 }) => {
   // Calculate dynamic arrow dimensions based on squareSize
   const dynamicArrowShaftWidth = squareSize * 0.2; // Arrow shaft width as a percentage of square size
-  const dynamicArrowHeadLength = squareSize * 0.45; // Arrowhead length as a percentage of square size
+  const dynamicArrowHeadLength = squareSize * 0.35; // Arrowhead length as a percentage of square size
   // Offset for the arrowhead base from the true destination, along the arrow angle
   const dynamicArrowHeadBaseOffset = dynamicArrowHeadLength * 0.3; // Adjust for visual fit
 
