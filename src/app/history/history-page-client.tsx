@@ -476,7 +476,7 @@ export const HistoryPageClient = ({
   }
 
   return (
-    <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8">
+    <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8 min-h-screen">
       <Tabs defaultValue={defaultTab} value={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger
