@@ -153,7 +153,7 @@ export default function PlayerProfile({
 
     setIsLoading(true);
     const newName = inputValue.trim();
-    setPlayerName(newName); // Optimistically update UI
+    setPlayerName(newName);
 
     try {
       // Call the API endpoint to save the name
@@ -197,7 +197,7 @@ export default function PlayerProfile({
     if (!session?.user?.id) return;
 
     const previousAvatar = avatarUrl;
-    setAvatarUrl(avatarPath); // Optimistically update UI
+    setAvatarUrl(avatarPath);
     setIsAvatarDialogOpen(false);
     setIsLoading(true);
 

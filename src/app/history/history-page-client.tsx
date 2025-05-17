@@ -67,6 +67,8 @@ import { Session } from "next-auth";
 import Link from "next/link";
 import { DEFAULT_STATE } from "@/config/game";
 import { type GameStats } from "@/types/stats";
+import { type UserWordleStats } from "@/types/wordle";
+import { getUserWordleStatsAction } from "@/lib/actions/wordle.actions";
 import EloBadge from "@/components/ui/elo-badge";
 
 interface HistoryPageClientProps {
@@ -80,13 +82,6 @@ interface HistoryPageClientProps {
 // Constant for game state in localStorage
 const GAME_STATE_STORAGE_KEY = "chess-game-state";
 const SELECTED_BOT_STORAGE_KEY = "selectedBot";
-const WORDLE_WINS_STORAGE_KEY = "chessWordleWinsCount";
-const WORDLE_TOTAL_PLAYS_KEY = "chessWordleTotalPlays";
-const WORDLE_CURRENT_STREAK_KEY = "chessWordleCurrentStreak";
-const WORDLE_LONGEST_STREAK_KEY = "chessWordleLongestStreak";
-const WORDLE_GUESS_DISTRIBUTION_KEY = "chessWordleGuessDistribution";
-const WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY =
-  "chessWordleTotalGuessesInWonGames";
 
 export const HistoryPageClient = ({
   session,
@@ -127,15 +122,18 @@ export const HistoryPageClient = ({
     null
   );
 
-  const [wordleTotalWins, setWordleTotalWins] = useState<number>(0);
-  const [wordleTotalPlays, setWordleTotalPlays] = useState<number>(0);
-  const [wordleCurrentStreak, setWordleCurrentStreak] = useState<number>(0);
-  const [wordleLongestStreak, setWordleLongestStreak] = useState<number>(0);
-  const [wordleGuessDistribution, setWordleGuessDistribution] = useState<
-    Record<number, number>
-  >({});
-  const [wordleTotalGuessesInWonGames, setWordleTotalGuessesInWonGames] =
-    useState<number>(0);
+  // State for Wordle statistics fetched from backend
+  const [wordleStats, setWordleStats] = useState<UserWordleStats | null>(null);
+  const [isLoadingWordleStats, setIsLoadingWordleStats] = useState(true);
+  const [wordleStatsError, setWordleStatsError] = useState<string | null>(null);
+
+  // Removed temporary placeholder Wordle stats
+  // const wordleTotalWins = 0;
+  // const wordleTotalPlays = 0;
+  // const wordleCurrentStreak = 0;
+  // const wordleLongestStreak = 0;
+  // const wordleGuessDistribution: Record<number, number> = {};
+  // const wordleTotalGuessesInWonGames = 0;
 
   // Get the default tab from URL parameters
   const [defaultTab, setDefaultTab] = useState("history");
@@ -213,58 +211,44 @@ export const HistoryPageClient = ({
         localStorage.removeItem(SELECTED_BOT_STORAGE_KEY); // Belt and braces
       }
 
-      // Load Wordle wins
-      const storedWordleWins = localStorage.getItem(WORDLE_WINS_STORAGE_KEY);
-      if (storedWordleWins) {
-        setWordleTotalWins(parseInt(storedWordleWins, 10));
-      }
-      // Load detailed Wordle stats
-      const storedWordleTotalPlays = localStorage.getItem(
-        WORDLE_TOTAL_PLAYS_KEY
-      );
-      if (storedWordleTotalPlays)
-        setWordleTotalPlays(parseInt(storedWordleTotalPlays, 10));
+      // Fetch Wordle stats from backend
+      const fetchWordleStats = async () => {
+        if (session?.user?.id) {
+          setIsLoadingWordleStats(true);
+          setWordleStatsError(null);
+          const result = await getUserWordleStatsAction();
+          if (result.error) {
+            setWordleStatsError(result.error);
+            setWordleStats(null);
+          } else if (result.stats) {
+            setWordleStats(result.stats);
+          } else {
+            // Should not happen if action is implemented correctly
+            setWordleStatsError("Failed to retrieve Wordle stats.");
+          }
+          setIsLoadingWordleStats(false);
+        } else {
+          // No user session, so no stats to fetch for Wordle
+          // Display a relevant message or leave stats as null/empty
+          setIsLoadingWordleStats(false);
+          // setWordleStatsError("Sign in to view your Wordle statistics."); // Optional: prompt to sign in
+        }
+      };
 
-      const storedWordleCurrentStreak = localStorage.getItem(
-        WORDLE_CURRENT_STREAK_KEY
-      );
-      if (storedWordleCurrentStreak)
-        setWordleCurrentStreak(parseInt(storedWordleCurrentStreak, 10));
-
-      const storedWordleLongestStreak = localStorage.getItem(
-        WORDLE_LONGEST_STREAK_KEY
-      );
-      if (storedWordleLongestStreak)
-        setWordleLongestStreak(parseInt(storedWordleLongestStreak, 10));
-
-      const storedWordleGuessDistribution = localStorage.getItem(
-        WORDLE_GUESS_DISTRIBUTION_KEY
-      );
-      if (storedWordleGuessDistribution)
-        setWordleGuessDistribution(JSON.parse(storedWordleGuessDistribution));
-      else setWordleGuessDistribution({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 });
-
-      const storedWordleTotalGuessesInWonGames = localStorage.getItem(
-        WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY
-      );
-      if (storedWordleTotalGuessesInWonGames)
-        setWordleTotalGuessesInWonGames(
-          parseInt(storedWordleTotalGuessesInWonGames, 10)
-        );
+      fetchWordleStats();
     }
-  }, []);
+  }, [session]); // Depend on session to refetch if login status changes
 
-  // Calculate average guesses
-  const averageGuesses =
-    wordleTotalWins > 0
-      ? (wordleTotalGuessesInWonGames / wordleTotalWins).toFixed(2)
-      : "N/A";
+  // Calculate average guesses - now derived from wordleStats
+  const averageGuessesDisplay = wordleStats?.averageGuessesInWonGames
+    ? wordleStats.averageGuessesInWonGames.toFixed(2)
+    : "N/A";
 
-  // Calculate Wordle Win Percentage
-  const wordleWinPercentage =
-    wordleTotalPlays > 0
-      ? ((wordleTotalWins / wordleTotalPlays) * 100).toFixed(1)
-      : "0.0";
+  // Calculate Wordle Win Percentage - now derived from wordleStats
+  const wordleWinPercentageDisplay =
+    wordleStats && wordleStats.totalPlays > 0
+      ? `${wordleStats.winPercentage.toFixed(1)}%`
+      : "0.0%";
 
   // Check if user should be redirected based on initial state
   useEffect(() => {
@@ -1019,44 +1003,57 @@ export const HistoryPageClient = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {wordleTotalPlays > 0 ? (
+              {isLoadingWordleStats ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                  <p className="text-muted-foreground">
+                    Loading Wordle Statistics...
+                  </p>
+                </div>
+              ) : wordleStatsError ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error Loading Wordle Stats</AlertTitle>
+                  <AlertDescription>{wordleStatsError}</AlertDescription>
+                </Alert>
+              ) : wordleStats && wordleStats.totalPlays > 0 ? (
                 <>
                   {/* Wordle Stats Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <StatCardItem
                       icon={Gamepad2}
                       label="Total Games Played"
-                      value={wordleTotalPlays}
+                      value={wordleStats.totalPlays}
                       color="text-primary"
                     />
                     <StatCardItem
                       icon={Trophy}
                       label="Words Guessed Correctly"
-                      value={wordleTotalWins}
+                      value={wordleStats.totalWins}
                       color="text-yellow-500"
                     />
                     <StatCardItem
                       icon={Activity}
                       label="Average Guesses (Wins)"
-                      value={averageGuesses}
+                      value={averageGuessesDisplay}
                       color="text-cyan-500"
                     />
                     <StatCardItem
                       icon={PieChart}
                       label="Win Percentage"
-                      value={`${wordleWinPercentage}%`}
+                      value={wordleWinPercentageDisplay}
                       color="text-orange-500"
                     />
                     <StatCardItem
                       icon={TrendingUp}
                       label="Current Winning Streak"
-                      value={wordleCurrentStreak}
+                      value={wordleStats.currentStreak}
                       color="text-violet-500"
                     />
                     <StatCardItem
                       icon={Award}
                       label="Longest Winning Streak"
-                      value={wordleLongestStreak}
+                      value={wordleStats.longestStreak}
                       color="text-sky-500"
                     />
                   </div>
@@ -1067,12 +1064,12 @@ export const HistoryPageClient = ({
                       <BarChart3 className="h-5 w-5 text-primary" /> Guess
                       Distribution
                     </h3>
-                    {Object.keys(wordleGuessDistribution).length > 0 &&
-                    Object.values(wordleGuessDistribution).some(
+                    {Object.keys(wordleStats.guessDistribution).length > 0 &&
+                    Object.values(wordleStats.guessDistribution).some(
                       (v) => v > 0
                     ) ? (
                       <ul className="space-y-2">
-                        {Object.entries(wordleGuessDistribution)
+                        {Object.entries(wordleStats.guessDistribution)
                           .sort(
                             ([keyA], [keyB]) => parseInt(keyA) - parseInt(keyB)
                           )

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import { CHESS_WORDLE_WORDS } from "@/lib/chess-wordle-words";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +20,6 @@ import { CHESS_WORDLE } from "@/lib/constants/site";
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 const VALID_KEYS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const WORDLE_WINS_STORAGE_KEY = "chessWordleWinsCount";
-const WORDLE_TOTAL_PLAYS_KEY = "chessWordleTotalPlays";
-const WORDLE_CURRENT_STREAK_KEY = "chessWordleCurrentStreak";
-const WORDLE_LONGEST_STREAK_KEY = "chessWordleLongestStreak";
-const WORDLE_GUESS_DISTRIBUTION_KEY = "chessWordleGuessDistribution";
-const WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY =
-  "chessWordleTotalGuessesInWonGames";
 
 // Threshold for showing word suggestion
 const INVALID_GUESS_SUGGESTION_THRESHOLD = 5;
@@ -54,15 +48,6 @@ export function ChessWordleClient() {
     useState<KeyboardLetterStatus>({});
   const [isMounted, setIsMounted] = useState(false);
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
-  const [wordleWinsCount, setWordleWinsCount] = useState<number>(0);
-  const [totalPlays, setTotalPlays] = useState<number>(0);
-  const [currentStreak, setCurrentStreak] = useState<number>(0);
-  const [longestStreak, setLongestStreak] = useState<number>(0);
-  const [guessDistribution, setGuessDistribution] = useState<
-    Record<number, number>
-  >({});
-  const [totalGuessesInWonGames, setTotalGuessesInWonGames] =
-    useState<number>(0);
   const [isShaking, setIsShaking] = useState<boolean>(false);
   const [invalidGuessStreak, setInvalidGuessStreak] = useState<number>(0);
   const [showSuggestionButton, setShowSuggestionButton] =
@@ -70,6 +55,7 @@ export function ChessWordleClient() {
   const [suggestedWordHint, setSuggestedWordHint] = useState<string | null>(
     null
   );
+  const { data: session } = useSession();
 
   // ** Valid Words ** //
   const validFiveLetterWords = useMemo(() => {
@@ -114,6 +100,41 @@ export function ChessWordleClient() {
   ]);
 
   // ** Game Logic Functions ** //
+  const recordWordleAttempt = useCallback(
+    async (word: string, guessesTakenParam: number, won: boolean) => {
+      if (!session?.user?.id) {
+        toast.error("You must be logged in to save your Wordle score.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/wordle-attempts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            targetWord: word,
+            guessesTaken: guessesTakenParam,
+            isWin: won,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to save Wordle attempt:", errorData);
+          toast.error(
+            errorData.message || "Failed to save your game progress."
+          );
+        }
+      } catch (error) {
+        console.error("Error calling API to save Wordle attempt:", error);
+        toast.error(
+          "An unexpected error occurred while saving your game progress."
+        );
+      }
+    },
+    [session]
+  );
+
   const handleSubmitGuess = useCallback(() => {
     if (currentGuess.length !== WORD_LENGTH) {
       toast.warning(`Word must be ${WORD_LENGTH} letters long.`);
@@ -201,28 +222,11 @@ export function ChessWordleClient() {
 
     if (currentGuess === targetWord) {
       setGameStatus("won");
-      const newWins = wordleWinsCount + 1;
-      setWordleWinsCount(newWins);
-
-      const newTotalPlays = totalPlays + 1;
-      setTotalPlays(newTotalPlays);
-
-      const newCurrentStreak = currentStreak + 1;
-      setCurrentStreak(newCurrentStreak);
-      if (newCurrentStreak > longestStreak) {
-        setLongestStreak(newCurrentStreak);
-      }
-
       const winningGuessIndex = newGuesses.findIndex(
         (g) => g.word === targetWord
       );
       const actualGuessesTaken = winningGuessIndex + 1;
-
-      setGuessDistribution((prev) => ({
-        ...prev,
-        [actualGuessesTaken]: (prev[actualGuessesTaken] || 0) + 1,
-      }));
-      setTotalGuessesInWonGames((prev) => prev + actualGuessesTaken);
+      recordWordleAttempt(targetWord, actualGuessesTaken, true);
       toast.success("You Won!", {
         description: `The word was: ${targetWord}. You guessed it in ${actualGuessesTaken} tries.`,
         icon: <CheckCircle className="w-5 h-5" />,
@@ -230,9 +234,7 @@ export function ChessWordleClient() {
       });
     } else if (activeGuessIndex === MAX_GUESSES - 1) {
       setGameStatus("lost");
-      const newTotalPlays = totalPlays + 1;
-      setTotalPlays(newTotalPlays);
-      setCurrentStreak(0);
+      recordWordleAttempt(targetWord, MAX_GUESSES, false);
       toast.error("Game Over!", {
         description: `The word was: ${targetWord}.`,
         icon: <AlertCircle className="w-5 h-5" />,
@@ -247,16 +249,13 @@ export function ChessWordleClient() {
     gameStatus,
     targetWord,
     keyboardStatuses,
-    wordleWinsCount,
-    totalPlays,
-    currentStreak,
-    longestStreak,
     validFiveLetterWords,
     invalidGuessStreak,
     setInvalidGuessStreak,
     setIsShaking,
     setShowSuggestionButton,
     setSuggestedWordHint,
+    recordWordleAttempt,
   ]);
 
   const handleVirtualKeyClick = useCallback(
@@ -297,85 +296,12 @@ export function ChessWordleClient() {
   // ** Effects ** //
   useEffect(() => {
     setIsMounted(true);
-    // Load stats from localStorage on mount
-    const storedWins = localStorage.getItem(WORDLE_WINS_STORAGE_KEY);
-    if (storedWins) setWordleWinsCount(parseInt(storedWins, 10));
-
-    let loadedTotalPlays = 0;
-    const storedTotalPlays = localStorage.getItem(WORDLE_TOTAL_PLAYS_KEY);
-    if (storedTotalPlays) {
-      loadedTotalPlays = parseInt(storedTotalPlays, 10);
-      setTotalPlays(loadedTotalPlays);
-    } else {
-      setTotalPlays(0);
-    }
-
-    const storedCurrentStreak = localStorage.getItem(WORDLE_CURRENT_STREAK_KEY);
-    if (storedCurrentStreak)
-      setCurrentStreak(parseInt(storedCurrentStreak, 10));
-
-    const storedLongestStreak = localStorage.getItem(WORDLE_LONGEST_STREAK_KEY);
-    if (storedLongestStreak)
-      setLongestStreak(parseInt(storedLongestStreak, 10));
-
-    const storedGuessDistribution = localStorage.getItem(
-      WORDLE_GUESS_DISTRIBUTION_KEY
-    );
-    if (storedGuessDistribution)
-      setGuessDistribution(JSON.parse(storedGuessDistribution));
-    else setGuessDistribution({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }); // Initialize if not found
-
-    const storedTotalGuessesInWonGames = localStorage.getItem(
-      WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY
-    );
-    if (storedTotalGuessesInWonGames)
-      setTotalGuessesInWonGames(parseInt(storedTotalGuessesInWonGames, 10));
-
     initializeGame();
-
-    // Conditionally open the instructions modal only on the first play
-    if (loadedTotalPlays === 0) {
-      setIsInstructionsModalOpen(true);
-    } else {
-      setIsInstructionsModalOpen(false);
-    }
+    setIsInstructionsModalOpen(false);
   }, [
     initializeGame,
     setIsInstructionsModalOpen,
-    setWordleWinsCount,
-    setTotalPlays,
-    setCurrentStreak,
-    setLongestStreak,
-    setGuessDistribution,
-    setTotalGuessesInWonGames,
     setIsMounted,
-    validFiveLetterWords,
-  ]);
-
-  // Save stats to localStorage on change
-  useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem(WORDLE_WINS_STORAGE_KEY, wordleWinsCount.toString());
-      localStorage.setItem(WORDLE_TOTAL_PLAYS_KEY, totalPlays.toString());
-      localStorage.setItem(WORDLE_CURRENT_STREAK_KEY, currentStreak.toString());
-      localStorage.setItem(WORDLE_LONGEST_STREAK_KEY, longestStreak.toString());
-      localStorage.setItem(
-        WORDLE_GUESS_DISTRIBUTION_KEY,
-        JSON.stringify(guessDistribution)
-      );
-      localStorage.setItem(
-        WORDLE_TOTAL_GUESSES_IN_WON_GAMES_KEY,
-        totalGuessesInWonGames.toString()
-      );
-    }
-  }, [
-    wordleWinsCount,
-    totalPlays,
-    currentStreak,
-    longestStreak,
-    guessDistribution,
-    totalGuessesInWonGames,
-    isMounted,
     validFiveLetterWords,
   ]);
 
@@ -383,7 +309,7 @@ export function ChessWordleClient() {
     if (gameStatus !== "playing" || isInstructionsModalOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey) return;
+      if (event.metaKey || event.ctrlKey) return; // Ignore system shortcuts
       const key = event.key.toUpperCase();
 
       if (key === "ENTER") {
@@ -393,7 +319,7 @@ export function ChessWordleClient() {
       } else if (
         VALID_KEYS.includes(key) &&
         currentGuess.length < WORD_LENGTH &&
-        key.length === 1
+        key.length === 1 // Ensure it's a single character key
       ) {
         setCurrentGuess((prev) => prev + key);
       }
@@ -401,14 +327,7 @@ export function ChessWordleClient() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    currentGuess,
-    gameStatus,
-    targetWord,
-    handleSubmitGuess,
-    isInstructionsModalOpen,
-    validFiveLetterWords,
-  ]);
+  }, [currentGuess, gameStatus, handleSubmitGuess, isInstructionsModalOpen]);
 
   // ** UI Rendering ** //
   if (targetWord === "ERROR") {
@@ -534,6 +453,11 @@ export function ChessWordleClient() {
               <li>
                 The color of the tiles will change to show how close your guess
                 was to the word.
+              </li>
+              <li>
+                If you make {INVALID_GUESS_SUGGESTION_THRESHOLD} incorrect (not
+                in word list) guesses in a row, a suggestion button for a valid
+                word might appear to help you out!
               </li>
             </ul>
 

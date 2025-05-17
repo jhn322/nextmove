@@ -15,7 +15,6 @@ const DEFAULT_START_ELO = 600; // Fallback, though Prisma schema default should 
 interface SaveGameActionParams {
   userId: string;
   fen: string; // FEN string instead of Chess instance
-  // PGN history, potentially for more complex game state reconstruction if needed in the future
   pgnHistory?: string[];
   difficulty: string;
   playerColor: "w" | "b";
@@ -33,7 +32,6 @@ interface SaveGameResultWithElo extends GameHistory {
 export const saveGameAction = async ({
   userId,
   fen,
-  // pgnHistory, // Currently unused, but kept for potential future use
   difficulty,
   playerColor,
   selectedBot,
@@ -71,7 +69,7 @@ export const saveGameAction = async ({
     }
 
     let eloDelta = 0;
-    let newElo = user.elo ?? DEFAULT_START_ELO; // Use current ELO or default
+    let newElo = user.elo ?? DEFAULT_START_ELO;
 
     // Calculate ELO only for wins or losses (including resignations as losses)
     if (
@@ -103,13 +101,11 @@ export const saveGameAction = async ({
       selectedBot,
       gameTime,
       movesCount,
-      isResignation: actualGameResult === "resign", // Explicitly pass based on determined result
-      // actualGameResult can be passed to saveGameResult if it accepts it to set the result string
+      isResignation: actualGameResult === "resign",
     });
 
     if (!savedGame) {
       console.error("saveGameAction: Failed to save game result via service.");
-      // Potentially roll back ELO change if game save fails? For now, ELO is updated first.
       return null;
     }
 

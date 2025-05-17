@@ -53,6 +53,7 @@ import { APP_NAME } from "@/lib/constants/site";
 import { type GameStats } from "@/types/stats";
 import { DEFAULT_STATE } from "@/config/game";
 import EloBadge from "@/components/ui/elo-badge";
+import { getUserWordleStatsAction } from "@/lib/actions/wordle.actions";
 
 // ** Type Difficulty Cards ** //
 interface GameCardConfig {
@@ -255,7 +256,14 @@ export function HomePageClient({
     useState<string | null>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [isBotProgressionLoading, setIsBotProgressionLoading] = useState(false);
-  const [currentWordleWins, setCurrentWordleWins] = useState<number>(0);
+
+  // State for Wordle total wins fetched from backend
+  const [wordleTotalWins, setWordleTotalWins] = useState<number | null>(null);
+  const [isLoadingWordleTotalWins, setIsLoadingWordleTotalWins] =
+    useState(false);
+  const [wordleTotalWinsError, setWordleTotalWinsError] = useState<
+    string | null
+  >(null);
 
   const isUserLoggedIn = !!session;
 
@@ -349,12 +357,29 @@ export function HomePageClient({
     // The result of checkActiveGame directly sets isGameActive
     setIsGameActive(checkActiveGame());
 
-    // Load Wordle wins from localStorage
-    const storedWordleWins = localStorage.getItem("chessWordleWinsCount");
-    if (storedWordleWins) {
-      setCurrentWordleWins(parseInt(storedWordleWins, 10));
+    // Fetch Wordle total wins if user is logged in
+    const fetchWordleWins = async () => {
+      if (session?.user?.id) {
+        setIsLoadingWordleTotalWins(true);
+        setWordleTotalWinsError(null);
+        const result = await getUserWordleStatsAction();
+        if (result.error) {
+          setWordleTotalWinsError(result.error);
+          setWordleTotalWins(null);
+        } else if (result.stats) {
+          setWordleTotalWins(result.stats.totalWins);
+        } else {
+          setWordleTotalWinsError("Failed to retrieve Wordle wins.");
+          setWordleTotalWins(null);
+        }
+        setIsLoadingWordleTotalWins(false);
+      }
+    };
+
+    if (isUserLoggedIn) {
+      fetchWordleWins();
     }
-  }, []);
+  }, [session, isUserLoggedIn]);
 
   const handleNavigationAttempt = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -679,14 +704,22 @@ export function HomePageClient({
                               <div className="flex items-center">
                                 <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
                                 <span className="text-xs font-medium text-amber-300">
-                                  Words Guessed: {currentWordleWins}
+                                  {isLoadingWordleTotalWins
+                                    ? "Loading..."
+                                    : wordleTotalWinsError
+                                      ? "Error"
+                                      : `Words Guessed: ${wordleTotalWins ?? "N/A"}`}
                                 </span>
                               </div>
                             ) : (
                               <div className="flex items-center opacity-50">
                                 <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400/70" />
                                 <span className="text-xs font-medium text-amber-300/70">
-                                  Words Guessed: N/A
+                                  {isLoadingWordleTotalWins
+                                    ? "Loading wins..."
+                                    : wordleTotalWinsError
+                                      ? "Error loading wins"
+                                      : `Words Guessed: ${wordleTotalWins ?? "N/A"}`}
                                 </span>
                               </div>
                             )}
@@ -735,14 +768,22 @@ export function HomePageClient({
                               <div className="flex items-center">
                                 <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400" />
                                 <span className="text-sm font-medium text-amber-300">
-                                  Words Guessed: {currentWordleWins}
+                                  {isLoadingWordleTotalWins
+                                    ? "Loading..."
+                                    : wordleTotalWinsError
+                                      ? "Error"
+                                      : `Words Guessed: ${wordleTotalWins ?? "N/A"}`}
                                 </span>
                               </div>
                             ) : (
                               <div className="flex items-center opacity-50">
                                 <SpellCheck className="w-4 h-4 mr-1.5 text-amber-400/70" />
                                 <span className="text-sm font-medium text-amber-300/70">
-                                  Words Guessed: N/A
+                                  {isLoadingWordleTotalWins
+                                    ? "Loading wins..."
+                                    : wordleTotalWinsError
+                                      ? "Error loading wins"
+                                      : `Words Guessed: ${wordleTotalWins ?? "N/A"}`}
                                 </span>
                               </div>
                             )}
@@ -778,10 +819,18 @@ export function HomePageClient({
                           <span className="font-medium text-amber-300">
                             {isUserLoggedIn ? (
                               <>
-                                Words:{" "}
-                                <span className={level.textColor}>
-                                  {currentWordleWins}
-                                </span>
+                                {isLoadingWordleTotalWins ? (
+                                  <Loader2 className="h-3 w-3 animate-spin inline-block mr-1" />
+                                ) : wordleTotalWinsError ? (
+                                  "Error"
+                                ) : (
+                                  <>
+                                    Words:{" "}
+                                    <span className={level.textColor}>
+                                      {wordleTotalWins ?? "N/A"}
+                                    </span>
+                                  </>
+                                )}
                               </>
                             ) : (
                               <span className="opacity-50">Words: N/A</span>
