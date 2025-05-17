@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import EloBadge from "@/components/ui/elo-badge";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -481,9 +482,7 @@ const VictoryModal = ({
                               <span className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-full capitalize">
                                 {nextBotInfo.difficulty}
                               </span>
-                              <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded-full">
-                                {nextBotInfo.bot.rating} ELO
-                              </span>
+                              <EloBadge elo={nextBotInfo.bot.rating} />
                             </div>
                           );
                         }

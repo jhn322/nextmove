@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot } from "@/components/game/data/bots";
 import { Chess } from "chess.js";
@@ -15,6 +10,7 @@ import Image from "next/image";
 import CapturedPieces from "./CapturedPieces";
 import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
 import { useAuth } from "@/context/auth-context";
+import EloBadge from "@/components/ui/elo-badge";
 
 interface PlayerProfileProps {
   difficulty: string;
@@ -222,9 +218,11 @@ const PlayerProfile = ({
                 </span>
               )}
             </div>
-            <CardDescription className="text-[11px]">
-              Rating: {isBot && selectedBot ? selectedBot.rating : rating}
-            </CardDescription>
+            {/* ELO Badge */}
+            <EloBadge
+              elo={isBot && selectedBot ? selectedBot.rating : rating}
+              className="mt-0.5"
+            />
           </div>
         </CardHeader>
         {hasCapturedPieces && (

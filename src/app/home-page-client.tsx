@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/constants/site";
 import { type GameStats } from "@/types/stats";
 import { DEFAULT_STATE } from "@/config/game";
+import EloBadge from "@/components/ui/elo-badge";
 
 // ** Type Difficulty Cards ** //
 interface GameCardConfig {
@@ -1009,9 +1010,7 @@ export function HomePageClient({
                                 {nextBot.difficulty.charAt(0).toUpperCase() +
                                   nextBot.difficulty.slice(1).toLowerCase()}
                               </Badge>
-                              <span className="text-xs px-2 py-0.5 bg-amber-500/15 text-amber-400 rounded-full">
-                                {nextBot.rating} ELO
-                              </span>
+                              <EloBadge elo={nextBot.rating} />
                             </div>
                           </div>
                           {navigatingTo === nextBot.name ? (

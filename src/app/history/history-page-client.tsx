@@ -67,6 +67,7 @@ import { Session } from "next-auth";
 import Link from "next/link";
 import { DEFAULT_STATE } from "@/config/game";
 import { type GameStats } from "@/types/stats";
+import EloBadge from "@/components/ui/elo-badge";
 
 interface HistoryPageClientProps {
   session: Session | null;
@@ -946,6 +947,10 @@ export const HistoryPageClient = ({
                                       <div className="flex-1">
                                         <div className="font-semibold">
                                           {bot.name}
+                                          <EloBadge
+                                            elo={bot.rating}
+                                            className="ml-2 align-middle"
+                                          />
                                         </div>
                                         <div className="text-xs text-muted-foreground">
                                           {bot.description}

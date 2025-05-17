@@ -32,6 +32,7 @@ import Image from "next/image";
 import { Bot } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import EloBadge from "@/components/ui/elo-badge";
 
 interface BotSelectionPanelProps {
   bots: Bot[];
@@ -214,9 +215,7 @@ const BotSelectionPanel = ({
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium truncate">{bot.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Rating: {bot.rating}
-                  </div>
+                  <EloBadge elo={bot.rating} className="mt-0.5" />
                   <Image
                     src={bot.flag}
                     alt={`${bot.name} flag`}
@@ -259,7 +258,7 @@ const BotSelectionPanel = ({
                       />
                     </div>
                   </div>
-                  <div className="text-xs">Rating: {bot.rating}</div>
+                  <EloBadge elo={bot.rating} className="mt-0.5" />
                 </div>
                 <Button
                   className="flex-shrink-0 ml-auto"

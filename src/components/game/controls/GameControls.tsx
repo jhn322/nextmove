@@ -26,6 +26,7 @@ import { BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
 import { Bot } from "@/components/game/data/bots";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import EloBadge from "@/components/ui/elo-badge";
 
 interface CustomChess extends Chess {
   isResigned?: boolean;
@@ -464,9 +465,7 @@ const GameControls = ({
                         <span className="px-1.5 py-0.5 bg-blue-500/15 text-blue-400 rounded-full capitalize">
                           {nextBotInfo.difficulty}
                         </span>
-                        <span className="px-1.5 py-0.5 bg-amber-500/15 text-amber-400 rounded-full">
-                          {nextBotInfo.bot.rating} ELO
-                        </span>
+                        <EloBadge elo={nextBotInfo.bot.rating} />
                       </div>
                     );
                   }

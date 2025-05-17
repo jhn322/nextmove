@@ -31,6 +31,7 @@ import Image from "next/image";
 import HoverText from "@/components/ui/hover-text";
 import { getCharacterNameFromPath } from "@/lib/utils";
 import Link from "next/link";
+import EloBadge from "@/components/ui/elo-badge";
 
 interface PlayerProfileProps {
   className?: string;
@@ -399,6 +400,10 @@ export default function PlayerProfile({
                       </span>
                     )}
                   </div>
+                  <EloBadge
+                    elo={typeof winRate === "number" ? winRate : undefined}
+                    className="mt-1"
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
