@@ -73,6 +73,7 @@ import { type GameStats } from "@/types/stats";
 import { type UserWordleStats } from "@/types/wordle";
 import { getUserWordleStatsAction } from "@/lib/actions/wordle.actions";
 import EloBadge from "@/components/ui/elo-badge";
+import { Pagination } from "@/components/ui/pagination";
 
 interface ExtendedGameHistory extends PrismaGameHistory {
   eloDelta: number | null;
@@ -90,6 +91,9 @@ interface HistoryPageClientProps {
 // Constant for game state in localStorage
 const GAME_STATE_STORAGE_KEY = "chess-game-state";
 const SELECTED_BOT_STORAGE_KEY = "selectedBot";
+
+//** Pagination */
+const PAGE_SIZE = 25;
 
 export const HistoryPageClient = ({
   session,
@@ -145,6 +149,20 @@ export const HistoryPageClient = ({
 
   // Get the default tab from URL parameters
   const [defaultTab, setDefaultTab] = useState("history");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(gameHistory.length / PAGE_SIZE);
+  const paginatedGameHistory = gameHistory.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+  // Reset to page 1 if history changes and current page is out of bounds
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [gameHistory, totalPages, currentPage]);
 
   useEffect(() => {
     // Check if we're in the browser
@@ -554,113 +572,121 @@ export const HistoryPageClient = ({
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Opponent</TableHead>
-                        <TableHead>Difficulty</TableHead>
-                        <TableHead>Result</TableHead>
-                        <TableHead>Moves</TableHead>
-                        <TableHead>Time</TableHead>
-                        <TableHead>ELO Δ</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {gameHistory.map((game) => (
-                        <TableRow key={game.id}>
-                          <TableCell>
-                            {format(new Date(game.createdAt), "MMM d, yyyy")}
-                            <div className="text-xs text-muted-foreground">
-                              {format(new Date(game.createdAt), "h:mm a")}
-                            </div>
-                          </TableCell>
-                          <TableCell>{game.opponent}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "font-medium",
-                                game.difficulty === "beginner" &&
-                                  "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-                                game.difficulty === "easy" &&
-                                  "bg-green-500/10 text-green-500 border-green-500/20",
-                                game.difficulty === "intermediate" &&
-                                  "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-                                game.difficulty === "advanced" &&
-                                  "bg-blue-500/10 text-blue-500 border-blue-500/20",
-                                game.difficulty === "hard" &&
-                                  "bg-violet-500/10 text-violet-500 border-violet-500/20",
-                                game.difficulty === "expert" &&
-                                  "bg-purple-500/10 text-purple-500 border-purple-500/20",
-                                game.difficulty === "master" &&
-                                  "bg-orange-500/10 text-orange-500 border-orange-500/20",
-                                game.difficulty === "grandmaster" &&
-                                  "bg-red-500/10 text-red-500 border-red-500/20"
-                              )}
-                            >
-                              {game.difficulty.charAt(0).toUpperCase() +
-                                game.difficulty.slice(1)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1.5">
-                              {getResultIcon(game.result)}
-                              <span
-                                className={cn(
-                                  "capitalize",
-                                  game.result === "win" && "text-yellow-500",
-                                  game.result === "loss" && "text-red-500",
-                                  game.result === "draw" && "text-blue-500",
-                                  game.result === "resign" && "text-orange-500"
-                                )}
-                              >
-                                {game.result}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{game.movesCount}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                              {formatTime(game.timeTaken)}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {typeof game.eloDelta === "number" ? (
-                              <span
-                                className={
-                                  game.eloDelta > 0
-                                    ? "text-green-500 font-semibold"
-                                    : game.eloDelta < 0
-                                      ? "text-red-500 font-semibold"
-                                      : "text-muted-foreground"
-                                }
-                                title={
-                                  typeof game.newElo === "number"
-                                    ? `New ELO: ${game.newElo}`
-                                    : undefined
-                                }
-                              >
-                                {game.eloDelta > 0
-                                  ? `+${game.eloDelta}`
-                                  : game.eloDelta}
-                                {typeof game.newElo === "number" && (
-                                  <span className="ml-1 text-xs text-muted-foreground">
-                                    ({game.newElo})
-                                  </span>
-                                )}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
+                <>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Opponent</TableHead>
+                          <TableHead>Difficulty</TableHead>
+                          <TableHead>Result</TableHead>
+                          <TableHead>Moves</TableHead>
+                          <TableHead>Time</TableHead>
+                          <TableHead>ELO Δ</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedGameHistory.map((game) => (
+                          <TableRow key={game.id}>
+                            <TableCell>
+                              {format(new Date(game.createdAt), "MMM d, yyyy")}
+                              <div className="text-xs text-muted-foreground">
+                                {format(new Date(game.createdAt), "h:mm a")}
+                              </div>
+                            </TableCell>
+                            <TableCell>{game.opponent}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "font-medium",
+                                  game.difficulty === "beginner" &&
+                                    "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                                  game.difficulty === "easy" &&
+                                    "bg-green-500/10 text-green-500 border-green-500/20",
+                                  game.difficulty === "intermediate" &&
+                                    "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                                  game.difficulty === "advanced" &&
+                                    "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                  game.difficulty === "hard" &&
+                                    "bg-violet-500/10 text-violet-500 border-violet-500/20",
+                                  game.difficulty === "expert" &&
+                                    "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                                  game.difficulty === "master" &&
+                                    "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                                  game.difficulty === "grandmaster" &&
+                                    "bg-red-500/10 text-red-500 border-red-500/20"
+                                )}
+                              >
+                                {game.difficulty.charAt(0).toUpperCase() +
+                                  game.difficulty.slice(1)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                {getResultIcon(game.result)}
+                                <span
+                                  className={cn(
+                                    "capitalize",
+                                    game.result === "win" && "text-yellow-500",
+                                    game.result === "loss" && "text-red-500",
+                                    game.result === "draw" && "text-blue-500",
+                                    game.result === "resign" &&
+                                      "text-orange-500"
+                                  )}
+                                >
+                                  {game.result}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{game.movesCount}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                {formatTime(game.timeTaken)}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {typeof game.eloDelta === "number" ? (
+                                <span
+                                  className={
+                                    game.eloDelta > 0
+                                      ? "text-green-500 font-semibold"
+                                      : game.eloDelta < 0
+                                        ? "text-red-500 font-semibold"
+                                        : "text-muted-foreground"
+                                  }
+                                  title={
+                                    typeof game.newElo === "number"
+                                      ? `New ELO: ${game.newElo}`
+                                      : undefined
+                                  }
+                                >
+                                  {game.eloDelta > 0
+                                    ? `+${game.eloDelta}`
+                                    : game.eloDelta}
+                                  {typeof game.newElo === "number" && (
+                                    <span className="ml-1 text-xs text-muted-foreground">
+                                      ({game.newElo})
+                                    </span>
+                                  )}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </>
               )}
             </CardContent>
           </Card>
