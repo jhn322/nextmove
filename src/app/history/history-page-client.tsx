@@ -425,7 +425,8 @@ export const HistoryPageClient = ({
                   <strong>Game History</strong> - All past games
                 </li>
                 <li>
-                  <strong>Statistics</strong> - Win/loss records and averages
+                  <strong>Game Statistics</strong> - Win/loss records and
+                  averages
                 </li>
                 <li>
                   <strong>Bot Challenge Records</strong> - All bots you&apos;ve
@@ -484,7 +485,7 @@ export const HistoryPageClient = ({
             onClick={() => setDefaultTab("stats")}
           >
             <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Statistics</span>
+            <span className="hidden sm:inline">Game Statistics</span>
             <span className="sm:hidden">Stats</span>
           </TabsTrigger>
           <TabsTrigger

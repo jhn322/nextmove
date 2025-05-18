@@ -1,0 +1,178 @@
+export interface BoardPiecePreset {
+  id: string;
+  name: string;
+  boardTheme: string;
+  pieceSet: string;
+  description?: string;
+}
+
+export const BOARD_PIECE_PRESETS: BoardPiecePreset[] = [
+  {
+    id: "emerald-staunty",
+    name: "Emerald + Staunty",
+    boardTheme: "emerald",
+    pieceSet: "staunty",
+    description: "Classic green board with modern Staunty pieces",
+  },
+  {
+    id: "jade-cburnett",
+    name: "Jade + Cburnett",
+    boardTheme: "jade",
+    pieceSet: "cburnett",
+    description: "Jade green board and the popular Cburnett set",
+  },
+  {
+    id: "classic-merida",
+    name: "Classic + Merida",
+    boardTheme: "classic",
+    pieceSet: "merida_new",
+    description: "Classic board and Merida pieces for a timeless look",
+  },
+  {
+    id: "jade-gioco",
+    name: "Jade + Gioco",
+    boardTheme: "jade",
+    pieceSet: "gioco",
+    description: "Jade board with elegant Gioco pieces",
+  },
+  {
+    id: "dracula-chessnut",
+    name: "Dracula + Chessnut",
+    boardTheme: "dracula",
+    pieceSet: "chessnut",
+    description: "Dark Dracula board and Chessnut pieces",
+  },
+  {
+    id: "fantasy-tatiana",
+    name: "Fantasy + Tatiana",
+    boardTheme: "fantasy",
+    pieceSet: "tatiana",
+    description: "Vivid Fantasy board with Tatiana set",
+  },
+  {
+    id: "cyberpunk-pixel",
+    name: "Cyberpunk + Pixel",
+    boardTheme: "cyberpunk",
+    pieceSet: "pixel",
+    description: "Futuristic cyberpunk board and pixel art pieces",
+  },
+  {
+    id: "rose-fresca",
+    name: "Rose + Fresca",
+    boardTheme: "rose",
+    pieceSet: "fresca",
+    description: "Rose board with the playful Fresca set",
+  },
+  {
+    id: "midnight-chessmonk",
+    name: "Midnight + Chessmonk",
+    boardTheme: "midnight",
+    pieceSet: "chessmonk",
+    description: "Midnight board and Chessmonk pieces",
+  },
+  {
+    id: "high-contrast-cardinal",
+    name: "High Contrast + Cardinal",
+    boardTheme: "high-contrast",
+    pieceSet: "cardinal",
+    description: "Accessible high-contrast board and Cardinal set",
+  },
+  {
+    id: "amethyst-freestaunton",
+    name: "Amethyst + Freestaunton",
+    boardTheme: "amethyst",
+    pieceSet: "freestaunton",
+    description: "Purple amethyst board with Freestaunton pieces",
+  },
+  {
+    id: "amber-governor",
+    name: "Amber + Governor",
+    boardTheme: "amber",
+    pieceSet: "governor",
+    description: "Warm amber board and Governor set",
+  },
+  {
+    id: "comic-chessicons",
+    name: "Comic + ChessIcons",
+    boardTheme: "comic",
+    pieceSet: "chessicons",
+    description: "Comic book style board and ChessIcons pieces",
+  },
+  {
+    id: "crimson-maestro",
+    name: "Crimson + Maestro",
+    boardTheme: "crimson",
+    pieceSet: "maestro",
+    description: "Crimson board with Maestro set for bold play",
+  },
+  {
+    id: "pokemon-icpieces",
+    name: "Pokemon + Icpieces",
+    boardTheme: "pokemon",
+    pieceSet: "icpieces",
+    description: "Fun Pokemon board and Icpieces set",
+  },
+  {
+    id: "midnight-pixel",
+    name: "Midnight + Pixel",
+    boardTheme: "midnight",
+    pieceSet: "pixel",
+    description: "Dark midnight board with retro pixel pieces",
+  },
+  {
+    id: "fantasy-riohacha",
+    name: "Fantasy + Riohacha",
+    boardTheme: "fantasy",
+    pieceSet: "riohacha",
+    description: "Vivid fantasy board and Riohacha set",
+  },
+  {
+    id: "cyberpunk-chessmonk",
+    name: "Cyberpunk + Chessmonk",
+    boardTheme: "cyberpunk",
+    pieceSet: "chessmonk",
+    description: "Futuristic cyberpunk board and Chessmonk pieces",
+  },
+  {
+    id: "rose-california",
+    name: "Rose + California",
+    boardTheme: "rose",
+    pieceSet: "california",
+    description: "Rose board with the stylish California set",
+  },
+  {
+    id: "classic-tatiana",
+    name: "Classic + Tatiana",
+    boardTheme: "classic",
+    pieceSet: "tatiana",
+    description: "Classic board and Tatiana pieces for a refined look",
+  },
+  {
+    id: "dracula-kosal",
+    name: "Dracula + Kosal",
+    boardTheme: "dracula",
+    pieceSet: "kosal",
+    description: "Dracula board with Kosal set for a dramatic effect",
+  },
+  {
+    id: "amber-chessnut",
+    name: "Amber + Chessnut",
+    boardTheme: "amber",
+    pieceSet: "chessnut",
+    description: "Amber board and Chessnut pieces for a warm, natural vibe",
+  },
+  {
+    id: "blue-cardinal",
+    name: "Crimson + Cardinal",
+    boardTheme: "crimson",
+    pieceSet: "cardinal",
+    description: "Crimson board with Cardinal set for a bold modern look",
+  },
+  {
+    id: "midnight-merida",
+    name: "Midnight + Merida",
+    boardTheme: "midnight",
+    pieceSet: "merida_new",
+    description: "Midnight board and Merida pieces for a classic night game",
+  },
+];

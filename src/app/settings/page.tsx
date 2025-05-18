@@ -29,6 +29,7 @@ import {
   Sparkles,
   Pencil,
   Trash2,
+  Contrast,
 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -76,6 +77,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useTheme } from "next-themes";
 import { boardThemes } from "@/components/game/board/Square";
+import {
+  BOARD_PIECE_PRESETS,
+  BoardPiecePreset,
+} from "@/lib/settings/boardPiecePresets";
+import PresetPreview from "@/components/settings/PresetPreview";
 
 interface SettingsState {
   display_name: string;
@@ -98,6 +104,7 @@ interface SettingsState {
   autoQueen: boolean;
   moveInputMethod: "click" | "drag" | "both";
   boardTheme: string;
+  presetId?: string | null;
 }
 
 const DIFFICULTY_THEMES = [
@@ -128,6 +135,91 @@ const BoardThemePreview = ({ theme }: { theme: string }) => {
         title="Dark square"
       />
     </div>
+  );
+};
+
+const findMatchingPreset = (
+  boardTheme: string,
+  pieceSet: string
+): BoardPiecePreset | undefined =>
+  BOARD_PIECE_PRESETS.find(
+    (preset) => preset.boardTheme === boardTheme && preset.pieceSet === pieceSet
+  );
+
+const AppearancePresetGrid = ({
+  BOARD_PIECE_PRESETS,
+  presetId,
+  setSettings,
+  setPresetId,
+}: {
+  BOARD_PIECE_PRESETS: BoardPiecePreset[];
+  presetId: string | null;
+  setSettings: React.Dispatch<React.SetStateAction<SettingsState>>;
+  setPresetId: React.Dispatch<React.SetStateAction<string | null>>;
+}) => {
+  const [showAll, setShowAll] = useState(false);
+  const presetsPerRow = 4;
+  const defaultRows = 3;
+  const defaultCount = presetsPerRow * defaultRows;
+  const visiblePresets = showAll
+    ? BOARD_PIECE_PRESETS
+    : BOARD_PIECE_PRESETS.slice(0, defaultCount);
+  return (
+    <>
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4`}
+      >
+        {visiblePresets.map((preset) => {
+          const isSelected = presetId === preset.id;
+          return (
+            <button
+              key={preset.id}
+              type="button"
+              className={`flex flex-col items-center p-3 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-primary/60
+                ${isSelected ? "border-primary ring-2 ring-primary/60 bg-primary/5" : "border-border bg-card hover:bg-accent/30"}`}
+              onClick={() => {
+                setSettings((prev) => ({
+                  ...prev,
+                  boardTheme: preset.boardTheme,
+                  piece_set: preset.pieceSet,
+                }));
+                setPresetId(preset.id);
+              }}
+              tabIndex={0}
+              aria-label={`Select preset: ${preset.name}`}
+            >
+              <PresetPreview
+                boardTheme={preset.boardTheme}
+                pieceSet={preset.pieceSet}
+              />
+              <span className="mt-2 font-medium text-sm text-foreground text-center">
+                {preset.name}
+              </span>
+              <span className="text-xs text-muted-foreground text-center">
+                {preset.description}
+              </span>
+              {isSelected && (
+                <span className="mt-1 text-xs text-primary font-semibold">
+                  Selected
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {BOARD_PIECE_PRESETS.length > defaultCount && (
+        <div className="flex justify-center mt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAll((prev) => !prev)}
+            className="text-xs"
+          >
+            {showAll ? "Show less" : "Show all"}
+          </Button>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -168,6 +260,7 @@ export default function SettingsPage() {
   const [flairDialogOpen, setFlairDialogOpen] = useState(false);
   const router = useRouter();
   const { setTheme, theme } = useTheme();
+  const [presetId, setPresetId] = useState<string | null>(null);
 
   const pieceSets = [
     "staunty",
@@ -337,6 +430,11 @@ export default function SettingsPage() {
     ];
     setAvailableAvatars(avatars);
   }, []);
+
+  useEffect(() => {
+    const match = findMatchingPreset(settings.boardTheme, settings.piece_set);
+    setPresetId(match ? match.id : null);
+  }, [settings.boardTheme, settings.piece_set]);
 
   const handleSaveSettings = async () => {
     if (!session?.user?.id) {
@@ -534,9 +632,10 @@ export default function SettingsPage() {
           )}
 
           <Tabs defaultValue="profile">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="game">Game Settings</TabsTrigger>
+              <TabsTrigger value="game">Gameplay</TabsTrigger>
+              <TabsTrigger value="appearance">Appearance</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="space-y-6 mt-6">
@@ -1136,6 +1235,166 @@ export default function SettingsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Choose your default bot difficulty for new games.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="move_input_method">Move Input Method</Label>
+                <Select
+                  value={settings.moveInputMethod}
+                  onValueChange={(value) =>
+                    setSettings({
+                      ...settings,
+                      moveInputMethod: value as "click" | "drag" | "both",
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select move input method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="click">Click Only</SelectItem>
+                    <SelectItem value="drag">Drag Only</SelectItem>
+                    <SelectItem value="both">Click and Drag</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Choose how you want to move pieces on the board.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="white_pieces_bottom">
+                  White Pieces Position
+                </Label>
+                <div className="flex gap-3 mt-2">
+                  <Button
+                    onClick={() =>
+                      setSettings({ ...settings, white_pieces_bottom: true })
+                    }
+                    variant={
+                      settings.white_pieces_bottom ? "default" : "outline"
+                    }
+                    className="flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Crown className="h-4 w-4 fill-current" />
+                    Bottom
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      setSettings({ ...settings, white_pieces_bottom: false })
+                    }
+                    variant={
+                      !settings.white_pieces_bottom ? "default" : "outline"
+                    }
+                    className="flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Crown className="h-4 w-4" />
+                    Top
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="sound_enabled">Sound</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable or disable game sounds
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {settings.sound_enabled ? (
+                    <Volume2 className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <VolumeX className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <Switch
+                    id="sound_enabled"
+                    checked={settings.sound_enabled}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, sound_enabled: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="enable_animations">Animations</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable or disable game animations
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Zap className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="enable_animations"
+                    checked={settings.enable_animations}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, enable_animations: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="enable_confetti">Victory Confetti</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show confetti animation when winning a game
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <PartyPopper className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="enable_confetti"
+                    checked={settings.enable_confetti}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, enable_confetti: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="auto_queen">Auto-Queen Promotion</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Instantly promote pawns to queen (skip selection modal)
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Crown className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="auto_queen"
+                    checked={settings.autoQueen}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, autoQueen: checked })
+                    }
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="appearance" className="space-y-6 mt-6">
+              <div className="space-y-2">
+                <Label>Board + Piece Preset</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Quickly apply a curated board color and piece set combination.
+                </p>
+                <AppearancePresetGrid
+                  BOARD_PIECE_PRESETS={BOARD_PIECE_PRESETS}
+                  presetId={presetId}
+                  setSettings={setSettings}
+                  setPresetId={setPresetId}
+                />
+                {!presetId && (
+                  <div className="mt-2 text-xs text-muted-foreground italic">
+                    Custom combination
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -1208,10 +1467,10 @@ export default function SettingsPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <div className="mt-2 flex justify-center">
+                <div className="mt-2 flex justify-start">
                   <div className="grid grid-cols-4 gap-2 p-2 bg-muted/30 rounded-md">
                     {["k", "q", "r", "b"].map((piece) => (
-                      <div key={piece} className="w-14 h-14">
+                      <div key={piece} className="w-14 h-14 flex">
                         <Image
                           src={`/pieces/${settings.piece_set}/w${piece}.svg`}
                           alt={`${piece} piece`}
@@ -1223,86 +1482,9 @@ export default function SettingsPage() {
                     ))}
                   </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="white_pieces_bottom">
-                  White Pieces Position
-                </Label>
-                <div className="flex gap-3 mt-2">
-                  <Button
-                    onClick={() =>
-                      setSettings({ ...settings, white_pieces_bottom: true })
-                    }
-                    variant={
-                      settings.white_pieces_bottom ? "default" : "outline"
-                    }
-                    className="flex-1 flex items-center justify-center gap-2"
-                  >
-                    <Crown className="h-4 w-4 fill-current" />
-                    Bottom
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      setSettings({ ...settings, white_pieces_bottom: false })
-                    }
-                    variant={
-                      !settings.white_pieces_bottom ? "default" : "outline"
-                    }
-                    className="flex-1 flex items-center justify-center gap-2"
-                  >
-                    <Crown className="h-4 w-4" />
-                    Top
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="move_input_method">Move Input Method</Label>
-                <Select
-                  value={settings.moveInputMethod}
-                  onValueChange={(value) =>
-                    setSettings({
-                      ...settings,
-                      moveInputMethod: value as "click" | "drag" | "both",
-                    })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select move input method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="click">Click Only</SelectItem>
-                    <SelectItem value="drag">Drag Only</SelectItem>
-                    <SelectItem value="both">Click and Drag</SelectItem>
-                  </SelectContent>
-                </Select>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Choose how you want to move pieces on the board.
+                  Select your preferred chess piece style.
                 </p>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="sound_enabled">Sound</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable or disable game sounds
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {settings.sound_enabled ? (
-                    <Volume2 className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <VolumeX className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <Switch
-                    id="sound_enabled"
-                    checked={settings.sound_enabled}
-                    onCheckedChange={(checked) =>
-                      setSettings({ ...settings, sound_enabled: checked })
-                    }
-                  />
-                </div>
               </div>
 
               <div className="flex items-center justify-between">
@@ -1326,74 +1508,17 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="enable_animations">Animations</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable or disable game animations
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Zap className="h-4 w-4 text-muted-foreground" />
-                  <Switch
-                    id="enable_animations"
-                    checked={settings.enable_animations}
-                    onCheckedChange={(checked) =>
-                      setSettings({ ...settings, enable_animations: checked })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="enable_confetti">Victory Confetti</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show confetti animation when winning a game
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <PartyPopper className="h-4 w-4 text-muted-foreground" />
-                  <Switch
-                    id="enable_confetti"
-                    checked={settings.enable_confetti}
-                    onCheckedChange={(checked) =>
-                      setSettings({ ...settings, enable_confetti: checked })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
                   <Label htmlFor="high_contrast">High Contrast Mode</Label>
                   <p className="text-sm text-muted-foreground">
                     Improve accessibility with a high-contrast color scheme
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
+                  <Contrast className="h-4 w-4 text-muted-foreground" />
                   <Switch
                     id="high_contrast"
                     checked={settings.highContrast}
                     onCheckedChange={handleHighContrastToggle}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="auto_queen">Auto-Queen Promotion</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Instantly promote pawns to queen (skip selection modal)
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Crown className="h-4 w-4 text-muted-foreground" />
-                  <Switch
-                    id="auto_queen"
-                    checked={settings.autoQueen}
-                    onCheckedChange={(checked) =>
-                      setSettings({ ...settings, autoQueen: checked })
-                    }
                   />
                 </div>
               </div>
