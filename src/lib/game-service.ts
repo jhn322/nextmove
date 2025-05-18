@@ -198,24 +198,26 @@ export const getUserGameStats = async (userId: string) => {
     );
     const averageGameTime = totalGames > 0 ? totalTime / totalGames : 0;
 
-    const beatenBots = Array.from(
-      new Set(
-        gameHistory
-          .filter((game) => game.result === "win")
-          .map((game) => {
-            const difficulty = normalizeDifficulty(game.difficulty);
-            const botInDifficulty = BOTS_BY_DIFFICULTY[
-              difficulty as keyof typeof BOTS_BY_DIFFICULTY
-            ]?.find((bot) => bot.name === game.opponent);
-
-            return {
-              name: game.opponent,
-              difficulty: normalizeDifficulty(game.difficulty),
-              id: botInDifficulty?.id || 0,
-            };
-          })
-      )
-    );
+    // Calculate beatenBots: unique bots defeated (by name)
+    const beatenBots: Array<{ name: string; difficulty: string; id: number }> =
+      [];
+    gameHistory.forEach((game) => {
+      if (game.result === "win") {
+        const botName = game.opponent;
+        const difficulty = normalizeDifficulty(game.difficulty);
+        const botInDifficulty = BOTS_BY_DIFFICULTY[
+          difficulty as keyof typeof BOTS_BY_DIFFICULTY
+        ]?.find((bot) => bot.name === botName);
+        const existingBot = beatenBots.find((bot) => bot.name === botName);
+        if (!existingBot) {
+          beatenBots.push({
+            name: botName,
+            difficulty,
+            id: botInDifficulty?.id || 0,
+          });
+        }
+      }
+    });
 
     return {
       totalGames,

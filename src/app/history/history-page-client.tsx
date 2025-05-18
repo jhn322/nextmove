@@ -595,7 +595,32 @@ export const HistoryPageClient = ({
                                 {format(new Date(game.createdAt), "h:mm a")}
                               </div>
                             </TableCell>
-                            <TableCell>{game.opponent}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {/* Bot Avatar */}
+                                {(() => {
+                                  const difficulty =
+                                    game.difficulty.toLowerCase();
+                                  const bot = BOTS_BY_DIFFICULTY[
+                                    difficulty as keyof typeof BOTS_BY_DIFFICULTY
+                                  ]?.find((b) => b.name === game.opponent);
+                                  return (
+                                    <Avatar className="h-8 w-8">
+                                      {bot?.image ? (
+                                        <AvatarImage
+                                          src={bot.image}
+                                          alt={bot.name}
+                                        />
+                                      ) : null}
+                                      <AvatarFallback>
+                                        {game.opponent.charAt(0)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  );
+                                })()}
+                                <span>{game.opponent}</span>
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <Badge
                                 variant="outline"
@@ -757,7 +782,7 @@ export const HistoryPageClient = ({
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                         <BotIcon className="h-4 w-4 text-purple-500" />
-                        Bots Beaten
+                        Bots Defeated
                       </div>
                       <div className="text-3xl font-bold">
                         {gameStats.beatenBots.length} / {allBots.length}
