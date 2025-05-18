@@ -16,8 +16,12 @@ export default function SettingsLoading() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Tabs */}
-          <div className="grid w-full grid-cols-2 gap-2">
+          <div className="grid w-full grid-cols-3 gap-2">
+            {/* Profile Tab */}
             <Skeleton className="h-10 rounded-lg" />
+            {/* Gameplay Tab */}
+            <Skeleton className="h-10 rounded-lg" />
+            {/* Appearance Tab */}
             <Skeleton className="h-10 rounded-lg" />
           </div>
 

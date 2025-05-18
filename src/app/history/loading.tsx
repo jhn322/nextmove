@@ -5,10 +5,15 @@ export default function HistoryLoading() {
   return (
     <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8">
       {/* Tab Bar */}
-      <div className="grid w-full grid-cols-3 gap-2">
-        {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="h-10 rounded-lg" />
-        ))}
+      <div className="grid w-full grid-cols-4 gap-2">
+        {/* Game History Tab */}
+        <Skeleton className="h-10 rounded-lg" />
+        {/* Game Statistics Tab */}
+        <Skeleton className="h-10 rounded-lg" />
+        {/* Bot Challenges Tab */}
+        <Skeleton className="h-10 rounded-lg" />
+        {/* Wordle Statistics Tab */}
+        <Skeleton className="h-10 rounded-lg" />
       </div>
 
       {/* Game History Tab Content */}
