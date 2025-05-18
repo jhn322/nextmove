@@ -487,8 +487,8 @@ const GameControls = ({
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
-                      Face the next stronger opponent with higher ELO rating and
-                      skill level.
+                      Face the next stronger, more skilled bot in The Ultimate
+                      Chess Challenge.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -588,7 +588,7 @@ const GameControls = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Choose a different bot to play against.</p>
+                <p>Choose a different bot to play against and settings.</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
