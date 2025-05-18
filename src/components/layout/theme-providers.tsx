@@ -24,6 +24,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
         "midnight",
         "classic",
         "comic",
+        "high-contrast",
       ]}
       {...props}
     >

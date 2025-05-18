@@ -518,6 +518,33 @@
     --chart-4: 30 80% 50%;
     --chart-5: 350 70% 55%;
   }
+
+  .high-contrast {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 60 100% 50%; /* Yellow */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 0%;
+    --muted-foreground: 60 100% 50%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
+    --ring: 60 100% 50%;
+    --chart-1: 60 100% 50%;
+    --chart-2: 0 0% 100%;
+    --chart-3: 0 0% 0%;
+    --chart-4: 60 100% 50%;
+    --chart-5: 0 0% 100%;
+  }
 }
 
 @keyframes pulsateSection {

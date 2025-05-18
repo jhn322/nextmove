@@ -25,6 +25,7 @@ import DroppableSquare from "./DroppableSquare";
 import { Chess } from "chess.js";
 import ChessboardArrows, { Arrow } from "./ChessboardArrows";
 import { LockKeyhole } from "lucide-react";
+import { getAutoQueen } from "@/lib/settings";
 
 const GAME_OVER_MODAL_SHOWN_KEY = "chess_gameOverModalShown";
 const GAME_OVER_FEN_KEY = "chess_gameOverFen";
@@ -90,6 +91,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const { status, session } = useAuth();
   const [pieceSet, setPieceSet] = useState("staunty");
   const [showCoordinates, setShowCoordinates] = useState(true);
+  const [autoQueen, setAutoQueen] = useState(() => getAutoQueen());
 
   // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
@@ -120,6 +122,11 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       setPieceSet(user.pieceSet || "staunty");
       setShowCoordinates(user.showCoordinates !== false);
       setWhitePiecesBottom(user.whitePiecesBottom !== false);
+      setAutoQueen(
+        "autoQueen" in user && typeof user.autoQueen === "boolean"
+          ? user.autoQueen
+          : getAutoQueen()
+      );
       loadedFromSession = true;
     }
 
@@ -333,7 +340,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setGameStarted,
     getBotMove,
     setShowBotSelection,
-    showBotSelection
+    showBotSelection,
+    autoQueen
   );
 
   const { playSound } = useGameSounds();
@@ -1333,7 +1341,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       />
 
       {/* Pawn Promotion Modal */}
-      {pendingPromotion && (
+      {pendingPromotion && !autoQueen && (
         <PawnPromotionModal
           color={playerColor}
           pieceSet={pieceSet}

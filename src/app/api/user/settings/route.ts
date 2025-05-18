@@ -26,6 +26,8 @@ const updateSettingsSchema = z
     showCoordinates: z.boolean().optional(),
     enableAnimations: z.boolean().optional(),
     enableConfetti: z.boolean().optional(),
+    highContrast: z.boolean().optional(),
+    autoQueen: z.boolean().optional(),
   })
   .strict();
 
@@ -91,6 +93,10 @@ export async function PATCH(req: Request) {
       prismaData.enableAnimations = dataToUpdate.enableAnimations;
     if (dataToUpdate.enableConfetti !== undefined)
       prismaData.enableConfetti = dataToUpdate.enableConfetti;
+    if (dataToUpdate.highContrast !== undefined)
+      prismaData.highContrast = dataToUpdate.highContrast;
+    if (dataToUpdate.autoQueen !== undefined)
+      prismaData.autoQueen = dataToUpdate.autoQueen;
 
     // Update user settings in the database
     await prisma.user.update({

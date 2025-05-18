@@ -18,7 +18,8 @@ export const useMoveHandler = (
   setGameStarted: (started: boolean) => void,
   getBotMove: () => void,
   setShowBotSelection: (show: boolean) => void,
-  showBotSelection: boolean
+  showBotSelection: boolean,
+  autoQueen?: boolean
 ) => {
   const [selectedPiece, setSelectedPiece] = useState<{
     row: number;
@@ -52,8 +53,18 @@ export const useMoveHandler = (
           return;
         }
 
-        // Use makeMove instead of directly calling game.move
-        const moveSuccessful = makeMove(from, to);
+        let moveSuccessful: boolean;
+        const piece = game.get(from as Square);
+        const isPromotion =
+          piece &&
+          piece.type === "p" &&
+          ((piece.color === "w" && to[1] === "8") ||
+            (piece.color === "b" && to[1] === "1"));
+        if (autoQueen && isPromotion) {
+          moveSuccessful = makeMove(from, to, "q");
+        } else {
+          moveSuccessful = makeMove(from, to);
+        }
 
         if (moveSuccessful) {
           // Hide bot selection panel when first move is made
@@ -99,6 +110,7 @@ export const useMoveHandler = (
       getBotMove,
       showBotSelection,
       setShowBotSelection,
+      autoQueen,
     ]
   );
 

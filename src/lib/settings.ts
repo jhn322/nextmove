@@ -12,6 +12,8 @@ const SETTINGS_KEYS = {
   CLOCK_FORMAT: "chess_clock_format",
   COUNTRY_FLAG: "chess_country_flag",
   FLAIR: "chess_flair",
+  HIGH_CONTRAST: "chess_high_contrast",
+  AUTO_QUEEN: "chess_auto_queen",
 };
 
 // Default settings values
@@ -26,6 +28,8 @@ const DEFAULT_SETTINGS = {
   clockFormat: "24" as "12" | "24",
   countryFlag: "",
   flair: "",
+  highContrast: false,
+  autoQueen: false,
 };
 
 // Get piece set from localStorage
@@ -156,6 +160,26 @@ export const setFlair = (flair: string): void => {
   localStorage.setItem(SETTINGS_KEYS.FLAIR, flair);
 };
 
+export const getHighContrast = (): boolean => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.highContrast;
+  return localStorage.getItem(SETTINGS_KEYS.HIGH_CONTRAST) === "true";
+};
+
+export const setHighContrast = (enable: boolean): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.HIGH_CONTRAST, enable.toString());
+};
+
+export const getAutoQueen = (): boolean => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.autoQueen;
+  return localStorage.getItem(SETTINGS_KEYS.AUTO_QUEEN) !== "false";
+};
+
+export const setAutoQueen = (enable: boolean): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.AUTO_QUEEN, enable.toString());
+};
+
 // Save all settings at once
 export const saveAllSettings = (settings: {
   pieceSet?: string;
@@ -168,6 +192,8 @@ export const saveAllSettings = (settings: {
   clockFormat?: "12" | "24";
   countryFlag?: string;
   flair?: string;
+  highContrast?: boolean;
+  autoQueen?: boolean;
 }): void => {
   if (typeof window === "undefined") return;
 
@@ -209,5 +235,13 @@ export const saveAllSettings = (settings: {
 
   if (settings.flair) {
     setFlair(settings.flair);
+  }
+
+  if (settings.highContrast !== undefined) {
+    setHighContrast(settings.highContrast);
+  }
+
+  if (settings.autoQueen !== undefined) {
+    setAutoQueen(settings.autoQueen);
   }
 };

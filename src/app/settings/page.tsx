@@ -54,6 +54,8 @@ import {
   getPieceSet,
   getShowCoordinates,
   getEnableAnimations,
+  getHighContrast,
+  getAutoQueen,
 } from "@/lib/settings";
 import { useRouter } from "next/navigation";
 import SettingsLoading from "./loading";
@@ -70,6 +72,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useTheme } from "next-themes";
 
 interface SettingsState {
   display_name: string;
@@ -88,6 +91,8 @@ interface SettingsState {
   clock_format: "12" | "24";
   country_flag: string;
   flair: string;
+  highContrast: boolean;
+  autoQueen: boolean;
 }
 
 export default function SettingsPage() {
@@ -110,8 +115,13 @@ export default function SettingsPage() {
       clock_format: "24",
       country_flag: "",
       flair: "",
+      highContrast: getHighContrast(),
+      autoQueen: getAutoQueen(),
     };
   });
+  const [initialSettings, setInitialSettings] = useState<SettingsState | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +129,7 @@ export default function SettingsPage() {
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
   const [flairDialogOpen, setFlairDialogOpen] = useState(false);
   const router = useRouter();
+  const { setTheme, theme } = useTheme();
 
   const pieceSets = [
     "staunty",
@@ -173,6 +184,41 @@ export default function SettingsPage() {
       clock_format: user.clockFormat === "12" ? "12" : "24",
       country_flag: user.countryFlag || "",
       flair: user.flair || "",
+      highContrast:
+        "highContrast" in user && typeof user.highContrast === "boolean"
+          ? user.highContrast
+          : getHighContrast(),
+      autoQueen:
+        "autoQueen" in user && typeof user.autoQueen === "boolean"
+          ? user.autoQueen
+          : getAutoQueen(),
+    });
+
+    setInitialSettings({
+      display_name: user.name || "",
+      first_name: user.firstName || "",
+      last_name: user.lastName || "",
+      location: user.location || "",
+      avatar_url: user.image || "/avatars/jake.png",
+      preferred_difficulty: user.preferredDifficulty || "intermediate",
+      sound_enabled: user.soundEnabled !== false,
+      piece_set: user.pieceSet || getPieceSet(),
+      white_pieces_bottom: user.whitePiecesBottom !== false,
+      show_coordinates: user.showCoordinates !== false,
+      enable_animations: user.enableAnimations !== false,
+      enable_confetti: user.enableConfetti !== false,
+      timezone: user.timezone || "UTC",
+      clock_format: user.clockFormat === "12" ? "12" : "24",
+      country_flag: user.countryFlag || "",
+      flair: user.flair || "",
+      highContrast:
+        "highContrast" in user && typeof user.highContrast === "boolean"
+          ? user.highContrast
+          : getHighContrast(),
+      autoQueen:
+        "autoQueen" in user && typeof user.autoQueen === "boolean"
+          ? user.autoQueen
+          : getAutoQueen(),
     });
 
     setLoading(false);
@@ -259,6 +305,8 @@ export default function SettingsPage() {
       showCoordinates: settings.show_coordinates,
       enableAnimations: settings.enable_animations,
       enableConfetti: settings.enable_confetti,
+      highContrast: settings.highContrast,
+      autoQueen: settings.autoQueen,
     };
 
     try {
@@ -288,6 +336,8 @@ export default function SettingsPage() {
           clockFormat: settings.clock_format,
           countryFlag: settings.country_flag,
           flair: settings.flair,
+          highContrast: settings.highContrast,
+          autoQueen: settings.autoQueen,
         });
 
         setSaveMessage("Settings saved successfully");
@@ -341,6 +391,34 @@ export default function SettingsPage() {
     }
   };
 
+  const handleHighContrastToggle = (checked: boolean) => {
+    setSettings((prev) => ({ ...prev, highContrast: checked }));
+    if (checked) {
+      // Store previous theme
+      if (theme !== "high-contrast") {
+        localStorage.setItem("previous-theme", theme || "system");
+      }
+      setTheme("high-contrast");
+    } else {
+      // Restore previous theme
+      const prevTheme = localStorage.getItem("previous-theme") || "system";
+      setTheme(prevTheme);
+    }
+  };
+
+  // Keep highContrast toggle in sync with theme changes
+  useEffect(() => {
+    if (theme !== "high-contrast" && settings.highContrast) {
+      setSettings((prev) => ({ ...prev, highContrast: false }));
+    } else if (theme === "high-contrast" && !settings.highContrast) {
+      setSettings((prev) => ({ ...prev, highContrast: true }));
+    }
+  }, [theme, settings.highContrast]);
+
+  const isChanged =
+    initialSettings &&
+    JSON.stringify(settings) !== JSON.stringify(initialSettings);
+
   if (status === "loading" || loading) {
     return <SettingsLoading />;
   }
@@ -380,10 +458,12 @@ export default function SettingsPage() {
           )}
 
           {saveMessage && !error && (
-            <Alert className="mb-6 border-green-500 bg-green-50 dark:bg-green-900/20">
-              <Check className="h-4 w-4 text-green-500" />
-              <AlertTitle className="text-green-500">Success</AlertTitle>
-              <AlertDescription className="text-green-500">
+            <Alert className="mb-6 border-green-500 bg-card text-green-600 dark:text-green-400">
+              <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+              <AlertTitle className="text-green-600 dark:text-green-400">
+                Success
+              </AlertTitle>
+              <AlertDescription className="text-green-600 dark:text-green-400">
                 {saveMessage}
               </AlertDescription>
             </Alert>
@@ -1152,11 +1232,47 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="high_contrast">High Contrast Mode</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Improve accessibility with a high-contrast color scheme
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="high_contrast"
+                    checked={settings.highContrast}
+                    onCheckedChange={handleHighContrastToggle}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="auto_queen">Auto-Queen Promotion</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Instantly promote pawns to queen (skip selection modal)
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Crown className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="auto_queen"
+                    checked={settings.autoQueen}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, autoQueen: checked })
+                    }
+                  />
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button onClick={handleSaveSettings} disabled={loading}>
+          <Button onClick={handleSaveSettings} disabled={loading || !isChanged}>
             Save Settings
           </Button>
         </CardFooter>
