@@ -26,13 +26,27 @@ import {
   PartyPopper,
   Clock,
   Flag,
-  Sparkles,
+  SmilePlus,
   Pencil,
   Trash2,
   Contrast,
   ArrowRightLeft,
   Eye,
   Highlighter,
+  User,
+  Gamepad2,
+  MousePointer,
+  Hand,
+  Crosshair,
+  Swords,
+  Trophy,
+  Award,
+  Baby,
+  Blocks,
+  BookOpen,
+  Sword,
+  AlignEndHorizontal,
+  AlignStartHorizontal,
 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -291,6 +305,18 @@ export default function SettingsPage() {
     "riohacha",
     "tatiana",
   ];
+
+  // Map difficulty to icon (same as Navbar.tsx playItems icon)
+  const difficultyIconMap: Record<string, React.ElementType> = {
+    beginner: Baby,
+    easy: Blocks,
+    intermediate: BookOpen,
+    advanced: Crosshair,
+    hard: Sword,
+    expert: Swords,
+    master: Award,
+    grandmaster: Trophy,
+  };
 
   useEffect(() => {
     if (status === "loading") {
@@ -671,9 +697,30 @@ export default function SettingsPage() {
 
           <Tabs defaultValue="profile">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="game">Gameplay</TabsTrigger>
-              <TabsTrigger value="appearance">Appearance</TabsTrigger>
+              <TabsTrigger
+                value="profile"
+                className="flex items-center gap-2"
+                aria-label="Profile"
+              >
+                <User className="h-4 w-4 text-muted-foreground" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger
+                value="game"
+                className="flex items-center gap-2"
+                aria-label="Gameplay"
+              >
+                <Gamepad2 className="h-4 w-4 text-muted-foreground" />
+                Gameplay
+              </TabsTrigger>
+              <TabsTrigger
+                value="appearance"
+                className="flex items-center gap-2"
+                aria-label="Appearance"
+              >
+                <Palette className="h-4 w-4 text-muted-foreground" />
+                Appearance
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="space-y-6 mt-6">
@@ -927,7 +974,7 @@ export default function SettingsPage() {
                         className="w-full flex items-center justify-between"
                       >
                         <div className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-muted-foreground" />
+                          <SmilePlus className="h-4 w-4 text-muted-foreground" />
                           <span>{settings.flair || "Choose a flair"}</span>
                         </div>
                         <span className="text-2xl">{settings.flair}</span>
@@ -1154,7 +1201,10 @@ export default function SettingsPage() {
                   <SelectContent>
                     {Intl.supportedValuesOf("timeZone").map((tz) => (
                       <SelectItem key={tz} value={tz}>
-                        {tz}
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>{tz}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1254,7 +1304,20 @@ export default function SettingsPage() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select preferred difficulty" />
+                    <SelectValue placeholder="Select preferred difficulty">
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const Icon =
+                            difficultyIconMap[settings.preferred_difficulty];
+                          return Icon ? (
+                            <Icon className="h-4 w-4 text-muted-foreground" />
+                          ) : null;
+                        })()}
+                        <span className="capitalize">
+                          {settings.preferred_difficulty}
+                        </span>
+                      </div>
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {[
@@ -1268,13 +1331,21 @@ export default function SettingsPage() {
                       "grandmaster",
                     ].map((difficulty) => (
                       <SelectItem key={difficulty} value={difficulty}>
-                        <span className="capitalize">{difficulty}</span>
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            const Icon = difficultyIconMap[difficulty];
+                            return Icon ? (
+                              <Icon className="h-4 w-4 text-muted-foreground" />
+                            ) : null;
+                          })()}
+                          <span className="capitalize">{difficulty}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Choose your default bot difficulty for new games.
+                  Choose your preferred difficulty level.
                 </p>
               </div>
 
@@ -1290,12 +1361,49 @@ export default function SettingsPage() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select move input method" />
+                    <SelectValue placeholder="Select move input method">
+                      <div className="flex items-center gap-2">
+                        {settings.moveInputMethod === "click" && (
+                          <MousePointer className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        {settings.moveInputMethod === "drag" && (
+                          <Hand className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        {settings.moveInputMethod === "both" && (
+                          <>
+                            <MousePointer className="h-4 w-4 text-muted-foreground" />
+                            <Hand className="h-4 w-4 text-muted-foreground" />
+                          </>
+                        )}
+                        <span>
+                          {settings.moveInputMethod === "both"
+                            ? "Click and Drag"
+                            : settings.moveInputMethod.charAt(0).toUpperCase() +
+                              settings.moveInputMethod.slice(1)}
+                        </span>
+                      </div>
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="click">Click Only</SelectItem>
-                    <SelectItem value="drag">Drag Only</SelectItem>
-                    <SelectItem value="both">Click and Drag</SelectItem>
+                    <SelectItem value="click">
+                      <div className="flex items-center gap-2">
+                        <MousePointer className="h-4 w-4 text-muted-foreground" />
+                        Click Only
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="drag">
+                      <div className="flex items-center gap-2">
+                        <Hand className="h-4 w-4 text-muted-foreground" />
+                        Drag Only
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="both">
+                      <div className="flex items-center gap-2">
+                        <MousePointer className="h-4 w-4 text-muted-foreground" />
+                        <Hand className="h-4 w-4 text-muted-foreground" />
+                        Click and Drag
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -1317,7 +1425,7 @@ export default function SettingsPage() {
                     }
                     className="flex-1 flex items-center justify-center gap-2"
                   >
-                    <Crown className="h-4 w-4 fill-current" />
+                    <AlignEndHorizontal className="h-4 w-4 fill-current" />
                     Bottom
                   </Button>
                   <Button
@@ -1329,7 +1437,7 @@ export default function SettingsPage() {
                     }
                     className="flex-1 flex items-center justify-center gap-2"
                   >
-                    <Crown className="h-4 w-4" />
+                    <AlignStartHorizontal className="h-4 w-4" />
                     Top
                   </Button>
                 </div>
@@ -1507,17 +1615,32 @@ export default function SettingsPage() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select board theme" />
+                    <SelectValue placeholder="Select board theme">
+                      <div className="flex items-center gap-2">
+                        <Palette className="h-4 w-4 text-muted-foreground" />
+                        <span className="capitalize truncate">
+                          {settings.boardTheme === "auto"
+                            ? "Auto (Match Difficulty)"
+                            : settings.boardTheme.replace(/-/g, " ")}
+                        </span>
+                      </div>
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="auto">
-                      Auto (Match Difficulty)
+                      <div className="flex items-center gap-2">
+                        <Palette className="h-4 w-4 text-muted-foreground" />
+                        Auto (Match Difficulty)
+                      </div>
                     </SelectItem>
                     {NON_DIFFICULTY_THEMES.map((theme) => (
                       <SelectItem key={theme} value={theme}>
-                        {theme
-                          .replace(/-/g, " ")
-                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        <div className="flex items-center gap-2">
+                          <Palette className="h-4 w-4 text-muted-foreground" />
+                          {theme
+                            .replace(/-/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1557,6 +1680,7 @@ export default function SettingsPage() {
                     {pieceSets.map((set) => (
                       <SelectItem key={set} value={set}>
                         <div className="flex items-center gap-2">
+                          <Palette className="h-4 w-4 text-muted-foreground" />
                           <span className="capitalize">
                             {set.replace("_", " ")}
                           </span>

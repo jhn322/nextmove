@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   Baby,
-  Gamepad2,
   BookOpen,
   Sword,
   Crosshair,
@@ -19,7 +18,6 @@ import {
   Swords,
   ChevronDown,
   Save,
-  History,
   Medal,
   PartyPopper,
   Loader2,
@@ -27,6 +25,12 @@ import {
   SpellCheck,
   Hash,
   Lock,
+  Move,
+  Dice5,
+  Omega,
+  AudioLines,
+  Blocks,
+  Bot as BotIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -107,7 +111,7 @@ const difficultyLevels: GameCardConfig[] = [
     eloRange: "200-300",
     eloValue: 10,
     playStyle: "Random",
-    styleIcon: Brain,
+    styleIcon: Dice5,
   },
   {
     name: "Easy",
@@ -116,7 +120,7 @@ const difficultyLevels: GameCardConfig[] = [
       "Practice basic strategies with slightly improved moves. Focuses on capturing pieces and developing simple threats to win the game.",
     color: "bg-green-500/30 hover:bg-green-500/20 border-green-500/50",
     textColor: "text-green-500",
-    icon: Gamepad2,
+    icon: Blocks,
     gradient: "from-green-500/20 to-green-500/5",
     hoverGradient: "hover:from-green-500/30 hover:to-green-500/10",
     eloRange: "320-400",
@@ -146,13 +150,13 @@ const difficultyLevels: GameCardConfig[] = [
       "Face stronger tactical play and strategic planning. Understands positional advantages and can execute multi-move combinations.",
     color: "bg-blue-500/30 hover:bg-blue-500/20 border-blue-500/50",
     textColor: "text-blue-500",
-    icon: Sword,
+    icon: Crosshair,
     gradient: "from-blue-500/20 to-blue-500/5",
     hoverGradient: "hover:from-blue-500/30 hover:to-blue-500/10",
     eloRange: "700-900",
     eloValue: 30,
     playStyle: "Positional",
-    styleIcon: Brain,
+    styleIcon: Move,
   },
   {
     name: "Hard",
@@ -161,13 +165,13 @@ const difficultyLevels: GameCardConfig[] = [
       "Challenge yourself with advanced strategies and combinations. Plays with purpose and can exploit weaknesses in your position.",
     color: "bg-violet-500/30 hover:bg-violet-500/20 border-violet-500/50",
     textColor: "text-violet-500",
-    icon: Crosshair,
+    icon: Sword,
     gradient: "from-violet-500/20 to-violet-500/5",
     hoverGradient: "hover:from-violet-500/30 hover:to-violet-500/10",
     eloRange: "950-1200",
     eloValue: 40,
     playStyle: "Tactical",
-    styleIcon: Swords,
+    styleIcon: AudioLines,
   },
   {
     name: "Expert",
@@ -176,13 +180,13 @@ const difficultyLevels: GameCardConfig[] = [
       "Test yourself against sophisticated positional understanding. Executes long-term plans and creates complex tactical opportunities.",
     color: "bg-purple-500/30 hover:bg-purple-500/20 border-purple-500/50",
     textColor: "text-purple-500",
-    icon: Target,
+    icon: Swords,
     gradient: "from-purple-500/20 to-purple-500/5",
     hoverGradient: "hover:from-purple-500/30 hover:to-purple-500/10",
     eloRange: "1250-1700",
     eloValue: 58,
     playStyle: "Dynamic",
-    styleIcon: Zap,
+    styleIcon: Omega,
   },
   {
     name: "Master",
@@ -212,7 +216,7 @@ const difficultyLevels: GameCardConfig[] = [
     eloRange: "2500-3000",
     eloValue: 100,
     playStyle: "Universal",
-    styleIcon: Swords,
+    styleIcon: Target,
   },
   chessWordleCard,
 ];
@@ -921,7 +925,7 @@ export function HomePageClient({
                   onClick={() => setIsBotProgressionLoading(true)}
                 >
                   <div className="bg-primary/10 p-2 rounded-full">
-                    <History className="h-5 w-5 text-primary" />
+                    <BotIcon className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium flex items-center gap-2">
@@ -1010,7 +1014,7 @@ export function HomePageClient({
                             nextBot.name
                           )
                         }
-                        className="block p-4 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors"
+                        className="group block p-4 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           <Avatar className="h-12 w-12">
@@ -1065,7 +1069,7 @@ export function HomePageClient({
                           {navigatingTo === nextBot.name ? (
                             <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
                           ) : (
-                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                            <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
                           )}
                         </div>
                       </Link>

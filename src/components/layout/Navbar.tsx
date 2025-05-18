@@ -30,11 +30,11 @@ import {
   Moon,
   Laptop,
   Baby,
-  Gamepad2,
+  Blocks,
   BookOpen,
   Sword,
   Crosshair,
-  Target,
+  Swords,
   Trophy,
   Award,
   ChevronDown,
@@ -55,6 +55,13 @@ import {
   Trophy as TrophyIcon,
   Monitor,
   Loader2,
+  Dice5,
+  Shield,
+  Move,
+  AudioLines,
+  Omega,
+  Brain,
+  Target,
 } from "lucide-react";
 import {
   Collapsible,
@@ -167,16 +174,18 @@ const Navbar = () => {
       borderColor: "border-emerald-500/20",
       eloRange: "200-300",
       playStyle: "Random",
+      styleIcon: Dice5,
     },
     {
       title: "Easy",
       href: "/play/easy",
-      icon: Gamepad2,
+      icon: Blocks,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
       borderColor: "border-green-500/20",
       eloRange: "320-400",
       playStyle: "Aggressive",
+      styleIcon: Zap,
     },
     {
       title: "Intermediate",
@@ -187,36 +196,40 @@ const Navbar = () => {
       borderColor: "border-cyan-500/20",
       eloRange: "450-600",
       playStyle: "Balanced",
+      styleIcon: Shield,
     },
     {
       title: "Advanced",
       href: "/play/advanced",
-      icon: Sword,
+      icon: Crosshair,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20",
       eloRange: "650-800",
       playStyle: "Positional",
+      styleIcon: Move,
     },
     {
       title: "Hard",
       href: "/play/hard",
-      icon: Crosshair,
+      icon: Sword,
       color: "text-violet-500",
       bgColor: "bg-violet-500/10",
       borderColor: "border-violet-500/20",
       eloRange: "850-1000",
       playStyle: "Tactical",
+      styleIcon: AudioLines,
     },
     {
       title: "Expert",
       href: "/play/expert",
-      icon: Target,
+      icon: Swords,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
       borderColor: "border-purple-500/20",
       eloRange: "1100-1600",
       playStyle: "Dynamic",
+      styleIcon: Omega,
     },
     {
       title: "Master",
@@ -227,6 +240,7 @@ const Navbar = () => {
       borderColor: "border-orange-500/20",
       eloRange: "1700-2300",
       playStyle: "Strategic",
+      styleIcon: Brain,
     },
     {
       title: "Grandmaster",
@@ -237,6 +251,7 @@ const Navbar = () => {
       borderColor: "border-red-500/20",
       eloRange: "2400-3000",
       playStyle: "Universal",
+      styleIcon: Target,
     },
   ];
 
@@ -431,7 +446,16 @@ const Navbar = () => {
                                       {item.eloRange} ELO
                                     </span>
                                     <span>•</span>
-                                    <span>{item.playStyle}</span>
+                                    <span className="flex items-center gap-1">
+                                      {item.styleIcon && (
+                                        <item.styleIcon
+                                          className={`h-3.5 w-3.5 ${item.color}`}
+                                          aria-hidden="true"
+                                          focusable="false"
+                                        />
+                                      )}
+                                      {item.playStyle}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -754,7 +778,16 @@ const Navbar = () => {
                                         {item.eloRange} ELO
                                       </span>
                                       <span>•</span>
-                                      <span>{item.playStyle}</span>
+                                      <span className="flex items-center gap-1">
+                                        {item.styleIcon && (
+                                          <item.styleIcon
+                                            className={`h-3.5 w-3.5 ${item.color}`}
+                                            aria-hidden="true"
+                                            focusable="false"
+                                          />
+                                        )}
+                                        {item.playStyle}
+                                      </span>
                                     </div>
                                   )}
                                 </div>

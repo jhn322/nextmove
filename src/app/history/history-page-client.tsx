@@ -31,9 +31,9 @@ import {
   Timer,
   CheckCircle2,
   Gamepad2,
-  Swords,
+  Footprints,
   Medal,
-  Brain,
+  Bot as BotIcon,
   Trash2,
   Flag,
   Loader2,
@@ -42,6 +42,9 @@ import {
   TrendingUp,
   Award,
   PieChart,
+  Play,
+  Hourglass,
+  ChartColumnStacked,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -493,7 +496,7 @@ export const HistoryPageClient = ({
             className="flex items-center gap-2"
             onClick={() => setDefaultTab("bots")}
           >
-            <Brain className="h-4 w-4" />
+            <BotIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Bot Challenges</span>
             <span className="sm:hidden">Challenge</span>
           </TabsTrigger>
@@ -709,7 +712,7 @@ export const HistoryPageClient = ({
                     </div>
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Swords className="h-4 w-4 text-cyan-500" />
+                        <Footprints className="h-4 w-4 text-cyan-500" />
                         Average Moves
                       </div>
                       <div className="text-3xl font-bold">
@@ -727,7 +730,7 @@ export const HistoryPageClient = ({
                     </div>
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Brain className="h-4 w-4 text-purple-500" />
+                        <BotIcon className="h-4 w-4 text-purple-500" />
                         Bots Beaten
                       </div>
                       <div className="text-3xl font-bold">
@@ -736,7 +739,7 @@ export const HistoryPageClient = ({
                     </div>
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Activity className="h-4 w-4 text-sky-500" />
+                        <Hourglass className="h-4 w-4 text-sky-500" />
                         Total Play Time
                       </div>
                       <div className="text-3xl font-bold">
@@ -876,7 +879,7 @@ export const HistoryPageClient = ({
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
-                <Brain className="h-6 w-6" /> Bot Challenges
+                <BotIcon className="h-6 w-6" /> Bot Challenges
               </CardTitle>
               <CardDescription>
                 Track which bots you&apos;ve defeated and which ones you still
@@ -1097,8 +1100,8 @@ export const HistoryPageClient = ({
                   {/* Guess Distribution */}
                   <div className="pt-4 border-t border-border/20">
                     <h3 className="text-xl font-semibold flex items-center gap-2 mb-4">
-                      <BarChart3 className="h-5 w-5 text-primary" /> Guess
-                      Distribution
+                      <ChartColumnStacked className="h-5 w-5 text-primary" />{" "}
+                      Guess Distribution
                     </h3>
                     {Object.keys(wordleStats.guessDistribution).length > 0 &&
                     Object.values(wordleStats.guessDistribution).some(
@@ -1141,14 +1144,14 @@ export const HistoryPageClient = ({
                   <div className="pt-6 border-t border-border/20 text-center">
                     <Link href="/play/chess-wordle" passHref legacyBehavior>
                       <Button className="bg-amber-600/30 hover:bg-amber-600/40 text-amber-400 border-amber-500/60">
-                        <Gamepad2 className="mr-2 h-5 w-5" /> Play Chess Wordle
+                        <Play className="mr-2 h-5 w-5" /> Play Chess Wordle
                       </Button>
                     </Link>
                   </div>
                 </>
               ) : (
                 <div className="text-center py-12">
-                  <ToyBrick className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <Play className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-lg font-medium mb-2">
                     No Chess Wordle statistics available yet.
                   </p>
@@ -1157,7 +1160,7 @@ export const HistoryPageClient = ({
                   </p>
                   <Link href="/play/chess-wordle" passHref legacyBehavior>
                     <Button className="bg-amber-600/30 hover:bg-amber-600/40 text-amber-400 border-amber-500/60 ">
-                      <Gamepad2 className="mr-2 h-4 w-4" /> Start Playing Chess
+                      <Play className="mr-2 h-4 w-4" /> Start Playing Chess
                       Wordle
                     </Button>
                   </Link>
