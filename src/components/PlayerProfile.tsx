@@ -388,6 +388,7 @@ export default function PlayerProfile({
                         width={20}
                         height={12}
                         className="h-3 w-5"
+                        style={{ height: "auto" }}
                       />
                     )}
                     {flair && (

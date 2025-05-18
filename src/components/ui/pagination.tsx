@@ -46,7 +46,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         Page <span className="font-semibold mx-1">{currentPage}</span> of{" "}
         <span className="font-semibold mx-1">{totalPages}</span>
       </div>
-      <div className="flex gap-1 flex-wrap justify-center">
+      <div className="flex gap-1 flex-wrap justify-center items-center">
         <Button
           variant="outline"
           size="icon"
@@ -71,35 +71,37 @@ export const Pagination: React.FC<PaginationProps> = ({
           <span className="sr-only">Previous</span>
           &lsaquo;
         </Button>
-        {/* Page number btns */}
-        {pageNumbers.map((page, idx) =>
-          page === "ellipsis" ? (
-            <span
-              key={`ellipsis-${idx}`}
-              className="px-2 text-muted-foreground select-none"
-              aria-hidden="true"
-            >
-              ...
-            </span>
-          ) : (
-            <Button
-              key={page}
-              variant={page === currentPage ? "default" : "outline"}
-              size="icon"
-              aria-label={`Page ${page}`}
-              tabIndex={0}
-              onClick={() => onPageChange(page as number)}
-              disabled={page === currentPage}
-              className={
-                page === currentPage
-                  ? "w-8 h-8 bg-primary text-primary-foreground font-bold pointer-events-none"
-                  : "w-8 h-8"
-              }
-            >
-              {page}
-            </Button>
-          )
-        )}
+        {/* Page number btns - hidden on mobile */}
+        <div className="hidden sm:inline-flex gap-1">
+          {pageNumbers.map((page, idx) =>
+            page === "ellipsis" ? (
+              <span
+                key={`ellipsis-${idx}`}
+                className="px-2 text-muted-foreground select-none"
+                aria-hidden="true"
+              >
+                ...
+              </span>
+            ) : (
+              <Button
+                key={page}
+                variant={page === currentPage ? "default" : "outline"}
+                size="icon"
+                aria-label={`Page ${page}`}
+                tabIndex={0}
+                onClick={() => onPageChange(page as number)}
+                disabled={page === currentPage}
+                className={
+                  page === currentPage
+                    ? "w-8 h-8 bg-primary text-primary-foreground font-bold pointer-events-none"
+                    : "w-8 h-8"
+                }
+              >
+                {page}
+              </Button>
+            )
+          )}
+        </div>
         <Button
           variant="outline"
           size="icon"

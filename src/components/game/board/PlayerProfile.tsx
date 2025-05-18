@@ -202,6 +202,7 @@ const PlayerProfile = ({
                   className="w-5 h-3"
                   width={20}
                   height={12}
+                  style={{ height: "auto" }}
                 />
               ) : countryFlag ? (
                 <Image
@@ -210,6 +211,7 @@ const PlayerProfile = ({
                   className="w-5 h-3"
                   width={20}
                   height={12}
+                  style={{ height: "auto" }}
                 />
               ) : null}
               {flair && !isBot && (
