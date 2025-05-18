@@ -1051,6 +1051,38 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setGameStarted,
   ]);
 
+  // Gameplay settings
+  const [enablePreMadeMove, setEnablePreMadeMove] = useState(true);
+  const [showLegalMoves, setShowLegalMoves] = useState(true);
+  const [highlightSquare, setHighlightSquare] = useState(true);
+
+  // Load gameplay settings from session or localStorage
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      const user = session.user;
+      setEnablePreMadeMove(
+        "enablePreMadeMove" in user &&
+          typeof user.enablePreMadeMove === "boolean"
+          ? user.enablePreMadeMove
+          : true
+      );
+      setShowLegalMoves(
+        "showLegalMoves" in user && typeof user.showLegalMoves === "boolean"
+          ? user.showLegalMoves
+          : true
+      );
+      setHighlightSquare(
+        "highlightSquare" in user && typeof user.highlightSquare === "boolean"
+          ? user.highlightSquare
+          : true
+      );
+    } else if (typeof window !== "undefined") {
+      setEnablePreMadeMove(true);
+      setShowLegalMoves(true);
+      setHighlightSquare(true);
+    }
+  }, [status, session]);
+
   return (
     <div className="flex flex-col h-full w-full">
       {/* TEMPORARY TEST BUTTON - HIDE LATER */}
@@ -1077,18 +1109,20 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       {/* END TEMPORARY TEST BUTTON */}
 
       <main className="flex flex-col w-full items-center justify-start">
-        <PreMadeMove
-          game={game}
-          board={board}
-          playerColor={playerColor}
-          makeMove={makeMove}
-          getBotMove={getBotMove}
-          onPreMadeMoveChange={handlePreMadeMoveChange}
-          onHandleSquareClick={handlePreMadeMoveSquareClick}
-          onPossibleMovesChange={handlePreMadePossibleMovesChange}
-          setSelectedPiece={setSelectedPiece}
-          setPossibleMoves={setPossibleMoves}
-        />
+        {enablePreMadeMove && (
+          <PreMadeMove
+            game={game}
+            board={board}
+            playerColor={playerColor}
+            makeMove={makeMove}
+            getBotMove={getBotMove}
+            onPreMadeMoveChange={handlePreMadeMoveChange}
+            onHandleSquareClick={handlePreMadeMoveSquareClick}
+            onPossibleMovesChange={handlePreMadePossibleMovesChange}
+            setSelectedPiece={setSelectedPiece}
+            setPossibleMoves={setPossibleMoves}
+          />
+        )}
 
         <div className="flex flex-col lg:flex-row w-full items-center lg:items-start justify-center gap-4 lg:max-h-[calc(100vh-40px)]">
           <div className="relative w-full max-w-[min(85vh,95vw)] sm:max-w-[min(85vh,85vw)] md:max-w-[min(90vh,80vw)] lg:max-w-[107vh]">
@@ -1225,11 +1259,13 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                           row={actualRowIndex}
                           col={actualColIndex}
                           isLight={isLight}
-                          isSelected={!!isSelected}
+                          isSelected={highlightSquare && !!isSelected}
                           isCheck={isKingInCheck}
-                          isLastMove={!!isLastMove}
-                          isPossibleMove={possibleMoves.includes(square)}
-                          isHintMove={!!isHintMove}
+                          isLastMove={highlightSquare && !!isLastMove}
+                          isPossibleMove={
+                            showLegalMoves && possibleMoves.includes(square)
+                          }
+                          isHintMove={highlightSquare && !!isHintMove}
                           isRedHighlighted={isHighlighted(square)}
                           isPreMadeMove={isPreMadeMove(square)}
                           isPreMadePossibleMove={isPreMadePossibleMove(square)}

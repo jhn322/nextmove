@@ -44,6 +44,9 @@ model User {
   autoQueen           Boolean? @default(true) // Auto promote to queen on pawn promotion
   moveInputMethod     String? @default("both") // Move input method: click, drag, or both
   boardTheme          String? @default("auto") // Board theme/color preference
+  enablePreMadeMove   Boolean? @default(true) // Enable pre-made move feature
+  showLegalMoves      Boolean? @default(true) // Show legal moves on board
+  highlightSquare     Boolean? @default(true) // Highlight last move/square
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken model

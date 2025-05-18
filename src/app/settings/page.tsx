@@ -30,6 +30,9 @@ import {
   Pencil,
   Trash2,
   Contrast,
+  ArrowRightLeft,
+  Eye,
+  Highlighter,
 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -105,6 +108,9 @@ interface SettingsState {
   moveInputMethod: "click" | "drag" | "both";
   boardTheme: string;
   presetId?: string | null;
+  enablePreMadeMove: boolean;
+  showLegalMoves: boolean;
+  highlightSquare: boolean;
 }
 
 const DIFFICULTY_THEMES = [
@@ -247,6 +253,9 @@ export default function SettingsPage() {
       autoQueen: getAutoQueen(),
       moveInputMethod: getMoveInputMethod(),
       boardTheme: getBoardTheme(),
+      enablePreMadeMove: true,
+      showLegalMoves: true,
+      highlightSquare: true,
     };
   });
   const [initialSettings, setInitialSettings] = useState<SettingsState | null>(
@@ -334,6 +343,19 @@ export default function SettingsPage() {
         "boardTheme" in user && typeof user.boardTheme === "string"
           ? user.boardTheme
           : getBoardTheme(),
+      enablePreMadeMove:
+        "enablePreMadeMove" in user &&
+        typeof user.enablePreMadeMove === "boolean"
+          ? user.enablePreMadeMove
+          : true,
+      showLegalMoves:
+        "showLegalMoves" in user && typeof user.showLegalMoves === "boolean"
+          ? user.showLegalMoves
+          : true,
+      highlightSquare:
+        "highlightSquare" in user && typeof user.highlightSquare === "boolean"
+          ? user.highlightSquare
+          : true,
     });
 
     setInitialSettings({
@@ -372,6 +394,19 @@ export default function SettingsPage() {
         "boardTheme" in user && typeof user.boardTheme === "string"
           ? user.boardTheme
           : getBoardTheme(),
+      enablePreMadeMove:
+        "enablePreMadeMove" in user &&
+        typeof user.enablePreMadeMove === "boolean"
+          ? user.enablePreMadeMove
+          : true,
+      showLegalMoves:
+        "showLegalMoves" in user && typeof user.showLegalMoves === "boolean"
+          ? user.showLegalMoves
+          : true,
+      highlightSquare:
+        "highlightSquare" in user && typeof user.highlightSquare === "boolean"
+          ? user.highlightSquare
+          : true,
     });
 
     setLoading(false);
@@ -467,6 +502,9 @@ export default function SettingsPage() {
       autoQueen: settings.autoQueen,
       moveInputMethod: settings.moveInputMethod,
       boardTheme: settings.boardTheme,
+      enablePreMadeMove: settings.enablePreMadeMove,
+      showLegalMoves: settings.showLegalMoves,
+      highlightSquare: settings.highlightSquare,
     };
 
     try {
@@ -1372,6 +1410,66 @@ export default function SettingsPage() {
                     checked={settings.autoQueen}
                     onCheckedChange={(checked) =>
                       setSettings({ ...settings, autoQueen: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="enablePreMadeMove">Pre-Made Move</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow making a move before your turn (pre-move)
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="enablePreMadeMove"
+                    checked={settings.enablePreMadeMove}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, enablePreMadeMove: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showLegalMoves">Show Legal Moves</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Highlight all legal moves for the selected piece
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="showLegalMoves"
+                    checked={settings.showLegalMoves}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, showLegalMoves: checked })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="highlightSquare">
+                    Highlight Moves & Selection
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show colored highlight for last move and currently selected
+                    piece. Disabling removes all move/selection highlights.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Highlighter className="h-4 w-4 text-muted-foreground" />
+                  <Switch
+                    id="highlightSquare"
+                    checked={settings.highlightSquare}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, highlightSquare: checked })
                     }
                   />
                 </div>

@@ -25,6 +25,13 @@ declare module "next-auth" {
       showCoordinates?: boolean | null;
       enableAnimations?: boolean | null;
       enableConfetti?: boolean | null;
+      highContrast?: boolean | null;
+      autoQueen?: boolean | null;
+      moveInputMethod?: "click" | "drag" | "both" | null;
+      boardTheme?: string | null;
+      enablePreMadeMove?: boolean | null;
+      showLegalMoves?: boolean | null;
+      highlightSquare?: boolean | null;
     } & DefaultSession["user"];
   }
 
@@ -46,6 +53,13 @@ declare module "next-auth" {
     showCoordinates?: boolean | null;
     enableAnimations?: boolean | null;
     enableConfetti?: boolean | null;
+    highContrast?: boolean | null;
+    autoQueen?: boolean | null;
+    moveInputMethod?: "click" | "drag" | "both" | null;
+    boardTheme?: string | null;
+    enablePreMadeMove?: boolean | null;
+    showLegalMoves?: boolean | null;
+    highlightSquare?: boolean | null;
   }
 }
 
@@ -71,5 +85,12 @@ declare module "next-auth/jwt" {
     showCoordinates?: boolean | null;
     enableAnimations?: boolean | null;
     enableConfetti?: boolean | null;
+    highContrast?: boolean | null;
+    autoQueen?: boolean | null;
+    moveInputMethod?: "click" | "drag" | "both" | null;
+    boardTheme?: string | null;
+    enablePreMadeMove?: boolean | null;
+    showLegalMoves?: boolean | null;
+    highlightSquare?: boolean | null;
   }
 }

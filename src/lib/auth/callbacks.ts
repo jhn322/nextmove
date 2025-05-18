@@ -106,6 +106,18 @@ export const configureCallbacks = () => ({
         token.showCoordinates = dbUser.showCoordinates;
         token.enableAnimations = dbUser.enableAnimations;
         token.enableConfetti = dbUser.enableConfetti;
+        token.highContrast = dbUser.highContrast;
+        token.autoQueen = dbUser.autoQueen;
+        token.moveInputMethod =
+          dbUser.moveInputMethod === "click" ||
+          dbUser.moveInputMethod === "drag" ||
+          dbUser.moveInputMethod === "both"
+            ? dbUser.moveInputMethod
+            : null;
+        token.boardTheme = dbUser.boardTheme;
+        token.enablePreMadeMove = dbUser.enablePreMadeMove;
+        token.showLegalMoves = dbUser.showLegalMoves;
+        token.highlightSquare = dbUser.highlightSquare;
       } else {
         token.id = user.id; // Use user.id if dbUser not found
         token.role = USER_ROLES.USER;
@@ -141,6 +153,18 @@ export const configureCallbacks = () => ({
         token.showCoordinates = dbUser.showCoordinates;
         token.enableAnimations = dbUser.enableAnimations;
         token.enableConfetti = dbUser.enableConfetti;
+        token.highContrast = dbUser.highContrast;
+        token.autoQueen = dbUser.autoQueen;
+        token.moveInputMethod =
+          dbUser.moveInputMethod === "click" ||
+          dbUser.moveInputMethod === "drag" ||
+          dbUser.moveInputMethod === "both"
+            ? dbUser.moveInputMethod
+            : null;
+        token.boardTheme = dbUser.boardTheme;
+        token.enablePreMadeMove = dbUser.enablePreMadeMove;
+        token.showLegalMoves = dbUser.showLegalMoves;
+        token.highlightSquare = dbUser.highlightSquare;
       } else {
         console.error(
           `AUTH: User with id ${token.sub} not found in JWT callback during refresh. Token may be stale.`
@@ -181,6 +205,18 @@ export const configureCallbacks = () => ({
       session.user.showCoordinates = token.showCoordinates;
       session.user.enableAnimations = token.enableAnimations;
       session.user.enableConfetti = token.enableConfetti;
+      session.user.highContrast = token.highContrast;
+      session.user.autoQueen = token.autoQueen;
+      session.user.moveInputMethod =
+        token.moveInputMethod === "click" ||
+        token.moveInputMethod === "drag" ||
+        token.moveInputMethod === "both"
+          ? token.moveInputMethod
+          : null;
+      session.user.boardTheme = token.boardTheme;
+      session.user.enablePreMadeMove = token.enablePreMadeMove;
+      session.user.showLegalMoves = token.showLegalMoves;
+      session.user.highlightSquare = token.highlightSquare;
     }
     return session;
   },

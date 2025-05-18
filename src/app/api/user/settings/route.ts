@@ -30,6 +30,9 @@ const updateSettingsSchema = z
     autoQueen: z.boolean().optional(),
     moveInputMethod: z.enum(["click", "drag", "both"]).optional(),
     boardTheme: z.string().optional(),
+    enablePreMadeMove: z.boolean().optional(),
+    showLegalMoves: z.boolean().optional(),
+    highlightSquare: z.boolean().optional(),
   })
   .strict();
 
@@ -103,6 +106,12 @@ export async function PATCH(req: Request) {
       prismaData.moveInputMethod = dataToUpdate.moveInputMethod;
     if (dataToUpdate.boardTheme !== undefined)
       prismaData.boardTheme = dataToUpdate.boardTheme;
+    if (dataToUpdate.enablePreMadeMove !== undefined)
+      prismaData.enablePreMadeMove = dataToUpdate.enablePreMadeMove;
+    if (dataToUpdate.showLegalMoves !== undefined)
+      prismaData.showLegalMoves = dataToUpdate.showLegalMoves;
+    if (dataToUpdate.highlightSquare !== undefined)
+      prismaData.highlightSquare = dataToUpdate.highlightSquare;
 
     // Update user settings in the database
     await prisma.user.update({
