@@ -979,8 +979,13 @@ export const HistoryPageClient = ({
                             isAnyGameActive &&
                             activeBotGameId === bot.id &&
                             activeBotGameDifficulty === botDifficultyStr;
+                          const isClickable =
+                            !navigatingToBotId && !isCurrentActiveBot;
                           return (
-                            <div key={bot.name} className="relative">
+                            <div
+                              key={bot.name}
+                              className="relative group focus-within:z-10"
+                            >
                               <Link
                                 href={`/play/${difficulty}/${bot.id}`}
                                 onClick={(e) =>
@@ -992,22 +997,49 @@ export const HistoryPageClient = ({
                                   )
                                 }
                                 className={cn(
-                                  "block",
+                                  "block focus:outline-none",
                                   isBotBeaten(bot.name)
                                     ? "cursor-pointer"
                                     : "cursor-pointer"
                                 )}
+                                tabIndex={0}
+                                aria-label={`Start game vs ${bot.name} (${difficulty})`}
+                                onKeyDown={(
+                                  e: React.KeyboardEvent<HTMLAnchorElement>
+                                ) => {
+                                  if (
+                                    (e.key === "Enter" || e.key === " ") &&
+                                    isClickable
+                                  ) {
+                                    e.preventDefault();
+                                    router.push(
+                                      `/play/${difficulty}/${bot.id}`
+                                    );
+                                  }
+                                }}
                               >
                                 <Card
                                   className={cn(
-                                    "border transition-all hover:shadow-md",
+                                    "border transition-all hover:shadow relative overflow-hidden group-focus:shadow",
                                     isBotBeaten(bot.name) &&
                                       "border-accent bg-accent/40 dark:bg-accent/30",
                                     isCurrentActiveBot &&
                                       "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-background"
                                   )}
                                 >
-                                  <CardContent className="p-4">
+                                  {/* Hover Overlay */}
+                                  {isClickable && (
+                                    <div
+                                      className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-200 pointer-events-none"
+                                      aria-hidden="true"
+                                    >
+                                      <Play className="h-6 w-6 text-white mb-2" />
+                                      <span className="text-white font-semibold text-base drop-shadow">
+                                        Challenge Bot
+                                      </span>
+                                    </div>
+                                  )}
+                                  <CardContent className="p-4 relative z-0">
                                     <div className="flex items-center gap-3">
                                       <Avatar className="h-12 w-12">
                                         <AvatarImage

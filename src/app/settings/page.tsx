@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   Card,
   CardContent,
@@ -99,6 +99,18 @@ import {
   BoardPiecePreset,
 } from "@/lib/settings/boardPiecePresets";
 import PresetPreview from "@/components/settings/PresetPreview";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface SettingsState {
   display_name: string;
@@ -243,6 +255,262 @@ const AppearancePresetGrid = ({
   );
 };
 
+const MemoizedAppearancePresetGrid = React.memo(AppearancePresetGrid);
+
+const AvatarGrid = memo(
+  ({
+    availableAvatars,
+    selectedAvatar,
+    handleAvatarSelect,
+    getCharacterNameFromPath,
+  }: {
+    availableAvatars: string[];
+    selectedAvatar: string;
+    handleAvatarSelect: (avatar: string) => void;
+    getCharacterNameFromPath: (path: string) => string;
+  }) => (
+    <ScrollArea className="h-[300px] mt-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
+        {availableAvatars.map((avatar, index) => (
+          <HoverText
+            key={index}
+            text={getCharacterNameFromPath(avatar)}
+            side="bottom"
+          >
+            <Button
+              key={index}
+              variant="ghost"
+              className="p-1 h-auto relative"
+              onClick={() => handleAvatarSelect(avatar)}
+            >
+              <div className="relative">
+                <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
+                  <AvatarImage src={avatar} alt={`Avatar ${index + 1}`} />
+                  <AvatarFallback>?</AvatarFallback>
+                </Avatar>
+                {avatar === selectedAvatar && (
+                  <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
+                    <Check className="h-4 w-4" />
+                  </div>
+                )}
+              </div>
+            </Button>
+          </HoverText>
+        ))}
+      </div>
+    </ScrollArea>
+  )
+);
+AvatarGrid.displayName = "AvatarGrid";
+
+const FLAIRS = [
+  "⚔️",
+  "🎮",
+  "🎯",
+  "🎲",
+  "🏆",
+  "👑",
+  "⭐",
+  "💫",
+  "✨",
+  "🌟",
+  "🌈",
+  "💥",
+  "🔥",
+  "⚡",
+  "🌀",
+  "🌪️",
+  "🌊",
+  "☄️",
+  "🌌",
+  "🌠",
+  "🪐",
+  "🌙",
+  "☀️",
+  "🌤️",
+  "🌍",
+  "🌎",
+  "🌏",
+  "🧭",
+  "🕹️",
+  "🎼",
+  "🎵",
+  "🎶",
+  "🎤",
+  "🎧",
+  "🎷",
+  "🎸",
+  "🎻",
+  "🥁",
+  "📯",
+  "🎺",
+  "🎹",
+  "📀",
+  "💿",
+  "📸",
+  "🎥",
+  "🎬",
+  "📽️",
+  "📡",
+  "🔮",
+  "🕶️",
+  "🕵️‍♂️",
+  "🕵️‍♀️",
+  "🤖",
+  "👾",
+  "🎃",
+  "💀",
+  "👻",
+  "👽",
+  "🛸",
+  "🚀",
+  "🛰️",
+  "🛠️",
+  "🗡️",
+  "🔫",
+  "🏹",
+  "🛡️",
+  "💣",
+  "📜",
+  "🏰",
+  "🕌",
+  "🛕",
+  "⛩️",
+  "🌋",
+  "🏔️",
+  "⛰️",
+  "🗻",
+  "🏕️",
+  "🌄",
+  "🌅",
+  "🎑",
+  "🏜️",
+  "🏝️",
+  "🏞️",
+  "🌇",
+  "🌆",
+  "🏙️",
+  "🌃",
+  "🌉",
+  "🌁",
+  "🛤️",
+  "🚆",
+  "🚄",
+  "🛳️",
+  "🚢",
+  "⛵",
+  "🛶",
+  "🛺",
+  "🚘",
+  "🚖",
+  "🚍",
+  "🚌",
+  "🚋",
+  "🚊",
+  "🚉",
+  "🚁",
+  "🛩️",
+  "🦄",
+  "🐉",
+  "🐲",
+  "🐍",
+  "🦅",
+  "🦇",
+  "🐺",
+  "🦊",
+  "🐗",
+  "🦬",
+  "🦓",
+  "🦒",
+  "🐪",
+  "🐫",
+  "🦘",
+  "🐃",
+  "🐂",
+  "🐄",
+  "🦝",
+  "🦡",
+  "🦢",
+  "🦜",
+  "🐧",
+  "🦆",
+  "🐦",
+  "🕊️",
+  "🐕",
+  "🐩",
+  "🐈",
+  "🦁",
+  "🐅",
+  "🐆",
+  "🐎",
+  "🦏",
+  "🐘",
+  "🦛",
+  "🐁",
+  "🐀",
+  "🐿️",
+  "🦔",
+  "🐾",
+  "🦖",
+  "🦕",
+  "🦦",
+  "🦨",
+  "🦥",
+  "🦫",
+  "🐓",
+  "🦃",
+  "🦩",
+  "🦉",
+  "🎭",
+  "🎨",
+  "🖌️",
+  "🖍️",
+  "📝",
+  "✏️",
+  "🖊️",
+  "🖋️",
+  "📖",
+  "📚",
+  "🔖",
+  "🏹",
+  "🛠️",
+  "⚒️",
+  "🔨",
+  "⛏️",
+  "🧨",
+  "🚀",
+];
+
+const FlairGrid = memo(
+  ({ handleFlairSelect }: { handleFlairSelect: (flair: string) => void }) => (
+    <ScrollArea className="h-[300px]">
+      <div className="grid grid-cols-5 gap-2 p-2">
+        {FLAIRS.map((emoji, index) => (
+          <Button
+            key={index}
+            variant="ghost"
+            className="h-12 text-2xl hover:bg-accent"
+            onClick={() => handleFlairSelect(emoji)}
+          >
+            {emoji}
+          </Button>
+        ))}
+      </div>
+    </ScrollArea>
+  )
+);
+FlairGrid.displayName = "FlairGrid";
+
+// Zod schema for profile fields
+const profileSchema = z.object({
+  display_name: z.string().min(1).max(50),
+  first_name: z.string().max(50),
+  last_name: z.string().max(50),
+  location: z.string().max(100),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
+
 export default function SettingsPage() {
   const { status, session, signOut, refreshSession } = useAuth();
   const [settings, setSettings] = useState<SettingsState>(() => {
@@ -317,6 +585,53 @@ export default function SettingsPage() {
     master: Award,
     grandmaster: Trophy,
   };
+
+  // React-hook-form for profile fields
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      display_name: settings.display_name,
+      first_name: settings.first_name,
+      last_name: settings.last_name,
+      location: settings.location,
+    },
+    mode: "onChange",
+  });
+
+  // Store initial profile values for change detection
+  const initialProfileValues = React.useRef({
+    display_name: session?.user?.name || "",
+    first_name: session?.user?.firstName || "",
+    last_name: session?.user?.lastName || "",
+    location: session?.user?.location || "",
+  });
+
+  // Watch form values for change detection
+  const formValues = form.watch();
+  const isProfileChanged = Object.keys(initialProfileValues.current).some(
+    (key) =>
+      formValues[key as keyof ProfileFormValues] !==
+      initialProfileValues.current[key as keyof ProfileFormValues]
+  );
+
+  const isSettingsChanged =
+    initialSettings &&
+    JSON.stringify({
+      ...settings,
+      display_name: undefined,
+      first_name: undefined,
+      last_name: undefined,
+      location: undefined,
+    }) !==
+      JSON.stringify({
+        ...initialSettings,
+        display_name: undefined,
+        first_name: undefined,
+        last_name: undefined,
+        location: undefined,
+      });
+
+  const isChanged = isProfileChanged || isSettingsChanged;
 
   useEffect(() => {
     if (status === "loading") {
@@ -497,6 +812,7 @@ export default function SettingsPage() {
     setPresetId(match ? match.id : null);
   }, [settings.boardTheme, settings.piece_set]);
 
+  // On save, merge form values with other settings
   const handleSaveSettings = async () => {
     if (!session?.user?.id) {
       setError("You need to be signed in to save settings");
@@ -507,11 +823,14 @@ export default function SettingsPage() {
     setLoading(true);
     setError(null);
 
+    // Get profile values from form
+    const profileValues = form.getValues();
+
     const dataToSend = {
-      name: settings.display_name,
-      firstName: settings.first_name,
-      lastName: settings.last_name,
-      location: settings.location,
+      name: profileValues.display_name,
+      firstName: profileValues.first_name,
+      lastName: profileValues.last_name,
+      location: profileValues.location,
       image: settings.avatar_url,
       countryFlag: settings.country_flag,
       flair: settings.flair,
@@ -578,10 +897,15 @@ export default function SettingsPage() {
     }
   };
 
-  const handleAvatarSelect = (avatarPath: string) => {
-    setSettings({ ...settings, avatar_url: avatarPath });
+  const handleAvatarSelect = useCallback((avatarPath: string) => {
+    setSettings((prev) => ({ ...prev, avatar_url: avatarPath }));
     setAvatarDialogOpen(false);
-  };
+  }, []);
+
+  const handleFlairSelect = useCallback((flair: string) => {
+    setSettings((prev) => ({ ...prev, flair }));
+    setFlairDialogOpen(false);
+  }, []);
 
   const handleDeleteAccount = async () => {
     if (!session?.user?.id) {
@@ -640,10 +964,6 @@ export default function SettingsPage() {
       setSettings((prev) => ({ ...prev, highContrast: true }));
     }
   }, [theme, settings.highContrast]);
-
-  const isChanged =
-    initialSettings &&
-    JSON.stringify(settings) !== JSON.stringify(initialSettings);
 
   if (status === "loading" || loading) {
     return <SettingsLoading />;
@@ -724,572 +1044,391 @@ export default function SettingsPage() {
             </TabsList>
 
             <TabsContent value="profile" className="space-y-6 mt-6">
-              <div className="space-y-2">
-                <Label htmlFor="display_name">Display Name</Label>
-                <Input
-                  id="display_name"
-                  value={settings.display_name}
-                  onChange={(e) =>
-                    setSettings({ ...settings, display_name: e.target.value })
-                  }
-                  maxLength={20}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  id="first_name"
-                  value={settings.first_name}
-                  onChange={(e) =>
-                    setSettings({ ...settings, first_name: e.target.value })
-                  }
-                  maxLength={50}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  id="last_name"
-                  value={settings.last_name}
-                  onChange={(e) =>
-                    setSettings({ ...settings, last_name: e.target.value })
-                  }
-                  maxLength={50}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-sm font-medium">Email</Label>
-                <p className="text-sm text-muted-foreground mt-1.5">
-                  {session.user.email || "No email available"}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={settings.location}
-                  onChange={(e) =>
-                    setSettings({ ...settings, location: e.target.value })
-                  }
-                  maxLength={100}
-                  placeholder="City, Country"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Avatar</Label>
-                <div className="flex items-center gap-4">
-                  <Dialog
-                    open={avatarDialogOpen}
-                    onOpenChange={setAvatarDialogOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="p-0 h-auto w-auto rounded-full relative group"
-                      >
-                        <Avatar className="h-16 w-16 cursor-pointer border-2 border-primary/50 group-hover:border-primary transition-all">
-                          <AvatarImage src={settings.avatar_url} alt="Avatar" />
-                          <AvatarFallback>
-                            {settings.display_name?.charAt(0) || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                          <Pencil className="h-5 w-5 text-white" />
-                        </div>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Choose Avatar</DialogTitle>
-                      </DialogHeader>
-                      <ScrollArea className="h-[300px] mt-2">
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
-                          {availableAvatars.map((avatar, index) => (
-                            <HoverText
-                              key={index}
-                              text={getCharacterNameFromPath(avatar)}
-                              side="bottom"
-                            >
-                              <Button
-                                key={index}
-                                variant="ghost"
-                                className="p-1 h-auto relative"
-                                onClick={() => handleAvatarSelect(avatar)}
-                              >
-                                <div className="relative">
-                                  <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
-                                    <AvatarImage
-                                      src={avatar}
-                                      alt={`Avatar ${index + 1}`}
-                                    />
-                                    <AvatarFallback>?</AvatarFallback>
-                                  </Avatar>
-                                  {avatar === settings.avatar_url && (
-                                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
-                                      <Check className="h-4 w-4" />
-                                    </div>
-                                  )}
-                                </div>
-                              </Button>
-                            </HoverText>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </DialogContent>
-                  </Dialog>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Select an avatar to represent you in games
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Country Flag</Label>
-                <Select
-                  value={settings.country_flag || "none"}
-                  onValueChange={(value) =>
-                    setSettings({
-                      ...settings,
-                      country_flag: value === "none" ? "" : value,
-                    })
-                  }
+              <Form {...form}>
+                <form
+                  className="space-y-6"
+                  onSubmit={form.handleSubmit(handleSaveSettings)}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select country flag">
-                      <div className="flex items-center gap-2">
-                        <Flag className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                        {settings.country_flag ? (
-                          <div className="flex items-center gap-2">
-                            <Image
-                              src={`/flags/${settings.country_flag}.png`}
-                              alt={settings.country_flag}
-                              width={20}
-                              height={12}
-                              className="h-3 w-5"
+                  <FormField
+                    control={form.control}
+                    name="display_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Display Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            maxLength={20}
+                            placeholder="In-Game Name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="first_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            maxLength={50}
+                            placeholder="First Name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="last_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            maxLength={50}
+                            placeholder="Last Name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl>
+                          <Input
+                            maxLength={100}
+                            placeholder="City, Country"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="space-y-2">
+                    <Label>Avatar</Label>
+                    <div className="flex items-center gap-4">
+                      <Dialog
+                        open={avatarDialogOpen}
+                        onOpenChange={setAvatarDialogOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="p-0 h-auto w-auto rounded-full relative group"
+                          >
+                            <Avatar className="h-16 w-16 cursor-pointer border-2 border-primary/50 group-hover:border-primary transition-all">
+                              <AvatarImage
+                                src={settings.avatar_url}
+                                alt="Avatar"
+                              />
+                              <AvatarFallback>
+                                {settings.display_name?.charAt(0) || "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <Pencil className="h-5 w-5 text-white" />
+                            </div>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Choose Avatar</DialogTitle>
+                          </DialogHeader>
+                          {avatarDialogOpen && (
+                            <AvatarGrid
+                              availableAvatars={availableAvatars}
+                              selectedAvatar={settings.avatar_url}
+                              handleAvatarSelect={handleAvatarSelect}
+                              getCharacterNameFromPath={
+                                getCharacterNameFromPath
+                              }
                             />
-                            <span className="capitalize">
-                              {settings.country_flag.toUpperCase()}
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Select an avatar to represent you in games
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Country Flag</Label>
+                    <Select
+                      value={settings.country_flag || "none"}
+                      onValueChange={(value) =>
+                        setSettings({
+                          ...settings,
+                          country_flag: value === "none" ? "" : value,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select country flag">
+                          <div className="flex items-center gap-2">
+                            <Flag className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                            {settings.country_flag ? (
+                              <div className="flex items-center gap-2">
+                                <Image
+                                  src={`/flags/${settings.country_flag}.png`}
+                                  alt={settings.country_flag}
+                                  width={20}
+                                  height={12}
+                                  className="h-3 w-5"
+                                />
+                                <span className="capitalize">
+                                  {settings.country_flag.toUpperCase()}
+                                </span>
+                              </div>
+                            ) : (
+                              <span>Select country flag</span>
+                            )}
+                          </div>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[
+                          "none",
+                          "ad",
+                          "am",
+                          "ar",
+                          "au",
+                          "ba",
+                          "bg",
+                          "ca",
+                          "cn",
+                          "cu",
+                          "cy",
+                          "cz",
+                          "de",
+                          "dk",
+                          "ec",
+                          "eng",
+                          "fi",
+                          "fr",
+                          "ge",
+                          "gr",
+                          "ie",
+                          "il",
+                          "in",
+                          "is",
+                          "it",
+                          "jp",
+                          "kr",
+                          "lt",
+                          "lu",
+                          "lv",
+                          "my",
+                          "no",
+                          "nz",
+                          "ph",
+                          "pk",
+                          "ps",
+                          "pt",
+                          "ro",
+                          "rs",
+                          "ru",
+                          "sct",
+                          "se",
+                          "sy",
+                          "tr",
+                          "ua",
+                          "ug",
+                          "us",
+                          "uy",
+                          "wls",
+                        ].map((flag) => (
+                          <SelectItem key={flag} value={flag}>
+                            <div className="flex items-center gap-2">
+                              {flag !== "none" ? (
+                                <>
+                                  <Image
+                                    src={`/flags/${flag}.png`}
+                                    alt={flag}
+                                    width={20}
+                                    height={12}
+                                    className="h-3 w-5"
+                                  />
+                                  <span className="capitalize">
+                                    {flag.toUpperCase()}
+                                  </span>
+                                </>
+                              ) : (
+                                <span>None</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Flair</Label>
+                    <div className="flex items-center gap-4">
+                      <Dialog
+                        open={flairDialogOpen}
+                        onOpenChange={setFlairDialogOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              <SmilePlus className="h-4 w-4 text-muted-foreground" />
+                              <span>{settings.flair || "Choose a flair"}</span>
+                            </div>
+                            <span className="text-2xl">{settings.flair}</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Choose Flair</DialogTitle>
+                          </DialogHeader>
+                          {flairDialogOpen && (
+                            <FlairGrid handleFlairSelect={handleFlairSelect} />
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone">Timezone</Label>
+                    <Select
+                      value={settings.timezone}
+                      onValueChange={(value) =>
+                        setSettings({ ...settings, timezone: value })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select timezone">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                            <span className="truncate">
+                              {settings.timezone}
                             </span>
                           </div>
-                        ) : (
-                          <span>Select country flag</span>
-                        )}
-                      </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[
-                      "none",
-                      "ad",
-                      "am",
-                      "ar",
-                      "au",
-                      "ba",
-                      "bg",
-                      "ca",
-                      "cn",
-                      "cu",
-                      "cy",
-                      "cz",
-                      "de",
-                      "dk",
-                      "ec",
-                      "eng",
-                      "fi",
-                      "fr",
-                      "ge",
-                      "gr",
-                      "ie",
-                      "il",
-                      "in",
-                      "is",
-                      "it",
-                      "jp",
-                      "kr",
-                      "lt",
-                      "lu",
-                      "lv",
-                      "my",
-                      "no",
-                      "nz",
-                      "ph",
-                      "pk",
-                      "ps",
-                      "pt",
-                      "ro",
-                      "rs",
-                      "ru",
-                      "sct",
-                      "se",
-                      "sy",
-                      "tr",
-                      "ua",
-                      "ug",
-                      "us",
-                      "uy",
-                      "wls",
-                    ].map((flag) => (
-                      <SelectItem key={flag} value={flag}>
-                        <div className="flex items-center gap-2">
-                          {flag !== "none" ? (
-                            <>
-                              <Image
-                                src={`/flags/${flag}.png`}
-                                alt={flag}
-                                width={20}
-                                height={12}
-                                className="h-3 w-5"
-                              />
-                              <span className="capitalize">
-                                {flag.toUpperCase()}
-                              </span>
-                            </>
-                          ) : (
-                            <span>None</span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Flair</Label>
-                <div className="flex items-center gap-4">
-                  <Dialog
-                    open={flairDialogOpen}
-                    onOpenChange={setFlairDialogOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <SmilePlus className="h-4 w-4 text-muted-foreground" />
-                          <span>{settings.flair || "Choose a flair"}</span>
-                        </div>
-                        <span className="text-2xl">{settings.flair}</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Choose Flair</DialogTitle>
-                      </DialogHeader>
-                      <ScrollArea className="h-[300px]">
-                        <div className="grid grid-cols-5 gap-2 p-2">
-                          {[
-                            "⚔️",
-                            "🎮",
-                            "🎯",
-                            "🎲",
-                            "🏆",
-                            "👑",
-                            "⭐",
-                            "💫",
-                            "✨",
-                            "🌟",
-                            "🌈",
-                            "💥",
-                            "🔥",
-                            "⚡",
-                            "🌀",
-                            "🌪️",
-                            "🌊",
-                            "☄️",
-                            "🌌",
-                            "🌠",
-                            "🪐",
-                            "🌙",
-                            "☀️",
-                            "🌤️",
-                            "🌍",
-                            "🌎",
-                            "🌏",
-                            "🧭",
-                            "🕹️",
-                            "🎼",
-                            "🎵",
-                            "🎶",
-                            "🎤",
-                            "🎧",
-                            "🎷",
-                            "🎸",
-                            "🎻",
-                            "🥁",
-                            "📯",
-                            "🎺",
-                            "🎹",
-                            "📀",
-                            "💿",
-                            "📸",
-                            "🎥",
-                            "🎬",
-                            "📽️",
-                            "📡",
-                            "🔮",
-                            "🕶️",
-                            "🕵️‍♂️",
-                            "🕵️‍♀️",
-                            "🤖",
-                            "👾",
-                            "🎃",
-                            "💀",
-                            "👻",
-                            "👽",
-                            "🛸",
-                            "🚀",
-                            "🛰️",
-                            "🛠️",
-                            "🗡️",
-                            "🔫",
-                            "🏹",
-                            "🛡️",
-                            "💣",
-                            "📜",
-                            "🏰",
-                            "🕌",
-                            "🛕",
-                            "⛩️",
-                            "🌋",
-                            "🏔️",
-                            "⛰️",
-                            "🗻",
-                            "🏕️",
-                            "🌄",
-                            "🌅",
-                            "🎑",
-                            "🏜️",
-                            "🏝️",
-                            "🏞️",
-                            "🌇",
-                            "🌆",
-                            "🏙️",
-                            "🌃",
-                            "🌉",
-                            "🌁",
-                            "🛤️",
-                            "🚆",
-                            "🚄",
-                            "🛳️",
-                            "🚢",
-                            "⛵",
-                            "🛶",
-                            "🛺",
-                            "🚘",
-                            "🚖",
-                            "🚍",
-                            "🚌",
-                            "🚋",
-                            "🚊",
-                            "🚉",
-                            "🚁",
-                            "🛩️",
-                            "🦄",
-                            "🐉",
-                            "🐲",
-                            "🐍",
-                            "🦅",
-                            "🦇",
-                            "🐺",
-                            "🦊",
-                            "🐗",
-                            "🦬",
-                            "🦓",
-                            "🦒",
-                            "🐪",
-                            "🐫",
-                            "🦘",
-                            "🐃",
-                            "🐂",
-                            "🐄",
-                            "🦝",
-                            "🦡",
-                            "🦢",
-                            "🦜",
-                            "🐧",
-                            "🦆",
-                            "🐦",
-                            "🕊️",
-                            "🐕",
-                            "🐩",
-                            "🐈",
-                            "🦁",
-                            "🐅",
-                            "🐆",
-                            "🐎",
-                            "🦏",
-                            "🐘",
-                            "🦛",
-                            "🐁",
-                            "🐀",
-                            "🐿️",
-                            "🦔",
-                            "🐾",
-                            "🦖",
-                            "🦕",
-                            "🦦",
-                            "🦨",
-                            "🦥",
-                            "🦫",
-                            "🐓",
-                            "🦃",
-                            "🦩",
-                            "🦉",
-                            "🎭",
-                            "🎨",
-                            "🖌️",
-                            "🖍️",
-                            "📝",
-                            "✏️",
-                            "🖊️",
-                            "🖋️",
-                            "📖",
-                            "📚",
-                            "🔖",
-                            "🏹",
-                            "🛠️",
-                            "⚒️",
-                            "🔨",
-                            "⛏️",
-                            "🧨",
-                            "🚀",
-                          ].map((emoji, index) => (
-                            <Button
-                              key={index}
-                              variant="ghost"
-                              className="h-12 text-2xl hover:bg-accent"
-                              onClick={() => {
-                                setSettings({ ...settings, flair: emoji });
-                                setFlairDialogOpen(false);
-                              }}
-                            >
-                              {emoji}
-                            </Button>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Select
-                  value={settings.timezone}
-                  onValueChange={(value) =>
-                    setSettings({ ...settings, timezone: value })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select timezone">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                        <span className="truncate">{settings.timezone}</span>
-                      </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Intl.supportedValuesOf("timeZone").map((tz) => (
-                      <SelectItem key={tz} value={tz}>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{tz}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="clock_format">Clock Format</Label>
-                <div className="flex gap-3 mt-2">
-                  <Button
-                    onClick={() =>
-                      setSettings({ ...settings, clock_format: "12" })
-                    }
-                    variant={
-                      settings.clock_format === "12" ? "default" : "outline"
-                    }
-                    className="flex-1 flex items-center justify-center gap-2"
-                  >
-                    <Clock className="h-4 w-4" />
-                    12-hour
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      setSettings({ ...settings, clock_format: "24" })
-                    }
-                    variant={
-                      settings.clock_format === "24" ? "default" : "outline"
-                    }
-                    className="flex-1 flex items-center justify-center gap-2"
-                  >
-                    <Clock className="h-4 w-4" />
-                    24-hour
-                  </Button>
-                </div>
-              </div>
-
-              <div className="pt-6 mt-6 border-t">
-                <h3 className="text-lg font-medium text-destructive mb-4">
-                  Danger Zone
-                </h3>
-                <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-medium">Delete Account</h4>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Permanently delete your account and all associated data.
-                        This action cannot be undone.
-                      </p>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="flex items-center gap-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Are you absolutely sure?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete your account and remove all of your data from
-                            our servers.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleDeleteAccount}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete Account
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Intl.supportedValuesOf("timeZone").map((tz) => (
+                          <SelectItem key={tz} value={tz}>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span>{tz}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
-              </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="clock_format">Clock Format</Label>
+                    <div className="flex gap-3 mt-2">
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            clock_format: "12",
+                          }))
+                        }
+                        variant={
+                          settings.clock_format === "12" ? "default" : "outline"
+                        }
+                        className="flex-1 flex items-center justify-center gap-2"
+                      >
+                        <Clock className="h-4 w-4" />
+                        12-hour
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            clock_format: "24",
+                          }))
+                        }
+                        variant={
+                          settings.clock_format === "24" ? "default" : "outline"
+                        }
+                        className="flex-1 flex items-center justify-center gap-2"
+                      >
+                        <Clock className="h-4 w-4" />
+                        24-hour
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 mt-6 border-t">
+                    <h3 className="text-lg font-medium text-destructive mb-4">
+                      Danger Zone
+                    </h3>
+                    <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-medium">Delete Account</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Permanently delete your account and all associated
+                            data. This action cannot be undone.
+                          </p>
+                        </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="flex items-center gap-2"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you absolutely sure?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete your account and remove all
+                                of your data from our servers.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={handleDeleteAccount}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete Account
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </Form>
             </TabsContent>
 
             <TabsContent value="game" className="space-y-6 mt-6">
@@ -1425,7 +1564,7 @@ export default function SettingsPage() {
                     }
                     className="flex-1 flex items-center justify-center gap-2"
                   >
-                    <AlignEndHorizontal className="h-4 w-4 fill-current" />
+                    <AlignEndHorizontal className="h-4 w-4" />
                     Bottom
                   </Button>
                   <Button
@@ -1590,7 +1729,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground mb-2">
                   Quickly apply a curated board color and piece set combination.
                 </p>
-                <AppearancePresetGrid
+                <MemoizedAppearancePresetGrid
                   BOARD_PIECE_PRESETS={BOARD_PIECE_PRESETS}
                   presetId={presetId}
                   setSettings={setSettings}
@@ -1748,7 +1887,10 @@ export default function SettingsPage() {
           </Tabs>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button onClick={handleSaveSettings} disabled={loading || !isChanged}>
+          <Button
+            onClick={form.handleSubmit(handleSaveSettings)}
+            disabled={loading || !isChanged}
+          >
             Save Settings
           </Button>
         </CardFooter>
