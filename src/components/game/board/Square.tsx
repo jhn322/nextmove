@@ -1,4 +1,65 @@
-const difficultyColors = {
+import React from "react";
+
+export const boardThemes: Record<string, { light: string; dark: string }> = {
+  // Non-difficulty themes
+  amethyst: {
+    light: "bg-purple-200 dark:bg-purple-900",
+    dark: "bg-purple-400 dark:bg-purple-800",
+  },
+  amber: {
+    light: "bg-amber-200 dark:bg-amber-900",
+    dark: "bg-amber-300 dark:bg-amber-800",
+  },
+  classic: {
+    light: "bg-yellow-100 dark:bg-yellow-900",
+    dark: "bg-yellow-200 dark:bg-yellow-800",
+  },
+  comic: {
+    light: "bg-yellow-100 dark:bg-yellow-900",
+    dark: "bg-blue-200 dark:bg-blue-800",
+  },
+  crimson: {
+    light: "bg-rose-200 dark:bg-rose-900",
+    dark: "bg-rose-400 dark:bg-rose-800",
+  },
+  cyberpunk: {
+    light: "bg-fuchsia-200 dark:bg-fuchsia-900",
+    dark: "bg-fuchsia-400 dark:bg-fuchsia-800",
+  },
+  dracula: {
+    light: "bg-purple-300 dark:bg-purple-900",
+    dark: "bg-purple-400 dark:bg-purple-800",
+  },
+  emerald: {
+    light: "bg-emerald-200 dark:bg-emerald-900",
+    dark: "bg-emerald-300 dark:bg-emerald-800",
+  },
+  fantasy: {
+    light: "bg-pink-200 dark:bg-pink-900",
+    dark: "bg-pink-300 dark:bg-pink-800",
+  },
+  "high-contrast": {
+    light: "bg-black text-white border-2 border-white",
+    dark: "bg-yellow-400 text-black border-2 border-white",
+  },
+  jade: {
+    light: "bg-green-200 dark:bg-green-900",
+    dark: "bg-green-300 dark:bg-green-800",
+  },
+  midnight: {
+    light: "bg-gray-300 dark:bg-gray-900",
+    dark: "bg-gray-400 dark:bg-gray-800",
+  },
+  pokemon: {
+    light: "bg-yellow-200 dark:bg-yellow-900",
+    dark: "bg-blue-200 dark:bg-blue-900",
+  },
+  rose: {
+    light: "bg-rose-200 dark:bg-rose-900",
+    dark: "bg-rose-300 dark:bg-rose-800",
+  },
+
+  // Difficulty themes
   beginner: {
     light: "bg-emerald-200 dark:bg-emerald-900",
     dark: "bg-emerald-300 dark:bg-emerald-800",
@@ -37,8 +98,9 @@ interface SquareProps {
   isLight: boolean;
   isSelected: boolean;
   children?: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   difficulty: string;
+  boardTheme?: string;
   isPossibleMove: boolean;
   isCheck: boolean;
   isLastMove: boolean;
@@ -58,6 +120,7 @@ const Square = ({
   children,
   onClick,
   difficulty,
+  boardTheme,
   isPossibleMove,
   isCheck,
   isLastMove,
@@ -70,7 +133,10 @@ const Square = ({
   showFile,
   onContextMenu,
 }: SquareProps) => {
-  const colors = difficultyColors[difficulty as keyof typeof difficultyColors];
+  let colors = boardThemes[difficulty];
+  if (boardTheme && boardTheme !== "auto" && boardThemes[boardTheme]) {
+    colors = boardThemes[boardTheme];
+  }
 
   // Determine the highlight class based on the square state
   const getHighlightClass = () => {

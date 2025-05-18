@@ -28,6 +28,8 @@ const updateSettingsSchema = z
     enableConfetti: z.boolean().optional(),
     highContrast: z.boolean().optional(),
     autoQueen: z.boolean().optional(),
+    moveInputMethod: z.enum(["click", "drag", "both"]).optional(),
+    boardTheme: z.string().optional(),
   })
   .strict();
 
@@ -97,6 +99,10 @@ export async function PATCH(req: Request) {
       prismaData.highContrast = dataToUpdate.highContrast;
     if (dataToUpdate.autoQueen !== undefined)
       prismaData.autoQueen = dataToUpdate.autoQueen;
+    if (dataToUpdate.moveInputMethod !== undefined)
+      prismaData.moveInputMethod = dataToUpdate.moveInputMethod;
+    if (dataToUpdate.boardTheme !== undefined)
+      prismaData.boardTheme = dataToUpdate.boardTheme;
 
     // Update user settings in the database
     await prisma.user.update({

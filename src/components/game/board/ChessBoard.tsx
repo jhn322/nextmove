@@ -25,7 +25,11 @@ import DroppableSquare from "./DroppableSquare";
 import { Chess } from "chess.js";
 import ChessboardArrows, { Arrow } from "./ChessboardArrows";
 import { LockKeyhole } from "lucide-react";
-import { getAutoQueen } from "@/lib/settings";
+import {
+  getAutoQueen,
+  getMoveInputMethod,
+  getBoardTheme,
+} from "@/lib/settings";
 
 const GAME_OVER_MODAL_SHOWN_KEY = "chess_gameOverModalShown";
 const GAME_OVER_FEN_KEY = "chess_gameOverFen";
@@ -92,6 +96,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const [pieceSet, setPieceSet] = useState("staunty");
   const [showCoordinates, setShowCoordinates] = useState(true);
   const [autoQueen, setAutoQueen] = useState(() => getAutoQueen());
+  const [moveInputMethod, setMoveInputMethod] = useState<
+    "click" | "drag" | "both"
+  >(() => getMoveInputMethod());
+  const [boardTheme, setBoardTheme] = useState<string>(() => getBoardTheme());
 
   // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
@@ -126,6 +134,19 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         "autoQueen" in user && typeof user.autoQueen === "boolean"
           ? user.autoQueen
           : getAutoQueen()
+      );
+      setMoveInputMethod(
+        "moveInputMethod" in user &&
+          (user.moveInputMethod === "click" ||
+            user.moveInputMethod === "drag" ||
+            user.moveInputMethod === "both")
+          ? user.moveInputMethod
+          : getMoveInputMethod()
+      );
+      setBoardTheme(
+        "boardTheme" in user && typeof user.boardTheme === "string"
+          ? user.boardTheme
+          : getBoardTheme()
       );
       loadedFromSession = true;
     }
@@ -1152,9 +1173,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                         ? 7 - colIndex
                         : colIndex;
                       const piece = board[actualRowIndex][actualColIndex];
-                      const square = `${"abcdefgh"[actualColIndex]}${
-                        8 - actualRowIndex
-                      }`;
+                      const square = `${"abcdefgh"[actualColIndex]}${8 - actualRowIndex}`;
                       const isKingInCheck =
                         game.isCheck() &&
                         piece?.type.toLowerCase() === "k" &&
@@ -1192,6 +1211,14 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                         game.turn() === playerColor &&
                         !game.isGameOver();
 
+                      // Move input method logic
+                      const enableClick =
+                        moveInputMethod === "click" ||
+                        moveInputMethod === "both";
+                      const enableDrag =
+                        moveInputMethod === "drag" ||
+                        moveInputMethod === "both";
+
                       return (
                         <DroppableSquare
                           key={`${actualRowIndex}-${actualColIndex}`}
@@ -1209,10 +1236,19 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                           coordinate={coordinate}
                           showRank={shouldShowRank}
                           showFile={shouldShowFile}
-                          difficulty={difficulty}
-                          onDrop={handleDragMove}
-                          onClick={() =>
-                            handleSquareClick(actualRowIndex, actualColIndex)
+                          difficulty={
+                            boardTheme === "auto" ? difficulty : boardTheme
+                          }
+                          boardTheme={boardTheme}
+                          onDrop={enableDrag ? handleDragMove : undefined}
+                          onClick={
+                            enableClick
+                              ? () =>
+                                  handleSquareClick(
+                                    actualRowIndex,
+                                    actualColIndex
+                                  )
+                              : undefined
                           }
                           onContextMenu={(e) => {
                             e.preventDefault();
@@ -1222,12 +1258,17 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                             }
                             handleRightClick(square, e);
                           }}
-                          // Arrow drawing handlers
-                          onMouseDown={(e: React.MouseEvent) =>
-                            handleSquareMouseDown(square, e)
+                          onMouseDown={
+                            handleSquareMouseDown
+                              ? (e: React.MouseEvent) =>
+                                  handleSquareMouseDown(square, e)
+                              : undefined
                           }
-                          onMouseUp={(e: React.MouseEvent) =>
-                            handleSquareMouseUp(square, e)
+                          onMouseUp={
+                            handleSquareMouseUp
+                              ? (e: React.MouseEvent) =>
+                                  handleSquareMouseUp(square, e)
+                              : undefined
                           }
                         >
                           {piece && (
@@ -1236,8 +1277,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                               color={piece.color}
                               position={square}
                               pieceSet={pieceSet}
-                              canDrag={canDragPiece}
-                              onDragStart={handleDragStart}
+                              canDrag={enableDrag && canDragPiece}
+                              onDragStart={
+                                enableDrag ? handleDragStart : undefined
+                              }
                             />
                           )}
                         </DroppableSquare>

@@ -42,6 +42,8 @@ model User {
   enableConfetti      Boolean? @default(true) // Victory confetti preference
   highContrast        Boolean? @default(false) // High contrast accessibility mode
   autoQueen           Boolean? @default(true) // Auto promote to queen on pawn promotion
+  moveInputMethod     String? @default("both") // Move input method: click, drag, or both
+  boardTheme          String? @default("auto") // Board theme/color preference
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken model

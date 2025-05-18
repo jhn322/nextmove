@@ -14,6 +14,8 @@ const SETTINGS_KEYS = {
   FLAIR: "chess_flair",
   HIGH_CONTRAST: "chess_high_contrast",
   AUTO_QUEEN: "chess_auto_queen",
+  MOVE_INPUT_METHOD: "chess_move_input_method",
+  BOARD_THEME: "chess_board_theme",
 };
 
 // Default settings values
@@ -30,6 +32,8 @@ const DEFAULT_SETTINGS = {
   flair: "",
   highContrast: false,
   autoQueen: false,
+  moveInputMethod: "both" as "click" | "drag" | "both",
+  boardTheme: "auto",
 };
 
 // Get piece set from localStorage
@@ -180,6 +184,35 @@ export const setAutoQueen = (enable: boolean): void => {
   localStorage.setItem(SETTINGS_KEYS.AUTO_QUEEN, enable.toString());
 };
 
+// Get move input method from localStorage
+export const getMoveInputMethod = (): "click" | "drag" | "both" => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.moveInputMethod;
+  const value = localStorage.getItem(SETTINGS_KEYS.MOVE_INPUT_METHOD);
+  if (value === "click" || value === "drag" || value === "both") return value;
+  return DEFAULT_SETTINGS.moveInputMethod;
+};
+
+// Set move input method in localStorage
+export const setMoveInputMethod = (method: "click" | "drag" | "both"): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.MOVE_INPUT_METHOD, method);
+};
+
+// Get board theme from localStorage
+export const getBoardTheme = (): string => {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS.boardTheme;
+  return (
+    localStorage.getItem(SETTINGS_KEYS.BOARD_THEME) ||
+    DEFAULT_SETTINGS.boardTheme
+  );
+};
+
+// Set board theme in localStorage
+export const setBoardTheme = (theme: string): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SETTINGS_KEYS.BOARD_THEME, theme);
+};
+
 // Save all settings at once
 export const saveAllSettings = (settings: {
   pieceSet?: string;
@@ -194,6 +227,8 @@ export const saveAllSettings = (settings: {
   flair?: string;
   highContrast?: boolean;
   autoQueen?: boolean;
+  moveInputMethod?: "click" | "drag" | "both";
+  boardTheme?: string;
 }): void => {
   if (typeof window === "undefined") return;
 
@@ -243,5 +278,13 @@ export const saveAllSettings = (settings: {
 
   if (settings.autoQueen !== undefined) {
     setAutoQueen(settings.autoQueen);
+  }
+
+  if (settings.moveInputMethod) {
+    setMoveInputMethod(settings.moveInputMethod);
+  }
+
+  if (settings.boardTheme) {
+    setBoardTheme(settings.boardTheme);
   }
 };

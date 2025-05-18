@@ -15,15 +15,16 @@ interface DroppableSquareProps {
   isPreMadeMove?: boolean;
   isPreMadePossibleMove?: boolean;
   difficulty: string;
+  boardTheme?: string;
   coordinate?: string;
   showRank?: boolean;
   showFile?: boolean;
   children?: ReactNode;
-  onDrop: (
+  onDrop?: (
     item: { type: string; position: string },
     targetPosition: string
   ) => void;
-  onClick: () => void;
+  onClick?: () => void;
   onContextMenu?: (event: React.MouseEvent) => void;
   onMouseDown?: (event: React.MouseEvent) => void;
   onMouseUp?: (event: React.MouseEvent) => void;
@@ -47,6 +48,7 @@ const DroppableSquare = ({
   isPreMadeMove = false,
   isPreMadePossibleMove = false,
   difficulty,
+  boardTheme,
   coordinate,
   showRank,
   showFile,
@@ -67,7 +69,7 @@ const DroppableSquare = ({
   >({
     accept: "CHESS_PIECE",
     drop: (item) => {
-      onDrop(item, position);
+      if (onDrop) onDrop(item, position);
       return undefined;
     },
     collect: (monitor: DropTargetMonitor) => ({
@@ -97,6 +99,7 @@ const DroppableSquare = ({
         isPreMadeMove={isPreMadeMove}
         isPreMadePossibleMove={isPreMadePossibleMove}
         difficulty={difficulty}
+        boardTheme={boardTheme}
         coordinate={coordinate}
         showRank={showRank}
         showFile={showFile}

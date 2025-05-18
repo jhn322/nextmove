@@ -56,6 +56,8 @@ import {
   getEnableAnimations,
   getHighContrast,
   getAutoQueen,
+  getMoveInputMethod,
+  getBoardTheme,
 } from "@/lib/settings";
 import { useRouter } from "next/navigation";
 import SettingsLoading from "./loading";
@@ -73,6 +75,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useTheme } from "next-themes";
+import { boardThemes } from "@/components/game/board/Square";
 
 interface SettingsState {
   display_name: string;
@@ -93,7 +96,40 @@ interface SettingsState {
   flair: string;
   highContrast: boolean;
   autoQueen: boolean;
+  moveInputMethod: "click" | "drag" | "both";
+  boardTheme: string;
 }
+
+const DIFFICULTY_THEMES = [
+  "beginner",
+  "easy",
+  "intermediate",
+  "advanced",
+  "hard",
+  "expert",
+  "master",
+  "grandmaster",
+];
+
+const NON_DIFFICULTY_THEMES = Object.keys(boardThemes)
+  .filter((theme) => !DIFFICULTY_THEMES.includes(theme))
+  .sort((a, b) => a.localeCompare(b));
+
+const BoardThemePreview = ({ theme }: { theme: string }) => {
+  const colors = boardThemes[theme] || boardThemes["emerald"];
+  return (
+    <div className="flex gap-4 items-center mt-2">
+      <div
+        className={`w-10 h-10 rounded border ${colors.light}`}
+        title="Light square"
+      />
+      <div
+        className={`w-10 h-10 rounded border ${colors.dark}`}
+        title="Dark square"
+      />
+    </div>
+  );
+};
 
 export default function SettingsPage() {
   const { status, session, signOut, refreshSession } = useAuth();
@@ -117,6 +153,8 @@ export default function SettingsPage() {
       flair: "",
       highContrast: getHighContrast(),
       autoQueen: getAutoQueen(),
+      moveInputMethod: getMoveInputMethod(),
+      boardTheme: getBoardTheme(),
     };
   });
   const [initialSettings, setInitialSettings] = useState<SettingsState | null>(
@@ -192,6 +230,17 @@ export default function SettingsPage() {
         "autoQueen" in user && typeof user.autoQueen === "boolean"
           ? user.autoQueen
           : getAutoQueen(),
+      moveInputMethod:
+        "moveInputMethod" in user &&
+        (user.moveInputMethod === "click" ||
+          user.moveInputMethod === "drag" ||
+          user.moveInputMethod === "both")
+          ? user.moveInputMethod
+          : getMoveInputMethod(),
+      boardTheme:
+        "boardTheme" in user && typeof user.boardTheme === "string"
+          ? user.boardTheme
+          : getBoardTheme(),
     });
 
     setInitialSettings({
@@ -219,6 +268,17 @@ export default function SettingsPage() {
         "autoQueen" in user && typeof user.autoQueen === "boolean"
           ? user.autoQueen
           : getAutoQueen(),
+      moveInputMethod:
+        "moveInputMethod" in user &&
+        (user.moveInputMethod === "click" ||
+          user.moveInputMethod === "drag" ||
+          user.moveInputMethod === "both")
+          ? user.moveInputMethod
+          : getMoveInputMethod(),
+      boardTheme:
+        "boardTheme" in user && typeof user.boardTheme === "string"
+          ? user.boardTheme
+          : getBoardTheme(),
     });
 
     setLoading(false);
@@ -307,6 +367,8 @@ export default function SettingsPage() {
       enableConfetti: settings.enable_confetti,
       highContrast: settings.highContrast,
       autoQueen: settings.autoQueen,
+      moveInputMethod: settings.moveInputMethod,
+      boardTheme: settings.boardTheme,
     };
 
     try {
@@ -338,6 +400,8 @@ export default function SettingsPage() {
           flair: settings.flair,
           highContrast: settings.highContrast,
           autoQueen: settings.autoQueen,
+          moveInputMethod: settings.moveInputMethod,
+          boardTheme: settings.boardTheme,
         });
 
         setSaveMessage("Settings saved successfully");
@@ -1075,6 +1139,46 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="board_theme">Board Theme</Label>
+                <Select
+                  value={settings.boardTheme}
+                  onValueChange={(value) =>
+                    setSettings({
+                      ...settings,
+                      boardTheme: value,
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select board theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">
+                      Auto (Match Difficulty)
+                    </SelectItem>
+                    {NON_DIFFICULTY_THEMES.map((theme) => (
+                      <SelectItem key={theme} value={theme}>
+                        {theme
+                          .replace(/-/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <BoardThemePreview
+                  theme={
+                    settings.boardTheme === "auto"
+                      ? settings.preferred_difficulty
+                      : settings.boardTheme
+                  }
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Choose a board color theme. &quot;Auto&quot; uses the default
+                  color for the current difficulty.
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="piece_set">Chess Piece Set</Label>
                 <Select
                   value={settings.piece_set}
@@ -1107,7 +1211,7 @@ export default function SettingsPage() {
                 <div className="mt-2 flex justify-center">
                   <div className="grid grid-cols-4 gap-2 p-2 bg-muted/30 rounded-md">
                     {["k", "q", "r", "b"].map((piece) => (
-                      <div key={piece} className="w-8 h-8">
+                      <div key={piece} className="w-14 h-14">
                         <Image
                           src={`/pieces/${settings.piece_set}/w${piece}.svg`}
                           alt={`${piece} piece`}
@@ -1151,6 +1255,31 @@ export default function SettingsPage() {
                     Top
                   </Button>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="move_input_method">Move Input Method</Label>
+                <Select
+                  value={settings.moveInputMethod}
+                  onValueChange={(value) =>
+                    setSettings({
+                      ...settings,
+                      moveInputMethod: value as "click" | "drag" | "both",
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select move input method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="click">Click Only</SelectItem>
+                    <SelectItem value="drag">Drag Only</SelectItem>
+                    <SelectItem value="both">Click and Drag</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Choose how you want to move pieces on the board.
+                </p>
               </div>
 
               <div className="flex items-center justify-between">
