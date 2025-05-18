@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { AUTH_MESSAGES, USER_ROLES } from "@/lib/auth/constants/auth";
 import { type TokenSet } from "next-auth";
 import { DEFAULT_START_ELO } from "@/lib/elo";
+import type { User as AuthUser } from "next-auth";
 
 /**
  * Provider configuration for NextAuth
@@ -68,7 +69,71 @@ export const configureProviders = () => [
         );
       }
 
-      return user;
+      // Return only the fields NextAuth expects, with correct types
+      return mapPrismaUserToAuthUser(user);
     },
   }),
 ];
+
+// ** Helper to map Prisma user to NextAuth user ** //
+const mapPrismaUserToAuthUser = (user: {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role: string;
+  elo: number;
+  countryFlag?: string | null;
+  flair?: string | null;
+  pieceSet?: string | null;
+  timezone?: string | null;
+  clockFormat?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  location?: string | null;
+  preferredDifficulty?: string | null;
+  soundEnabled?: boolean | null;
+  whitePiecesBottom?: boolean | null;
+  showCoordinates?: boolean | null;
+  enableAnimations?: boolean | null;
+  enableConfetti?: boolean | null;
+  highContrast?: boolean | null;
+  autoQueen?: boolean | null;
+  moveInputMethod?: string | null;
+  boardTheme?: string | null;
+  enablePreMadeMove?: boolean | null;
+  showLegalMoves?: boolean | null;
+  highlightSquare?: boolean | null;
+}): AuthUser => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  image: user.image,
+  role: user.role,
+  elo: user.elo,
+  countryFlag: user.countryFlag ?? null,
+  flair: user.flair ?? null,
+  pieceSet: user.pieceSet ?? null,
+  timezone: user.timezone ?? null,
+  clockFormat: user.clockFormat ?? null,
+  firstName: user.firstName ?? null,
+  lastName: user.lastName ?? null,
+  location: user.location ?? null,
+  preferredDifficulty: user.preferredDifficulty ?? null,
+  soundEnabled: user.soundEnabled ?? null,
+  whitePiecesBottom: user.whitePiecesBottom ?? null,
+  showCoordinates: user.showCoordinates ?? null,
+  enableAnimations: user.enableAnimations ?? null,
+  enableConfetti: user.enableConfetti ?? null,
+  highContrast: user.highContrast ?? null,
+  autoQueen: user.autoQueen ?? null,
+  moveInputMethod: ["click", "drag", "both"].includes(
+    user.moveInputMethod ?? ""
+  )
+    ? (user.moveInputMethod as "click" | "drag" | "both")
+    : null,
+  boardTheme: user.boardTheme ?? null,
+  enablePreMadeMove: user.enablePreMadeMove ?? null,
+  showLegalMoves: user.showLegalMoves ?? null,
+  highlightSquare: user.highlightSquare ?? null,
+});
