@@ -1829,7 +1829,7 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
                 <div className="mt-2 flex justify-start">
-                  <div className="grid grid-cols-4 gap-2 p-2 bg-muted/30 rounded-md">
+                  <div className="grid grid-cols-4 gap-2 p-2 bg-muted/30 rounded-lg">
                     {["k", "q", "r", "b"].map((piece) => (
                       <div key={piece} className="w-14 h-14 flex">
                         <Image

@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <Link href="/" className="inline-block mb-6">
-              <div className="flex items-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5">
+              <div className="flex items-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-lg p-1.5">
                 <Image
                   className=""
                   src="/favicon.svg"
@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
 
           <div className="mt-10">
             {pageError && !isSuccess && (
-              <div className="mb-6 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-center text-sm text-destructive dark:border-destructive dark:bg-destructive/20 dark:text-red-400">
+              <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center text-sm text-destructive dark:border-destructive dark:bg-destructive/20 dark:text-red-400">
                 <p>{pageError}</p>
               </div>
             )}

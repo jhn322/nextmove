@@ -37,7 +37,7 @@ const TermsOfService = () => {
           </div>
         </div>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <FileText className="h-6 w-6" />
@@ -57,7 +57,7 @@ const TermsOfService = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Globe className="h-6 w-6" />
@@ -92,7 +92,7 @@ const TermsOfService = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <ShieldCheck className="h-6 w-6" />
@@ -115,7 +115,7 @@ const TermsOfService = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <AlertTriangle className="h-6 w-6" />
@@ -136,7 +136,7 @@ const TermsOfService = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Mail className="h-6 w-6" />

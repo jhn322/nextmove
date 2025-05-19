@@ -38,7 +38,7 @@ const PrivacyPolicy = () => {
           </div>
         </div>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Shield className="h-6 w-6" />
@@ -70,7 +70,7 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Lock className="h-6 w-6" />
@@ -94,7 +94,7 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Eye className="h-6 w-6" />
@@ -125,7 +125,7 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Server className="h-6 w-6" />
@@ -145,7 +145,7 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <UserCheck className="h-6 w-6" />
@@ -171,7 +171,7 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <FileText className="h-6 w-6" />
@@ -191,7 +191,7 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        <section className="space-y-6 bg-card rounded-xl p-6 shadow-sm border border-border/50">
+        <section className="space-y-6 bg-card rounded-lg p-6 shadow-sm border border-border/50">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Mail className="h-6 w-6" />

@@ -75,7 +75,7 @@ function LoginContent() {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <Link href="/" className="inline-block mb-6">
-              <div className="flex items-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5">
+              <div className="flex items-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-lg p-1.5">
                 <Image
                   className=""
                   src="/favicon.svg"

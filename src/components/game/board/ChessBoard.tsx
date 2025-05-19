@@ -1176,7 +1176,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
               >
                 {/* Overlay for bot selection - This was previously inside F, but should be sibling to D or even higher to overlay everything if needed */}
                 {(!gameStarted || showBotSelection) && (
-                  <div className="absolute z-30 inset-0 bg-black/60 rounded-md flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+                  <div className="absolute z-30 inset-0 bg-black/60 rounded-lg flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
                     <LockKeyhole className="h-16 w-16 text-white/90 mb-6" />
                     <h3 className="text-3xl font-bold text-white mb-3">
                       Game Not Started

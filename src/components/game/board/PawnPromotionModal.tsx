@@ -40,7 +40,7 @@ const PawnPromotionModal = ({
             <button
               key={piece.type}
               className={`
-                relative p-3 rounded-md transition-all duration-200
+                relative p-3 rounded-lg transition-all duration-200
                 ${
                   hoveredPiece === piece.type
                     ? "bg-accent/20"
@@ -71,7 +71,7 @@ const PawnPromotionModal = ({
         {/* Cancel button */}
         <button
           onClick={onCancel}
-          className="mt-5 px-5 py-2.5 bg-accent/10 hover:bg-accent/20 rounded-md transition-colors text-sm font-medium flex items-center gap-2"
+          className="mt-5 px-5 py-2.5 bg-accent/10 hover:bg-accent/20 rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
         >
           <X size={16} />
           <span>Cancel Selection</span>

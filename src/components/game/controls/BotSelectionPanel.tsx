@@ -207,7 +207,7 @@ const BotSelectionPanel = ({
             {bots.map((bot) => (
               <div
                 key={bot.name}
-                className="flex items-center gap-2 p-2.5 rounded-md hover:bg-accent/50 transition-colors cursor-pointer"
+                className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 onClick={() => handleBotSelect(bot)}
               >
                 <Avatar className="h-10 w-10 flex-shrink-0">
@@ -241,7 +241,7 @@ const BotSelectionPanel = ({
             {bots.map((bot) => (
               <div
                 key={bot.name}
-                className="flex items-center gap-3 p-2.5 rounded-md hover:bg-accent/50 transition-colors cursor-pointer"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 onClick={() => handleBotSelect(bot)}
               >
                 <Avatar className="h-12 w-12 flex-shrink-0">

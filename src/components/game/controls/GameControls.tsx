@@ -125,7 +125,7 @@ const PlayerIndicator = ({
   children,
 }: PlayerIndicatorProps) => {
   const baseClasses =
-    "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all duration-300";
+    "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300";
   let activeClasses = "";
   let inactiveClasses = "";
 
@@ -335,7 +335,7 @@ const GameControls = ({
       {/* Move History */}
       <div className="flex flex-col flex-grow min-h-0 space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Move History</h3>
-        <ScrollArea className="flex-grow w-full rounded-md border border-border/30 bg-background/50 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent scrollbar-thumb-rounded-full h-[300px] sm:h-[400px] md:h-[350px] lg:h-[420px] xl:h-[450px] laptop-screen:h-[calc(100vh-510px)]">
+        <ScrollArea className="flex-grow w-full rounded-lg border border-border/30 bg-background/50 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent scrollbar-thumb-rounded-full h-[300px] sm:h-[400px] md:h-[350px] lg:h-[420px] xl:h-[450px] laptop-screen:h-[calc(100vh-510px)]">
           <div className="p-2.5 space-y-1">
             {history.length <= 1 && (
               <p className="text-center text-xs text-muted-foreground py-4">
@@ -352,7 +352,7 @@ const GameControls = ({
               return (
                 <div
                   key={index}
-                  className={`flex items-center text-xs sm:text-sm rounded-sm transition-colors duration-150 ${
+                  className={`flex items-center text-xs sm:text-sm rounded-lg transition-colors duration-150 ${
                     isWhiteMove
                       ? "bg-foreground/5 hover:bg-foreground/10"
                       : "hover:bg-foreground/5"

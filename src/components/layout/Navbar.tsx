@@ -344,7 +344,7 @@ const Navbar = () => {
               href="/"
               className="flex items-center space-x-3 hover:opacity-90 transition-all group"
             >
-              <div className="relative w-10 h-10 flex-shrink-0 bg-primary/10 rounded-xl p-1.5 group-hover:scale-105 transition-transform">
+              <div className="relative w-10 h-10 flex-shrink-0 bg-primary/10 rounded-lg p-1.5 group-hover:scale-105 transition-transform">
                 <Image
                   src="/favicon.svg"
                   alt="Pawn Icon"
@@ -369,7 +369,7 @@ const Navbar = () => {
                   <Link
                     href="/"
                     className={cn(
-                      "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center",
+                      "px-4 py-2 text-base font-medium rounded-lg transition-colors inline-flex items-center",
                       "h-10",
                       isActive("/")
                         ? "bg-primary/10 text-primary"
@@ -384,7 +384,7 @@ const Navbar = () => {
                 <NavigationMenuItem>
                   <NavigationMenuTrigger
                     className={cn(
-                      "text-base font-medium px-4 py-2 rounded-xl",
+                      "text-base font-medium px-4 py-2 rounded-lg",
                       "h-10",
                       "inline-flex items-center",
                       "hover:bg-accent hover:text-accent-foreground",
@@ -406,7 +406,7 @@ const Navbar = () => {
                               handlePlayMenuItemClick(item.href, item.title)
                             }
                             className={cn(
-                              "relative flex flex-col space-y-2 rounded-xl p-3 text-left transition-colors hover:bg-accent/50",
+                              "relative flex flex-col space-y-2 rounded-lg p-3 text-left transition-colors hover:bg-accent/50",
                               isActive(item.href)
                                 ? `${item.bgColor} ${item.borderColor} border shadow-sm`
                                 : "hover:shadow-sm"
@@ -474,7 +474,7 @@ const Navbar = () => {
                         variant="ghost"
                         onClick={() => handleProtectedNavigation("/history")}
                         className={cn(
-                          "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
+                          "px-4 py-2 text-base font-medium transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
                           "h-10",
                           isActive("/history")
                             ? "bg-primary/10 text-primary"
@@ -491,7 +491,7 @@ const Navbar = () => {
                         variant="ghost"
                         onClick={() => handleProtectedNavigation("/settings")}
                         className={cn(
-                          "px-4 py-2 text-base font-medium rounded-xl transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
+                          "px-4 py-2 text-base font-medium transition-colors inline-flex items-center hover:bg-accent hover:text-accent-foreground",
                           "h-10",
                           isActive("/settings")
                             ? "bg-primary/10 text-primary"
@@ -519,7 +519,7 @@ const Navbar = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm hover:bg-accent/50 transition-colors"
+                    className="h-10 w-10 border-border/50 bg-background/50 backdrop-blur-sm hover:bg-accent/50 transition-colors"
                   >
                     <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                     <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -528,7 +528,7 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 p-1.5 rounded-xl dropdown-menu-content"
+                  className="w-56 p-1.5 rounded-lg dropdown-menu-content"
                 >
                   {themeCategories.map((category, index) => (
                     <React.Fragment key={category.category}>
@@ -569,11 +569,11 @@ const Navbar = () => {
               <div className="hidden lg:block">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button className="text-base px-5 py-2 h-10 inline-flex items-center rounded-xl shadow-md hover:shadow-lg transition-all">
+                    <Button className="text-base px-5 py-2 h-10 inline-flex items-center shadow-md hover:shadow-lg transition-all">
                       <LogOut className="mr-2 h-4 w-4" /> Sign Out
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-xl">
+                  <AlertDialogContent className="rounded-lg">
                     <AlertDialogHeader>
                       <AlertDialogTitle>
                         Are you sure you want to sign out?
@@ -601,7 +601,7 @@ const Navbar = () => {
               <>
                 <Button
                   onClick={() => router.push("/auth/login")}
-                  className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center rounded-xl shadow-md hover:shadow-lg transition-all"
+                  className="hidden lg:inline-flex text-base px-5 py-2 h-10 items-center shadow-md hover:shadow-lg transition-all"
                 >
                   <LogIn className="mr-2 h-4 w-4" /> Sign In
                 </Button>
@@ -614,11 +614,11 @@ const Navbar = () => {
             {isAuthenticated ? (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all">
+                  <Button className="text-base px-4 py-2 h-10 inline-flex items-center shadow-sm hover:shadow-md transition-all">
                     <LogOut className="mr-2 h-4 w-4" /> Sign Out
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-xl">
+                <AlertDialogContent className="rounded-lg">
                   <AlertDialogHeader>
                     <AlertDialogTitle>
                       Are you sure you want to sign out?
@@ -644,18 +644,14 @@ const Navbar = () => {
             ) : (
               <Button
                 onClick={() => router.push("/auth/login")}
-                className="text-base px-4 py-2 h-10 inline-flex items-center rounded-xl shadow-sm hover:shadow-md transition-all"
+                className="text-base px-4 py-2 h-10 inline-flex items-center shadow-sm hover:shadow-md transition-all"
               >
                 <LogIn className="mr-2 h-4 w-4" /> Sign In
               </Button>
             )}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10 rounded-xl"
-                >
+                <Button variant="outline" size="icon" className="h-10 w-10">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
@@ -667,7 +663,7 @@ const Navbar = () => {
                 <div className="flex flex-col h-full">
                   <SheetHeader className="p-6 border-b">
                     <div className="flex items-center space-x-3">
-                      <div className="relative w-9 h-9 flex-shrink-0 bg-primary/10 rounded-xl p-1.5">
+                      <div className="relative w-9 h-9 flex-shrink-0 bg-primary/10 rounded-lg p-1.5">
                         <Image
                           src="/favicon.svg"
                           alt="Pawn Icon"
@@ -693,7 +689,7 @@ const Navbar = () => {
                       <Link
                         href="/"
                         className={cn(
-                          "px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center",
+                          "px-4 py-3 text-base font-medium rounded-lg transition-colors flex items-center",
                           "h-10",
                           isActive("/")
                             ? "bg-primary/10 text-primary"
@@ -712,7 +708,7 @@ const Navbar = () => {
                       >
                         <CollapsibleTrigger
                           className={cn(
-                            "w-full px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-between",
+                            "w-full px-4 py-3 text-base font-medium rounded-lg transition-colors flex items-center justify-between",
                             pathname.startsWith("/play")
                               ? "bg-primary/10 text-primary"
                               : "hover:bg-accent hover:text-accent-foreground"
@@ -738,7 +734,7 @@ const Navbar = () => {
                                 setIsOpen(false);
                               }}
                               className={cn(
-                                "w-full rounded-xl p-3 transition-colors",
+                                "w-full rounded-lg p-3 transition-colors",
                                 isActive(item.href)
                                   ? `${item.bgColor} ${item.borderColor} border shadow-sm`
                                   : "hover:bg-accent/50 hover:shadow-sm"
@@ -799,12 +795,12 @@ const Navbar = () => {
 
                       {isAuthenticated && (
                         <>
-                          <button
+                          <Button
                             onClick={() =>
                               handleProtectedNavigation("/history")
                             }
                             className={cn(
-                              "w-full px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start",
+                              "w-full px-4 py-3 text-base font-medium transition-colors flex items-center justify-start",
                               isActive("/history")
                                 ? "bg-primary/10 text-primary"
                                 : "hover:bg-accent hover:text-accent-foreground"
@@ -812,14 +808,14 @@ const Navbar = () => {
                           >
                             <History className="mr-3 h-5 w-5" />
                             <span>History</span>
-                          </button>
+                          </Button>
 
-                          <button
+                          <Button
                             onClick={() =>
                               handleProtectedNavigation("/settings")
                             }
                             className={cn(
-                              "w-full px-4 py-3 text-base font-medium rounded-xl transition-colors flex items-center justify-start",
+                              "w-full px-4 py-3 text-base font-medium transition-colors flex items-center justify-start",
                               isActive("/settings")
                                 ? "bg-primary/10 text-primary"
                                 : "hover:bg-accent hover:text-accent-foreground"
@@ -827,7 +823,7 @@ const Navbar = () => {
                           >
                             <Settings className="mr-3 h-5 w-5" />
                             <span>Settings</span>
-                          </button>
+                          </Button>
                         </>
                       )}
                     </div>
@@ -841,7 +837,7 @@ const Navbar = () => {
                             <Button
                               variant="outline"
                               size="icon"
-                              className="h-9 w-9 rounded-lg"
+                              className="h-9 w-9"
                             >
                               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                               <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -850,7 +846,7 @@ const Navbar = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent
                             align="end"
-                            className="w-56 p-1.5 rounded-xl dropdown-menu-content"
+                            className="w-56 p-1.5 rounded-lg dropdown-menu-content"
                           >
                             {themeCategories.map((category, index) => (
                               <React.Fragment key={category.category}>
@@ -903,11 +899,11 @@ const Navbar = () => {
                         {isAuthenticated ? (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg">
+                              <Button className="h-9 px-4 py-2 inline-flex items-center justify-center">
                                 <LogOut className="mr-2 h-4 w-4" /> Sign Out
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-xl">
+                            <AlertDialogContent className="rounded-lg">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
                                   Are you sure you want to sign out?
@@ -937,7 +933,7 @@ const Navbar = () => {
                                 router.push("/auth/login");
                                 setIsOpen(false);
                               }}
-                              className="h-9 px-4 py-2 inline-flex items-center justify-center rounded-lg"
+                              className="h-9 px-4 py-2 inline-flex items-center justify-center"
                             >
                               <LogIn className="mr-2 h-4 w-4" /> Sign In
                             </Button>

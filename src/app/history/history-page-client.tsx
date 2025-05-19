@@ -1201,7 +1201,7 @@ export const HistoryPageClient = ({
                               return (
                                 <li
                                   key={guesses}
-                                  className="flex justify-between items-center p-2 bg-background rounded-md border border-border/50 text-sm"
+                                  className="flex justify-between items-center p-2 bg-background rounded-lg border border-border/50 text-sm"
                                 >
                                   <span>
                                     Won in {guesses} guess

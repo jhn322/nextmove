@@ -523,7 +523,7 @@ export function HomePageClient({
                   level.name
                 );
               let showLockOverlay = false;
-              let cardClasses = `relative p-5 rounded-xl border ${
+              let cardClasses = `relative p-5 rounded-lg border ${
                 level.isWordleCard
                   ? "border-2 border-amber-500/80"
                   : "border-border/50"
@@ -567,7 +567,7 @@ export function HomePageClient({
                   {hoveredCard === level.name && !showLockOverlay && (
                     <div
                       className={cn(
-                        "absolute inset-0 rounded-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100",
+                        "absolute inset-0 rounded-lg transition-opacity duration-300 opacity-0 group-hover:opacity-100",
                         level.hoverGradient,
                         level.isWordleCard &&
                           "ring-4 ring-amber-500/70 shadow-2xl shadow-amber-500/30"
@@ -594,7 +594,7 @@ export function HomePageClient({
 
                   {/* Overlay for Wordle Card if not logged in */}
                   {showLockOverlay && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl rounded-xl z-20 p-4 text-center pointer-events-none">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl rounded-lg z-20 p-4 text-center pointer-events-none">
                       <Lock className="w-10 h-10 text-white mb-3" />
                       <h3 className="text-lg font-semibold text-white mb-1 [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]">
                         Login to Play
@@ -903,7 +903,7 @@ export function HomePageClient({
             />
 
             {/* Challenge Description */}
-            <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 sticky top-6 shadow-lg">
+            <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg p-6 sticky top-6 shadow-lg">
               <div className="relative">
                 <h2 className="text-2xl font-bold mb-4 inline-block">
                   The Ultimate Chess Challenge
@@ -1105,7 +1105,7 @@ export function HomePageClient({
 
                     <Link
                       href="/api/auth/signin"
-                      className="flex w-full items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-md font-medium transition-colors"
+                      className="flex w-full items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-lg font-medium transition-colors"
                     >
                       <LogIn className="mr-2 h-4 w-4" />
                       Begin Your Journey

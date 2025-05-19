@@ -68,7 +68,7 @@ const SkeletonBotSelectionPanel = () => (
         {/* Mobile Layout */}
         <div className="lg:hidden grid grid-cols-1 sm:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="flex items-center gap-2 p-2 rounded-md">
+            <div key={index} className="flex items-center gap-2 p-2 rounded-lg">
               <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <Skeleton className="h-4 w-20 mb-1" />

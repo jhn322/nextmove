@@ -513,7 +513,7 @@ export default function PlayerProfile({
           <Link
             href="/history?tab=history"
             onClick={() => setIsNavigatingToHistory(true)}
-            className="group mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="group mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {isNavigatingToHistory ? (
               <>

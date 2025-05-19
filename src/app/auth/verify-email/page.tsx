@@ -115,7 +115,7 @@ export default function VerifyEmailPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="mx-auto w-full max-w-md lg:w-[450px]">
         <Link href="/" className="inline-block mb-8 mx-auto">
-          <div className="flex items-center justify-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-xl p-1.5 mx-auto">
+          <div className="flex items-center justify-center space-x-2 bg-primary/10 w-12 h-12 flex-shrink-0 rounded-lg p-1.5 mx-auto">
             <Image
               className="h-10 w-auto"
               src="/favicon.svg"

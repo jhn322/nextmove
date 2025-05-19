@@ -30,31 +30,31 @@ export default function SettingsLoading() {
             {/* Display Name */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[100px]" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
 
             {/* First Name */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[80px]" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
 
             {/* Last Name */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[80px]" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
 
             {/* Email */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[50px]" />
-              <Skeleton className="h-6 w-[250px] rounded-md" />
+              <Skeleton className="h-6 w-[250px] rounded-lg" />
             </div>
 
             {/* Location */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[70px]" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
 
             {/* Avatar */}
@@ -71,13 +71,13 @@ export default function SettingsLoading() {
             {/* Country Flag */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[90px]" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
 
             {/* Flair */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-[50px]" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
           </div>
         </CardContent>
