@@ -32,6 +32,12 @@ import HoverText from "@/components/ui/hover-text";
 import { getCharacterNameFromPath } from "@/lib/utils";
 import Link from "next/link";
 import EloBadge from "@/components/ui/elo-badge";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface PlayerProfileProps {
   className?: string;
@@ -289,9 +295,16 @@ export default function PlayerProfile({
                         {(playerName || "P").charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                      <Pencil className="h-5 w-5 text-white" />
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <Pencil className="h-5 w-5 text-white" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit Avatar</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </Button>
                 </HoverText>
               ) : (
@@ -305,9 +318,16 @@ export default function PlayerProfile({
                       {(playerName || "P").charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <Pencil className="h-5 w-5 text-white" />
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <Pencil className="h-5 w-5 text-white" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit Avatar</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </Button>
               )}
             </DialogTrigger>
@@ -372,13 +392,23 @@ export default function PlayerProfile({
                     className="h-9"
                   />
                   <Button size="sm" onClick={handleSaveName}>
-                    <Check className="h-4 w-4" />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Check className="h-4 w-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>Save</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </Button>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold">
+                    <span
+                      className="text-md font-bold break-words max-w-[10rem] text-ellipsis"
+                      title={playerName || "Player"}
+                    >
                       {playerName || "Player"}
                     </span>
                     {countryFlag && (
@@ -401,20 +431,28 @@ export default function PlayerProfile({
                       </span>
                     )}
                   </div>
-                  <EloBadge elo={session?.user?.elo} className="mt-1" />
+
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
                     onClick={handleEditClick}
                   >
-                    <Pencil className="h-4 w-4" />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Pencil className="h-4 w-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>Edit Name</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </Button>
                 </>
               )}
             </div>
+            <EloBadge elo={session?.user?.elo} className="mt-1" />
             <div className="text-sm text-muted-foreground mt-1">
-              Customize your in-game avatar and name.
+              Customize your avatar and name.
             </div>
           </div>
         </div>

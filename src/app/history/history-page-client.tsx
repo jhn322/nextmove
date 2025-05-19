@@ -74,6 +74,12 @@ import { type UserWordleStats } from "@/types/wordle";
 import { getUserWordleStatsAction } from "@/lib/actions/wordle.actions";
 import EloBadge from "@/components/ui/elo-badge";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface ExtendedGameHistory extends PrismaGameHistory {
   eloDelta: number | null;
@@ -424,15 +430,24 @@ export const HistoryPageClient = ({
     return (
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="ml-auto"
-            disabled={isClearing}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Clear History
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="ml-auto"
+                  disabled={isClearing}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Clear History
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Clear all game history and statistics
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -650,19 +665,24 @@ export const HistoryPageClient = ({
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1.5">
-                                {getResultIcon(game.result)}
-                                <span
-                                  className={cn(
-                                    "capitalize",
-                                    game.result === "win" && "text-yellow-500",
-                                    game.result === "loss" && "text-red-500",
-                                    game.result === "draw" && "text-blue-500",
-                                    game.result === "resign" &&
-                                      "text-orange-500"
-                                  )}
-                                >
-                                  {game.result}
-                                </span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span>{getResultIcon(game.result)}</span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {game.result === "win"
+                                        ? "Win"
+                                        : game.result === "loss"
+                                          ? "Loss"
+                                          : game.result === "draw"
+                                            ? "Draw"
+                                            : game.result === "resign"
+                                              ? "Resigned"
+                                              : "Result"}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </div>
                             </TableCell>
                             <TableCell>{game.movesCount}</TableCell>
@@ -860,7 +880,24 @@ export const HistoryPageClient = ({
                           className="flex items-center justify-between"
                         >
                           <div className="flex items-center gap-3">
-                            {getResultIcon(game.result)}
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span>{getResultIcon(game.result)}</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {game.result === "win"
+                                    ? "Win"
+                                    : game.result === "loss"
+                                      ? "Loss"
+                                      : game.result === "draw"
+                                        ? "Draw"
+                                        : game.result === "resign"
+                                          ? "Resigned"
+                                          : "Result"}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                             <div>
                               <div className="font-medium">{game.opponent}</div>
                               <div className="text-xs text-muted-foreground">
@@ -1063,9 +1100,27 @@ export const HistoryPageClient = ({
                                         </div>
                                       </div>
                                       {navigatingToBotId === bot.id ? (
-                                        <Loader2 className="h-6 w-6 animate-spin text-primary flex-shrink-0" />
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Loader2 className="h-6 w-6 animate-spin text-primary flex-shrink-0" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              Loading...
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
                                       ) : isBotBeaten(bot.name) ? (
-                                        <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              Bot defeated
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
                                       ) : !isCurrentActiveBot ? (
                                         <div className="h-6 w-6 rounded-full border-2 border-dashed border-muted-foreground/50 flex-shrink-0" />
                                       ) : (
@@ -1076,12 +1131,21 @@ export const HistoryPageClient = ({
                                 </Card>
                               </Link>
                               {isCurrentActiveBot && (
-                                <Badge
-                                  variant="secondary"
-                                  className="absolute top-2 right-2 bg-green-500 text-white animate-pulse"
-                                >
-                                  In Progress
-                                </Badge>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Badge
+                                        variant="secondary"
+                                        className="absolute top-2 right-2 bg-green-500 text-white animate-pulse"
+                                      >
+                                        In Progress
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      Game in progress
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               )}
                             </div>
                           );

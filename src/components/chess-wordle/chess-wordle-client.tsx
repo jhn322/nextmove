@@ -15,6 +15,12 @@ import { AlertCircle, CheckCircle, Info, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CHESS_WORDLE } from "@/lib/constants/site";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 // ** Constants ** //
 const WORD_LENGTH = 5;
@@ -415,18 +421,25 @@ export function ChessWordleClient() {
         <h1 className="text-3xl sm:text-4xl font-bold text-primary text-center">
           Chess Wordle
         </h1>
-        <Button
-          variant="outline"
-          aria-label="Show instructions"
-          onClick={() => setIsInstructionsModalOpen(true)}
-          className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm"
-        >
-          <Info className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
-          <div>
-            <span className="hidden sm:inline">How to Play</span>
-            <span className="sm:hidden">Instructions</span>
-          </div>
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                aria-label="Show instructions"
+                onClick={() => setIsInstructionsModalOpen(true)}
+                className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm"
+              >
+                <Info className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
+                <div>
+                  <span className="hidden sm:inline">How to Play</span>
+                  <span className="sm:hidden">Instructions</span>
+                </div>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Show instructions</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Instructions Modal */}

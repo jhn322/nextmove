@@ -111,6 +111,12 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface SettingsState {
   display_name: string;
@@ -178,6 +184,18 @@ const findMatchingPreset = (
     (preset) => preset.boardTheme === boardTheme && preset.pieceSet === pieceSet
   );
 
+// Responsive hook for mobile
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+  return isMobile;
+};
+
 const AppearancePresetGrid = ({
   BOARD_PIECE_PRESETS,
   presetId,
@@ -189,9 +207,10 @@ const AppearancePresetGrid = ({
   setSettings: React.Dispatch<React.SetStateAction<SettingsState>>;
   setPresetId: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
+  const isMobile = useIsMobile();
   const [showAll, setShowAll] = useState(false);
   const presetsPerRow = 4;
-  const defaultRows = 3;
+  const defaultRows = isMobile ? 1 : 3;
   const defaultCount = presetsPerRow * defaultRows;
   const visiblePresets = showAll
     ? BOARD_PIECE_PRESETS
@@ -965,6 +984,17 @@ export default function SettingsPage() {
     }
   }, [theme, settings.highContrast]);
 
+  useEffect(() => {
+    if (session?.user) {
+      form.reset({
+        display_name: session.user.name || "",
+        first_name: session.user.firstName || "",
+        last_name: session.user.lastName || "",
+        location: session.user.location || "",
+      });
+    }
+  }, [session?.user, form]);
+
   if (status === "loading" || loading) {
     return <SettingsLoading />;
   }
@@ -1058,7 +1088,7 @@ export default function SettingsPage() {
                         <FormControl>
                           <Input
                             maxLength={20}
-                            placeholder="In-Game Name"
+                            placeholder="Display Name"
                             {...field}
                           />
                         </FormControl>
@@ -1138,9 +1168,16 @@ export default function SettingsPage() {
                                 {settings.display_name?.charAt(0) || "?"}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                              <Pencil className="h-5 w-5 text-white" />
-                            </div>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                    <Pencil className="h-5 w-5 text-white" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Avatar</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">
@@ -1398,7 +1435,16 @@ export default function SettingsPage() {
                               size="sm"
                               className="flex items-center gap-2"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Trash2 className="h-4 w-4" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Delete Account
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                               Delete
                             </Button>
                           </AlertDialogTrigger>

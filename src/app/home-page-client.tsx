@@ -58,6 +58,12 @@ import { type GameStats } from "@/types/stats";
 import { DEFAULT_STATE } from "@/config/game";
 import EloBadge from "@/components/ui/elo-badge";
 import { getUserWordleStatsAction } from "@/lib/actions/wordle.actions";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 // ** Type Difficulty Cards ** //
 interface GameCardConfig {
@@ -605,13 +611,20 @@ export function HomePageClient({
                     </div>
                   )}
 
-                  {/* Saved game badge - only visible on sm and larger screens */}
+                  {/* In Progress badge - only visible on sm and larger screens */}
                   {isGameActive &&
                     activeGameDifficulty?.toLowerCase() ===
                       level.name.toLowerCase() && (
-                      <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse hidden sm:block">
-                        In Progress
-                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="absolute bottom-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg z-10 animate-pulse hidden sm:block">
+                              In Progress
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>Game in progress</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
 
                   {/* Card content */}
@@ -867,7 +880,7 @@ export function HomePageClient({
                       className={cn(
                         "mt-auto pt-3 self-end",
                         level.textColor,
-                        "sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1 text-sm font-medium transform sm:group-hover:translate-x-0 sm:-translate-x-2",
+                        "sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1 text-sm font-medium",
                         showLockOverlay && "!opacity-0 !hidden"
                       )}
                     >
@@ -935,10 +948,14 @@ export function HomePageClient({
                       )}
                     </h3>
                     {isBotProgressionLoading ? (
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Loading...
-                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          </TooltipTrigger>
+                          <TooltipContent>Loading...</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         Track your victories and challenges
@@ -983,7 +1000,7 @@ export function HomePageClient({
                         <div>
                           <h3 className="font-medium">Next Challenge</h3>
                           <p className="text-sm text-muted-foreground">
-                            Beat this bot to progress
+                            Beat this bot to progress on your journey
                           </p>
                         </div>
                         {isGameActive &&
@@ -1067,7 +1084,14 @@ export function HomePageClient({
                             </div>
                           </div>
                           {navigatingTo === nextBot.name ? (
-                            <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                                </TooltipTrigger>
+                                <TooltipContent>Loading...</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           ) : (
                             <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
                           )}
