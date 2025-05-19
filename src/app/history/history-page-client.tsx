@@ -1305,7 +1305,7 @@ export const HistoryPageClient = ({
                   {/* Play Again Button Area */}
                   <div className="pt-6 border-t border-border/20 text-center">
                     <Link href="/play/chess-wordle" passHref legacyBehavior>
-                      <Button className="bg-amber-600/30 hover:bg-amber-600/40 text-amber-400 border-amber-500/60">
+                      <Button className="difficulty-wordle-bg difficulty-wordle-border difficulty-wordle-text hover:bg-amber-500/30 hover:border-amber-500/70">
                         <Play className="mr-2 h-5 w-5" /> Play Chess Wordle
                       </Button>
                     </Link>
@@ -1321,7 +1321,7 @@ export const HistoryPageClient = ({
                     Play some Chess Wordle puzzles to see your stats here!
                   </p>
                   <Link href="/play/chess-wordle" passHref legacyBehavior>
-                    <Button className="bg-amber-600/30 hover:bg-amber-600/40 text-amber-400 border-amber-500/60 ">
+                    <Button className="difficulty-wordle-bg difficulty-wordle-border difficulty-wordle-text hover:bg-amber-500/30 hover:border-amber-500/70">
                       <Play className="mr-2 h-4 w-4" /> Start Playing Chess
                       Wordle
                     </Button>

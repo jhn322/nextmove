@@ -89,7 +89,7 @@ const chessWordleCard: GameCardConfig = {
   name: "Chess Wordle",
   href: "/play/chess-wordle",
   description:
-    "Guess the secret chess term! A fun, Wordle-style puzzle to test your chess vocabulary. Unlike traditional Wordle, you can play as many times as you like!",
+    "Guess the secret chess term! A Wordle-style puzzle to test your chess vocabulary. Unlike traditional Wordle, play as many times as you like and recieve hints!",
   color: "difficulty-wordle-bg difficulty-wordle-border",
   textColor: "difficulty-wordle-text",
   icon: ToyBrick,
