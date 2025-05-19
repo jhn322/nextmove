@@ -40,7 +40,7 @@ const PlayerProfile = ({
   const [message, setMessage] = useState<string>("");
   const [showMessage, setShowMessage] = useState(false);
   const [playerName, setPlayerName] = useState<string>("Player");
-  const [playerAvatar, setPlayerAvatar] = useState<string>("/default-pfp.png");
+  const [playerAvatar, setPlayerAvatar] = useState<string>("/default-pfp.webp");
   const [countryFlag, setCountryFlag] = useState<string>("");
   const [flair, setFlair] = useState<string>("");
   const [currentPieceSet, setCurrentPieceSet] = useState(initialPieceSet);
@@ -68,7 +68,7 @@ const PlayerProfile = ({
         const user = session.user;
         // Use session data, provide fallbacks
         setPlayerName(user.name || "Player");
-        setPlayerAvatar(user.image || "/default-pfp.png");
+        setPlayerAvatar(user.image || "/default-pfp.webp");
         setCountryFlag(user.countryFlag || "");
         setFlair(user.flair || "");
         setCurrentPieceSet(user.pieceSet || initialPieceSet);
@@ -78,7 +78,7 @@ const PlayerProfile = ({
         localStorage.setItem("chess-player-name", user.name || "Player");
         localStorage.setItem(
           "chess-player-avatar",
-          user.image || "/default-pfp.png"
+          user.image || "/default-pfp.webp"
         );
         localStorage.setItem("chess-player-flag", user.countryFlag || "");
         localStorage.setItem("chess-player-flair", user.flair || "");
@@ -206,7 +206,7 @@ const PlayerProfile = ({
                 />
               ) : countryFlag ? (
                 <Image
-                  src={`/flags/${countryFlag}.png`}
+                  src={`/flags/${countryFlag}.webp`}
                   alt={`${countryFlag} flag`}
                   className="w-5 h-3"
                   width={20}

@@ -79,7 +79,6 @@ import {
 } from "@/lib/settings";
 import { useRouter } from "next/navigation";
 import SettingsLoading from "./loading";
-import HoverText from "@/components/ui/hover-text";
 import { getCharacterNameFromPath } from "@/lib/utils";
 import {
   AlertDialog,
@@ -117,6 +116,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import dynamic from "next/dynamic";
 
 interface SettingsState {
   display_name: string;
@@ -276,51 +276,10 @@ const AppearancePresetGrid = ({
 
 const MemoizedAppearancePresetGrid = React.memo(AppearancePresetGrid);
 
-const AvatarGrid = memo(
-  ({
-    availableAvatars,
-    selectedAvatar,
-    handleAvatarSelect,
-    getCharacterNameFromPath,
-  }: {
-    availableAvatars: string[];
-    selectedAvatar: string;
-    handleAvatarSelect: (avatar: string) => void;
-    getCharacterNameFromPath: (path: string) => string;
-  }) => (
-    <ScrollArea className="h-[300px] mt-2">
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
-        {availableAvatars.map((avatar, index) => (
-          <HoverText
-            key={index}
-            text={getCharacterNameFromPath(avatar)}
-            side="bottom"
-          >
-            <Button
-              key={index}
-              variant="ghost"
-              className="p-1 h-auto relative"
-              onClick={() => handleAvatarSelect(avatar)}
-            >
-              <div className="relative">
-                <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
-                  <AvatarImage src={avatar} alt={`Avatar ${index + 1}`} />
-                  <AvatarFallback>?</AvatarFallback>
-                </Avatar>
-                {avatar === selectedAvatar && (
-                  <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
-                    <Check className="h-4 w-4" />
-                  </div>
-                )}
-              </div>
-            </Button>
-          </HoverText>
-        ))}
-      </div>
-    </ScrollArea>
-  )
+const VirtualizedAvatarGrid = dynamic(
+  () => import("@/components/ui/virtualized-avatar-grid"),
+  { ssr: false }
 );
-AvatarGrid.displayName = "AvatarGrid";
 
 const FLAIRS = [
   "⚔️",
@@ -672,7 +631,7 @@ export default function SettingsPage() {
       first_name: user.firstName || "",
       last_name: user.lastName || "",
       location: user.location || "",
-      avatar_url: user.image || "/avatars/jake.png",
+      avatar_url: user.image || "/avatars/jake.webp",
       preferred_difficulty: user.preferredDifficulty || "intermediate",
       sound_enabled: user.soundEnabled !== false,
       piece_set: user.pieceSet || getPieceSet(),
@@ -723,7 +682,7 @@ export default function SettingsPage() {
       first_name: user.firstName || "",
       last_name: user.lastName || "",
       location: user.location || "",
-      avatar_url: user.image || "/avatars/jake.png",
+      avatar_url: user.image || "/avatars/jake.webp",
       preferred_difficulty: user.preferredDifficulty || "intermediate",
       sound_enabled: user.soundEnabled !== false,
       piece_set: user.pieceSet || getPieceSet(),
@@ -774,54 +733,54 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const avatars = [
-      "/avatars/aang.png",
-      "/avatars/bart.png",
-      "/avatars/bender.png",
-      "/avatars/benson.png",
-      "/avatars/blossom.png",
-      "/avatars/bojack.png",
-      "/avatars/bubbles.png",
-      "/avatars/bubblegum.png",
-      "/avatars/buttercup.png",
-      "/avatars/catdog.png",
-      "/avatars/courage.png",
-      "/avatars/darwin.png",
-      "/avatars/deedee.png",
-      "/avatars/dexter.png",
-      "/avatars/dipper.png",
-      "/avatars/ed.png",
-      "/avatars/edd.png",
-      "/avatars/eddy.png",
-      "/avatars/finn.png",
-      "/avatars/flame.png",
-      "/avatars/gir.png",
-      "/avatars/grim.png",
-      "/avatars/gumball.png",
-      "/avatars/homer.png",
-      "/avatars/jake.png",
-      "/avatars/jerry.png",
-      "/avatars/jimmy.png",
-      "/avatars/johnny.png",
-      "/avatars/marceline.png",
-      "/avatars/mordecai.png",
-      "/avatars/morty.png",
-      "/avatars/patrick.png",
-      "/avatars/perry.png",
-      "/avatars/peter.png",
-      "/avatars/rick.png",
-      "/avatars/rigby.png",
-      "/avatars/samurai.png",
-      "/avatars/sandy.png",
-      "/avatars/scooby.png",
-      "/avatars/shaggy.png",
-      "/avatars/skips.png",
-      "/avatars/spongebob.png",
-      "/avatars/squidward.png",
-      "/avatars/stewie.png",
-      "/avatars/timmy.png",
-      "/avatars/tom.png",
-      "/avatars/wendy.png",
-      "/avatars/zim.png",
+      "/avatars/aang.webp",
+      "/avatars/bart.webp",
+      "/avatars/bender.webp",
+      "/avatars/benson.webp",
+      "/avatars/blossom.webp",
+      "/avatars/bojack.webp",
+      "/avatars/bubbles.webp",
+      "/avatars/bubblegum.webp",
+      "/avatars/buttercup.webp",
+      "/avatars/catdog.webp",
+      "/avatars/courage.webp",
+      "/avatars/darwin.webp",
+      "/avatars/deedee.webp",
+      "/avatars/dexter.webp",
+      "/avatars/dipper.webp",
+      "/avatars/ed.webp",
+      "/avatars/edd.webp",
+      "/avatars/eddy.webp",
+      "/avatars/finn.webp",
+      "/avatars/flame.webp",
+      "/avatars/gir.webp",
+      "/avatars/grim.webp",
+      "/avatars/gumball.webp",
+      "/avatars/homer.webp",
+      "/avatars/jake.webp",
+      "/avatars/jerry.webp",
+      "/avatars/jimmy.webp",
+      "/avatars/johnny.webp",
+      "/avatars/marceline.webp",
+      "/avatars/mordecai.webp",
+      "/avatars/morty.webp",
+      "/avatars/patrick.webp",
+      "/avatars/perry.webp",
+      "/avatars/peter.webp",
+      "/avatars/rick.webp",
+      "/avatars/rigby.webp",
+      "/avatars/samurai.webp",
+      "/avatars/sandy.webp",
+      "/avatars/scooby.webp",
+      "/avatars/shaggy.webp",
+      "/avatars/skips.webp",
+      "/avatars/spongebob.webp",
+      "/avatars/squidward.webp",
+      "/avatars/stewie.webp",
+      "/avatars/timmy.webp",
+      "/avatars/tom.webp",
+      "/avatars/wendy.webp",
+      "/avatars/zim.webp",
     ];
     setAvailableAvatars(avatars);
   }, []);
@@ -1180,19 +1139,27 @@ export default function SettingsPage() {
                             </TooltipProvider>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
+                        <DialogContent className="rounded-lg overflow-hidden box-border w-full max-w-md">
                           <DialogHeader>
                             <DialogTitle>Choose Avatar</DialogTitle>
                           </DialogHeader>
                           {avatarDialogOpen && (
-                            <AvatarGrid
-                              availableAvatars={availableAvatars}
-                              selectedAvatar={settings.avatar_url}
-                              handleAvatarSelect={handleAvatarSelect}
-                              getCharacterNameFromPath={
-                                getCharacterNameFromPath
-                              }
-                            />
+                            <div className="w-full h-[300px] overflow-y-auto box-border">
+                              <VirtualizedAvatarGrid
+                                availableAvatars={availableAvatars}
+                                selectedAvatar={settings.avatar_url}
+                                onSelect={handleAvatarSelect}
+                                getCharacterNameFromPath={
+                                  getCharacterNameFromPath
+                                }
+                                columnCount={
+                                  typeof window !== "undefined" &&
+                                  window.innerWidth <= 640
+                                    ? 3
+                                    : 4
+                                }
+                              />
+                            </div>
                           )}
                         </DialogContent>
                       </Dialog>
@@ -1222,7 +1189,7 @@ export default function SettingsPage() {
                             {settings.country_flag ? (
                               <div className="flex items-center gap-2">
                                 <Image
-                                  src={`/flags/${settings.country_flag}.png`}
+                                  src={`/flags/${settings.country_flag}.webp`}
                                   alt={settings.country_flag}
                                   width={20}
                                   height={12}
@@ -1295,7 +1262,7 @@ export default function SettingsPage() {
                               {flag !== "none" ? (
                                 <>
                                   <Image
-                                    src={`/flags/${flag}.png`}
+                                    src={`/flags/${flag}.webp`}
                                     alt={flag}
                                     width={20}
                                     height={12}

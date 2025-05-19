@@ -12,7 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Check,
   Pencil,
@@ -38,6 +37,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import dynamic from "next/dynamic";
 
 interface PlayerProfileProps {
   className?: string;
@@ -48,6 +48,11 @@ interface PlayerProfileProps {
   draws?: number;
   resigns?: number;
 }
+
+const VirtualizedAvatarGrid = dynamic(
+  () => import("@/components/ui/virtualized-avatar-grid"),
+  { ssr: false }
+);
 
 export default function PlayerProfile({
   className,
@@ -62,7 +67,7 @@ export default function PlayerProfile({
   const [playerName, setPlayerName] = useState<string>("Player");
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("/avatars/jake.png");
+  const [avatarUrl, setAvatarUrl] = useState("/avatars/jake.webp");
   const [countryFlag, setCountryFlag] = useState<string>("");
   const [flair, setFlair] = useState<string>("");
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
@@ -77,7 +82,7 @@ export default function PlayerProfile({
       const user = session.user;
       setPlayerName(user.name || "Player");
       setInputValue(user.name || "Player");
-      setAvatarUrl(user.image || "/avatars/jake.png");
+      setAvatarUrl(user.image || "/avatars/jake.webp");
       setCountryFlag(user.countryFlag || "");
       setFlair(user.flair || "");
       setIsLoading(false);
@@ -85,7 +90,7 @@ export default function PlayerProfile({
       // Reset to defaults if logged out
       setPlayerName("Player");
       setInputValue("Player");
-      setAvatarUrl("/avatars/jake.png");
+      setAvatarUrl("/avatars/jake.webp");
       setCountryFlag("");
       setFlair("");
       setIsLoading(false);
@@ -96,54 +101,54 @@ export default function PlayerProfile({
   // Load available avatars
   useEffect(() => {
     const avatars = [
-      "/avatars/aang.png",
-      "/avatars/bart.png",
-      "/avatars/bender.png",
-      "/avatars/benson.png",
-      "/avatars/blossom.png",
-      "/avatars/bojack.png",
-      "/avatars/bubbles.png",
-      "/avatars/bubblegum.png",
-      "/avatars/buttercup.png",
-      "/avatars/catdog.png",
-      "/avatars/courage.png",
-      "/avatars/darwin.png",
-      "/avatars/deedee.png",
-      "/avatars/dexter.png",
-      "/avatars/dipper.png",
-      "/avatars/ed.png",
-      "/avatars/edd.png",
-      "/avatars/eddy.png",
-      "/avatars/finn.png",
-      "/avatars/flame.png",
-      "/avatars/gir.png",
-      "/avatars/grim.png",
-      "/avatars/gumball.png",
-      "/avatars/homer.png",
-      "/avatars/jake.png",
-      "/avatars/jerry.png",
-      "/avatars/jimmy.png",
-      "/avatars/johnny.png",
-      "/avatars/marceline.png",
-      "/avatars/mordecai.png",
-      "/avatars/morty.png",
-      "/avatars/patrick.png",
-      "/avatars/perry.png",
-      "/avatars/peter.png",
-      "/avatars/rick.png",
-      "/avatars/rigby.png",
-      "/avatars/samurai.png",
-      "/avatars/sandy.png",
-      "/avatars/scooby.png",
-      "/avatars/shaggy.png",
-      "/avatars/skips.png",
-      "/avatars/spongebob.png",
-      "/avatars/squidward.png",
-      "/avatars/stewie.png",
-      "/avatars/timmy.png",
-      "/avatars/tom.png",
-      "/avatars/wendy.png",
-      "/avatars/zim.png",
+      "/avatars/aang.webp",
+      "/avatars/bart.webp",
+      "/avatars/bender.webp",
+      "/avatars/benson.webp",
+      "/avatars/blossom.webp",
+      "/avatars/bojack.webp",
+      "/avatars/bubbles.webp",
+      "/avatars/bubblegum.webp",
+      "/avatars/buttercup.webp",
+      "/avatars/catdog.webp",
+      "/avatars/courage.webp",
+      "/avatars/darwin.webp",
+      "/avatars/deedee.webp",
+      "/avatars/dexter.webp",
+      "/avatars/dipper.webp",
+      "/avatars/ed.webp",
+      "/avatars/edd.webp",
+      "/avatars/eddy.webp",
+      "/avatars/finn.webp",
+      "/avatars/flame.webp",
+      "/avatars/gir.webp",
+      "/avatars/grim.webp",
+      "/avatars/gumball.webp",
+      "/avatars/homer.webp",
+      "/avatars/jake.webp",
+      "/avatars/jerry.webp",
+      "/avatars/jimmy.webp",
+      "/avatars/johnny.webp",
+      "/avatars/marceline.webp",
+      "/avatars/mordecai.webp",
+      "/avatars/morty.webp",
+      "/avatars/patrick.webp",
+      "/avatars/perry.webp",
+      "/avatars/peter.webp",
+      "/avatars/rick.webp",
+      "/avatars/rigby.webp",
+      "/avatars/samurai.webp",
+      "/avatars/sandy.webp",
+      "/avatars/scooby.webp",
+      "/avatars/shaggy.webp",
+      "/avatars/skips.webp",
+      "/avatars/spongebob.webp",
+      "/avatars/squidward.webp",
+      "/avatars/stewie.webp",
+      "/avatars/timmy.webp",
+      "/avatars/tom.webp",
+      "/avatars/wendy.webp",
+      "/avatars/zim.webp",
     ];
 
     setAvailableAvatars(avatars);
@@ -332,7 +337,7 @@ export default function PlayerProfile({
               )}
             </DialogTrigger>
             <DialogContent
-              className="sm:max-w-md"
+              className="rounded-lg overflow-hidden box-border w-full max-w-md"
               aria-describedby="profile-avatar-dialog-description"
             >
               <DialogHeader>
@@ -344,38 +349,19 @@ export default function PlayerProfile({
               >
                 Select an avatar to represent you in games
               </div>
-              <ScrollArea className="h-[300px] mt-2">
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-2">
-                  {availableAvatars.map((avatar, index) => (
-                    <HoverText
-                      key={index}
-                      text={getCharacterNameFromPath(avatar)}
-                      side="bottom"
-                    >
-                      <Button
-                        variant="ghost"
-                        className="p-1 h-auto relative"
-                        onClick={() => handleAvatarSelect(avatar)}
-                      >
-                        <div className="relative">
-                          <Avatar className="h-16 w-16 border-2 border-transparent hover:border-primary transition-all">
-                            <AvatarImage
-                              src={avatar}
-                              alt={`Avatar ${index + 1}`}
-                            />
-                            <AvatarFallback>?</AvatarFallback>
-                          </Avatar>
-                          {avatar === avatarUrl && (
-                            <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5">
-                              <Check className="h-4 w-4" />
-                            </div>
-                          )}
-                        </div>
-                      </Button>
-                    </HoverText>
-                  ))}
-                </div>
-              </ScrollArea>
+              <div className="w-full h-[300px] overflow-y-auto box-border">
+                <VirtualizedAvatarGrid
+                  availableAvatars={availableAvatars}
+                  selectedAvatar={avatarUrl}
+                  onSelect={handleAvatarSelect}
+                  getCharacterNameFromPath={getCharacterNameFromPath}
+                  columnCount={
+                    typeof window !== "undefined" && window.innerWidth <= 640
+                      ? 3
+                      : 4
+                  }
+                />
+              </div>
             </DialogContent>
           </Dialog>
 
@@ -413,7 +399,7 @@ export default function PlayerProfile({
                     </span>
                     {countryFlag && (
                       <Image
-                        src={`/flags/${countryFlag}.png`}
+                        src={`/flags/${countryFlag}.webp`}
                         alt={`${countryFlag} flag`}
                         width={20}
                         height={12}
