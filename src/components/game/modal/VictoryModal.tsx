@@ -400,7 +400,10 @@ const VictoryModal = ({
         />
       )}
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg">
+        <DialogContent
+          className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg"
+          aria-describedby="victory-modal-description"
+        >
           <DialogDescription id="victory-modal-description" className="sr-only">
             {isResignation
               ? "Confirm if you want to resign from the current game."
@@ -425,7 +428,7 @@ const VictoryModal = ({
                       <AvatarImage src={playerAvatar} alt={playerName} />
                       <AvatarFallback>{playerName.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span>{playerName}</span>
+                    <span title={playerName}>{playerName}</span>
                     <span className="text-muted-foreground text-sm sm:text-base">
                       ({playerColor === "w" ? "White" : "Black"})
                     </span>
@@ -437,9 +440,13 @@ const VictoryModal = ({
                         src={selectedBot?.image}
                         alt={selectedBot?.name}
                       />
-                      <AvatarFallback>B</AvatarFallback>
+                      <AvatarFallback title={selectedBot?.name}>
+                        B
+                      </AvatarFallback>
                     </Avatar>
-                    <span>{selectedBot?.name || "Bot"}</span>
+                    <span title={selectedBot?.name}>
+                      {selectedBot?.name || "Bot"}
+                    </span>
                     <span className="text-muted-foreground text-sm sm:text-base">
                       ({playerColor === "w" ? "Black" : "White"})
                     </span>
@@ -489,7 +496,9 @@ const VictoryModal = ({
                                   src={nextBotInfo.bot.image}
                                   alt={nextBotInfo.bot.name}
                                 />
-                                <AvatarFallback>B</AvatarFallback>
+                                <AvatarFallback title={nextBotInfo.bot.name}>
+                                  B
+                                </AvatarFallback>
                               </Avatar>
                               <span className="font-medium">
                                 {nextBotInfo.bot.name}

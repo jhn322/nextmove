@@ -819,6 +819,7 @@ export function HomePageClient({
                               value={level.eloValue}
                               className="h-1.5"
                               indicatorClassName={level.color.split(" ")[0]}
+                              aria-label={`ELO Rating Progress for ${level.name}`}
                             />
                           </>
                         )}

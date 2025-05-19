@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { AlertCircle, CheckCircle, Info, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -447,7 +448,16 @@ export function ChessWordleClient() {
         open={isInstructionsModalOpen}
         onOpenChange={setIsInstructionsModalOpen}
       >
-        <DialogContent className="w-[90vw] max-w-lg sm:max-w-md bg-card/95 backdrop-blur-sm text-foreground p-0 rounded-lg">
+        <DialogContent
+          className="w-[90vw] max-w-lg sm:max-w-md bg-card/95 backdrop-blur-sm text-foreground p-0 rounded-lg"
+          aria-describedby="chess-wordle-instructions-desc"
+        >
+          <DialogDescription
+            id="chess-wordle-instructions-desc"
+            className="sr-only"
+          >
+            Instructions for how to play Chess Wordle.
+          </DialogDescription>
           <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
             <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-primary">
               How To Play

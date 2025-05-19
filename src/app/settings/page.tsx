@@ -57,6 +57,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -1139,10 +1140,19 @@ export default function SettingsPage() {
                             </TooltipProvider>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="rounded-lg overflow-hidden box-border w-full max-w-md">
+                        <DialogContent
+                          className="rounded-lg overflow-hidden box-border w-full max-w-md"
+                          aria-describedby="settings-avatar-dialog-description"
+                        >
                           <DialogHeader>
                             <DialogTitle>Choose Avatar</DialogTitle>
                           </DialogHeader>
+                          <DialogDescription
+                            id="settings-avatar-dialog-description"
+                            className="sr-only"
+                          >
+                            Select an avatar to represent you in games
+                          </DialogDescription>
                           {avatarDialogOpen && (
                             <div className="w-full h-[300px] overflow-y-auto box-border">
                               <VirtualizedAvatarGrid
@@ -1194,6 +1204,7 @@ export default function SettingsPage() {
                                   width={20}
                                   height={12}
                                   className="h-3 w-5"
+                                  style={{ width: "auto", height: "auto" }}
                                 />
                                 <span className="capitalize">
                                   {settings.country_flag.toUpperCase()}
@@ -1267,6 +1278,7 @@ export default function SettingsPage() {
                                     width={20}
                                     height={12}
                                     className="h-3 w-5"
+                                    style={{ width: "auto", height: "auto" }}
                                   />
                                   <span className="capitalize">
                                     {flag.toUpperCase()}

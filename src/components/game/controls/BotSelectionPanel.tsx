@@ -215,7 +215,12 @@ const BotSelectionPanel = ({
                   <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium truncate">{bot.name}</div>
+                  <div
+                    className="text-sm font-medium truncate"
+                    title={bot.name}
+                  >
+                    {bot.name}
+                  </div>
                   <EloBadge elo={bot.rating} className="mt-0.5" />
                   <Image
                     src={bot.flag}
@@ -250,7 +255,10 @@ const BotSelectionPanel = ({
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium truncate max-w-[100px]">
+                    <span
+                      className="text-sm font-medium truncate max-w-[100px]"
+                      title={bot.name}
+                    >
                       {bot.name}
                     </span>
                     <div className="flex-shrink-0">
@@ -322,13 +330,20 @@ const BotSelectionPanel = ({
               <Crown className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Black</span>
             </Button>
-            <Button
-              onClick={handleRandomColor}
-              variant={isRandomColor ? "default" : "outline"}
-              className="flex-1 flex items-center justify-center gap-2"
-            >
-              <Shuffle className="h-4 w-4 flex-shrink-0" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleRandomColor}
+                    variant={isRandomColor ? "default" : "outline"}
+                    className="flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Shuffle className="h-4 w-4 flex-shrink-0" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Random Piece Color</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </CardContent>
       </Card>

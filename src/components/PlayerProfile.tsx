@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Check,
@@ -343,6 +344,12 @@ export default function PlayerProfile({
               <DialogHeader>
                 <DialogTitle>Choose Avatar</DialogTitle>
               </DialogHeader>
+              <DialogDescription
+                id="profile-avatar-dialog-description"
+                className="sr-only"
+              >
+                Select an avatar to represent you in games
+              </DialogDescription>
               <div
                 id="profile-avatar-dialog-description"
                 className="text-sm text-muted-foreground mb-4"
