@@ -6,6 +6,7 @@ import { HistoryPageClient } from "./history-page-client";
 import React from "react";
 import { redirect } from "next/navigation";
 import { type GameStats } from "@/types/stats";
+import { Metadata } from "next";
 
 const calculateGameStats = (history: GameHistory[]): GameStats | null => {
   if (!history || history.length === 0) {
@@ -98,3 +99,7 @@ export default async function HistoryPageServer() {
     />
   );
 }
+
+export const generateMetadata = async (): Promise<Metadata> => ({
+  title: "History | NextMove",
+});

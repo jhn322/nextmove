@@ -1,14 +1,12 @@
-// * ==========================================================================
-// *                            CHESS WORDLE PAGE
-// * ==========================================================================
 import { ChessWordleClient } from "@/components/chess-wordle/chess-wordle-client";
 import { Suspense } from "react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/options";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 
-// ** Page Metadata (Optional but Recommended) ** //
-export const metadata = {
+// ** Page Metadata ** //
+export const metadata: Metadata = {
   title: "Chess Wordle | NextMove",
   description: "Test your chess vocabulary with a fun Wordle-style puzzle.",
 };
