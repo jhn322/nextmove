@@ -318,6 +318,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
   const {
@@ -375,19 +376,19 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   }, [gameStarted, showBotSelection, playSound]);
 
+  // Pre-compute complex expressions for dependency array
+  const currentFen = game.fen();
+  const currentIsResigned = game.isResigned === true;
+
   // Save state
   useEffect(() => {
     if (typeof window !== "undefined" && gameStarted) {
       const hasMovesBeenMade =
         lastMove !== null || (history && history.length > 1);
 
-      // Define these variables to use in dependencies and for saving
-      const currentFen = game.fen();
-      const currentIsResigned = game.isResigned === true;
-
       if (hasMovesBeenMade) {
         const gameState = {
-          fen: currentFen, // Use derived currentFen
+          fen: currentFen,
           playerColor,
           gameTime,
           whiteTime,
@@ -399,12 +400,13 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
           lastMove,
           pieceSet,
           capturedPieces,
-          isResigned: currentIsResigned, // Use derived currentIsResigned
+          isResigned: currentIsResigned,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
       }
     }
   }, [
+    game,
     currentMove,
     difficulty,
     gameStarted,
@@ -416,8 +418,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     whiteTime,
     blackTime,
     capturedPieces,
-    game.fen(),
-    game.isResigned,
+    currentFen,
+    currentIsResigned,
   ]);
 
   // Save state when component unmounts
@@ -854,7 +856,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         }
       }
     }
-  }, [game]);
+  }, [game, setBoard, setGameStarted, setPlayerColor]);
 
   const handleDragMove = (
     item: { type: string; position: string },

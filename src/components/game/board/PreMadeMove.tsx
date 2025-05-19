@@ -63,9 +63,12 @@ const PreMadeMove = ({
     onPossibleMovesChange(isPreMadePossibleMove);
   }, [isPreMadePossibleMove, onPossibleMovesChange]);
 
+  // Pre-compute complex expressions for dependency array
+  const currentGameTurn = game.turn();
+
   // Execute or cancel pre-made move based on turn changes
   useEffect(() => {
-    const currentTurn = game.turn();
+    const currentTurn = currentGameTurn;
     const previousTurn = prevTurnRef.current; // Value from before this effect ran
 
     let timerId: NodeJS.Timeout | undefined;
@@ -127,11 +130,12 @@ const PreMadeMove = ({
       }
     };
   }, [
-    game.turn(),
+    currentGameTurn,
     playerColor,
     preMadeMove,
     executePreMadeMove,
     cancelPreMadeMove,
+    game,
   ]);
 
   // Pass the handlePreMadeMove function to the parent component
@@ -139,12 +143,16 @@ const PreMadeMove = ({
     onHandleSquareClick(handlePreMadeMove);
   }, [handlePreMadeMove, onHandleSquareClick]);
 
+  // Pre-compute complex expressions for dependency array
+  const isGameOver = game.isGameOver();
+  const isResigned = game.isResigned;
+
   // Clear pre-made move when game is over
   useEffect(() => {
-    if (game.isGameOver() || game.isResigned) {
+    if (isGameOver || isResigned) {
       cancelPreMadeMove();
     }
-  }, [game.isGameOver(), game.isResigned, cancelPreMadeMove]);
+  }, [isGameOver, isResigned, cancelPreMadeMove, game]);
 
   return null;
 };
