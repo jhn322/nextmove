@@ -600,13 +600,13 @@ export function HomePageClient({
 
                   {/* Overlay for Wordle Card if not logged in */}
                   {showLockOverlay && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl rounded-lg z-20 p-4 text-center pointer-events-none">
-                      <Lock className="w-10 h-10 text-white mb-3" />
-                      <h3 className="text-lg font-semibold text-white mb-1 [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg z-20 p-4 text-center pointer-events-none">
+                      <Lock className="w-8 h-8 text-white mb-2" />
+                      <h3 className="text-base font-semibold text-white mb-1">
                         Login to Play
                       </h3>
-                      <p className="text-md text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]">
-                        This feature is only available for logged-in users.
+                      <p className="text-sm text-white">
+                        This feature is only available for signed-in users.
                       </p>
                     </div>
                   )}
