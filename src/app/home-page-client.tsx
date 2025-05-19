@@ -90,11 +90,11 @@ const chessWordleCard: GameCardConfig = {
   href: "/play/chess-wordle",
   description:
     "Guess the secret chess term! A fun, Wordle-style puzzle to test your chess vocabulary. Unlike traditional Wordle, you can play as many times as you like!",
-  color: "bg-amber-600/40 hover:bg-amber-600/30 border-amber-500/60",
-  textColor: "text-amber-400",
+  color: "bg-amber-500/20 border-amber-500/40",
+  textColor: "text-amber-700 dark:text-amber-200",
   icon: ToyBrick,
-  gradient: "from-amber-600/30 to-amber-600/10",
-  hoverGradient: "hover:from-amber-600/40 hover:to-amber-600/15",
+  gradient: "bg-amber-500/20",
+  hoverGradient: "hover:bg-amber-500/30",
   playStyle: "Word Puzzle",
   styleIcon: Hash,
   displayPlayTypeLabel: "Word Puzzle",
@@ -109,11 +109,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/beginner",
     description:
       "Learn the basics with a bot that makes predictable moves. Perfect for newcomers to chess or those looking to build up confidence in their skill.",
-    color: "bg-emerald-500/30 hover:bg-emerald-500/20 border-emerald-500/50",
-    textColor: "text-emerald-500",
+    color: "bg-emerald-500/20 border-emerald-500/40",
+    textColor: "text-emerald-700 dark:text-emerald-200",
     icon: Baby,
-    gradient: "from-emerald-500/20 to-emerald-500/5",
-    hoverGradient: "hover:from-emerald-500/30 hover:to-emerald-500/10",
+    gradient: "bg-emerald-500/20",
+    hoverGradient: "hover:bg-emerald-500/30",
     eloRange: "200-300",
     eloValue: 10,
     playStyle: "Random",
@@ -124,11 +124,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/easy",
     description:
       "Practice basic strategies with slightly improved moves. Focuses on capturing pieces and developing simple threats to win the game.",
-    color: "bg-green-500/30 hover:bg-green-500/20 border-green-500/50",
-    textColor: "text-green-500",
+    color: "bg-green-500/20 border-green-500/40",
+    textColor: "text-green-700 dark:text-green-200",
     icon: Blocks,
-    gradient: "from-green-500/20 to-green-500/5",
-    hoverGradient: "hover:from-green-500/30 hover:to-green-500/10",
+    gradient: "bg-green-500/20",
+    hoverGradient: "hover:bg-green-500/30",
     eloRange: "320-400",
     eloValue: 13,
     playStyle: "Aggressive",
@@ -139,11 +139,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/intermediate",
     description:
       "Test your skills against a bot with moderate tactical chess awareness. It recognizes basic patterns and responds to threats intelligently.",
-    color: "bg-cyan-500/30 hover:bg-cyan-500/20 border-cyan-500/50",
-    textColor: "text-cyan-500",
+    color: "bg-cyan-500/20 border-cyan-500/40",
+    textColor: "text-cyan-700 dark:text-cyan-200",
     icon: BookOpen,
-    gradient: "from-cyan-500/20 to-cyan-500/5",
-    hoverGradient: "hover:from-cyan-500/30 hover:to-cyan-500/10",
+    gradient: "bg-cyan-500/20",
+    hoverGradient: "hover:bg-cyan-500/30",
     eloRange: "450-600",
     eloValue: 20,
     playStyle: "Balanced",
@@ -154,11 +154,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/advanced",
     description:
       "Face stronger tactical play and strategic planning. Understands positional advantages and can execute multi-move combinations.",
-    color: "bg-blue-500/30 hover:bg-blue-500/20 border-blue-500/50",
-    textColor: "text-blue-500",
+    color: "bg-blue-500/20 border-blue-500/40",
+    textColor: "text-blue-700 dark:text-blue-200",
     icon: Crosshair,
-    gradient: "from-blue-500/20 to-blue-500/5",
-    hoverGradient: "hover:from-blue-500/30 hover:to-blue-500/10",
+    gradient: "bg-blue-500/20",
+    hoverGradient: "hover:bg-blue-500/30",
     eloRange: "700-900",
     eloValue: 30,
     playStyle: "Positional",
@@ -169,11 +169,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/hard",
     description:
       "Challenge yourself with advanced strategies and combinations. Plays with purpose and can exploit weaknesses in your position.",
-    color: "bg-violet-500/30 hover:bg-violet-500/20 border-violet-500/50",
-    textColor: "text-violet-500",
+    color: "bg-violet-500/20 border-violet-500/40",
+    textColor: "text-violet-700 dark:text-violet-200",
     icon: Sword,
-    gradient: "from-violet-500/20 to-violet-500/5",
-    hoverGradient: "hover:from-violet-500/30 hover:to-violet-500/10",
+    gradient: "bg-violet-500/20",
+    hoverGradient: "hover:bg-violet-500/30",
     eloRange: "950-1200",
     eloValue: 40,
     playStyle: "Tactical",
@@ -184,11 +184,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/expert",
     description:
       "Test yourself against sophisticated positional understanding. Executes long-term plans and creates complex tactical opportunities.",
-    color: "bg-purple-500/30 hover:bg-purple-500/20 border-purple-500/50",
-    textColor: "text-purple-500",
+    color: "bg-purple-500/20 border-purple-500/40",
+    textColor: "text-purple-700 dark:text-purple-200",
     icon: Swords,
-    gradient: "from-purple-500/20 to-purple-500/5",
-    hoverGradient: "hover:from-purple-500/30 hover:to-purple-500/10",
+    gradient: "bg-purple-500/20",
+    hoverGradient: "hover:bg-purple-500/30",
     eloRange: "1250-1700",
     eloValue: 58,
     playStyle: "Dynamic",
@@ -199,11 +199,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/master",
     description:
       "Face the second strongest bot with sophisticated chess understanding. Calculates deeply and rarely makes mistakes in its execution.",
-    color: "bg-orange-500/30 hover:bg-orange-500/20 border-orange-500/50",
-    textColor: "text-orange-500",
+    color: "bg-orange-500/20 border-orange-500/40",
+    textColor: "text-orange-700 dark:text-orange-200",
     icon: Award,
-    gradient: "from-orange-500/20 to-orange-500/5",
-    hoverGradient: "hover:from-orange-500/30 hover:to-orange-500/10",
+    gradient: "bg-orange-500/20",
+    hoverGradient: "hover:bg-orange-500/30",
     eloRange: "1800-2400",
     eloValue: 81,
     playStyle: "Strategic",
@@ -214,11 +214,11 @@ const difficultyLevels: GameCardConfig[] = [
     href: "/play/grandmaster",
     description:
       "Challenge the ultimate bot with masterful chess execution. Plays at near-perfect level with deep calculation and strategic brilliance.",
-    color: "bg-red-500/30 hover:bg-red-500/20 border-red-500/50",
-    textColor: "text-red-500",
+    color: "bg-red-500/20 border-red-500/40",
+    textColor: "text-red-700 dark:text-red-200",
     icon: Trophy,
-    gradient: "from-red-500/20 to-red-500/5",
-    hoverGradient: "hover:from-red-500/30 hover:to-red-500/10",
+    gradient: "bg-red-500/20",
+    hoverGradient: "hover:bg-red-500/30",
     eloRange: "2500-3000",
     eloValue: 100,
     playStyle: "Universal",
@@ -693,8 +693,13 @@ export function HomePageClient({
                         }`}
                         aria-label={
                           expandedCards[level.name]
-                            ? "Collapse details"
-                            : "Expand details"
+                            ? `Collapse details for ${level.name}`
+                            : `Expand details for ${level.name}`
+                        }
+                        title={
+                          expandedCards[level.name]
+                            ? `Collapse details for ${level.name}`
+                            : `Expand details for ${level.name}`
                         }
                       >
                         <ChevronDown className="h-4 w-4" />
@@ -1056,26 +1061,26 @@ export function HomePageClient({
                                   "text-xs",
                                   nextBot.difficulty.toLowerCase() ===
                                     "beginner" &&
-                                    "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                                    "bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border-emerald-500/40",
                                   nextBot.difficulty.toLowerCase() === "easy" &&
-                                    "bg-green-500/10 text-green-500 border-green-500/20",
+                                    "bg-green-500/20 text-green-700 dark:text-green-200 border-green-500/40",
                                   nextBot.difficulty.toLowerCase() ===
                                     "intermediate" &&
-                                    "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                    "bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 border-cyan-500/40",
                                   nextBot.difficulty.toLowerCase() ===
                                     "advanced" &&
-                                    "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                                    "bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/40",
                                   nextBot.difficulty.toLowerCase() === "hard" &&
-                                    "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                                    "bg-violet-500/20 text-violet-700 dark:text-violet-200 border-violet-500/40",
                                   nextBot.difficulty.toLowerCase() ===
                                     "expert" &&
-                                    "bg-red-500/10 text-red-500 border-red-500/20",
+                                    "bg-purple-500/20 text-purple-700 dark:text-purple-200 border-purple-500/40",
                                   nextBot.difficulty.toLowerCase() ===
                                     "master" &&
-                                    "bg-pink-500/10 text-pink-500 border-pink-500/20",
+                                    "bg-orange-500/20 text-orange-700 dark:text-orange-200 border-orange-500/40",
                                   nextBot.difficulty.toLowerCase() ===
                                     "grandmaster" &&
-                                    "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                                    "bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/40"
                                 )}
                               >
                                 {nextBot.difficulty.charAt(0).toUpperCase() +

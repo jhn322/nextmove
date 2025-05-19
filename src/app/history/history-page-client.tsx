@@ -624,7 +624,8 @@ export const HistoryPageClient = ({
                                       {bot?.image ? (
                                         <AvatarImage
                                           src={bot.image}
-                                          alt={bot.name}
+                                          alt=""
+                                          aria-hidden="true"
                                         />
                                       ) : null}
                                       <AvatarFallback>
@@ -642,21 +643,21 @@ export const HistoryPageClient = ({
                                 className={cn(
                                   "font-medium",
                                   game.difficulty === "beginner" &&
-                                    "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                                    "bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border-emerald-500/40",
                                   game.difficulty === "easy" &&
-                                    "bg-green-500/10 text-green-500 border-green-500/20",
+                                    "bg-green-500/20 text-green-700 dark:text-green-200 border-green-500/40",
                                   game.difficulty === "intermediate" &&
-                                    "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                                    "bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 border-cyan-500/40",
                                   game.difficulty === "advanced" &&
-                                    "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                    "bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/40",
                                   game.difficulty === "hard" &&
-                                    "bg-violet-500/10 text-violet-500 border-violet-500/20",
+                                    "bg-violet-500/20 text-violet-700 dark:text-violet-200 border-violet-500/40",
                                   game.difficulty === "expert" &&
-                                    "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                                    "bg-purple-500/20 text-purple-700 dark:text-purple-200 border-purple-500/40",
                                   game.difficulty === "master" &&
-                                    "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                                    "bg-orange-500/20 text-orange-700 dark:text-orange-200 border-orange-500/40",
                                   game.difficulty === "grandmaster" &&
-                                    "bg-red-500/10 text-red-500 border-red-500/20"
+                                    "bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/40"
                                 )}
                               >
                                 {game.difficulty.charAt(0).toUpperCase() +
@@ -913,21 +914,21 @@ export const HistoryPageClient = ({
                             className={cn(
                               "font-medium text-xs px-1.5 py-0.5", // Smaller badge
                               game.difficulty === "beginner" &&
-                                "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                                "bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border-emerald-500/40",
                               game.difficulty === "easy" &&
-                                "bg-green-500/10 text-green-500 border-green-500/20",
+                                "bg-green-500/20 text-green-700 dark:text-green-200 border-green-500/40",
                               game.difficulty === "intermediate" &&
-                                "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                                "bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 border-cyan-500/40",
                               game.difficulty === "advanced" &&
-                                "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                "bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/40",
                               game.difficulty === "hard" &&
-                                "bg-violet-500/10 text-violet-500 border-violet-500/20",
+                                "bg-violet-500/20 text-violet-700 dark:text-violet-200 border-violet-500/40",
                               game.difficulty === "expert" &&
-                                "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                                "bg-purple-500/20 text-purple-700 dark:text-purple-200 border-purple-500/40",
                               game.difficulty === "master" &&
-                                "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                                "bg-orange-500/20 text-orange-700 dark:text-orange-200 border-orange-500/40",
                               game.difficulty === "grandmaster" &&
-                                "bg-red-500/10 text-red-500 border-red-500/20"
+                                "bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/40"
                             )}
                           >
                             {game.difficulty.charAt(0).toUpperCase() +
@@ -985,21 +986,21 @@ export const HistoryPageClient = ({
                           className={cn(
                             "font-medium",
                             difficulty === "beginner" &&
-                              "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                              "bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border-emerald-500/40",
                             difficulty === "easy" &&
-                              "bg-green-500/10 text-green-500 border-green-500/20",
+                              "bg-green-500/20 text-green-700 dark:text-green-200 border-green-500/40",
                             difficulty === "intermediate" &&
-                              "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                              "bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 border-cyan-500/40",
                             difficulty === "advanced" &&
-                              "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                              "bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/40",
                             difficulty === "hard" &&
-                              "bg-violet-500/10 text-violet-500 border-violet-500/20",
+                              "bg-violet-500/20 text-violet-700 dark:text-violet-200 border-violet-500/40",
                             difficulty === "expert" &&
-                              "bg-purple-500/10 text-purple-500 border-purple-500/20",
+                              "bg-purple-500/20 text-purple-700 dark:text-purple-200 border-purple-500/40",
                             difficulty === "master" &&
-                              "bg-orange-500/10 text-orange-500 border-orange-500/20",
+                              "bg-orange-500/20 text-orange-700 dark:text-orange-200 border-orange-500/40",
                             difficulty === "grandmaster" &&
-                              "bg-red-500/10 text-red-500 border-red-500/20"
+                              "bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/40"
                           )}
                         >
                           {difficulty.charAt(0).toUpperCase() +
@@ -1079,10 +1080,13 @@ export const HistoryPageClient = ({
                                   <CardContent className="p-4 relative z-0">
                                     <div className="flex items-center gap-3">
                                       <Avatar className="h-12 w-12">
-                                        <AvatarImage
-                                          src={bot.image}
-                                          alt={bot.name}
-                                        />
+                                        {bot?.image ? (
+                                          <AvatarImage
+                                            src={bot.image}
+                                            alt=""
+                                            aria-hidden="true"
+                                          />
+                                        ) : null}
                                         <AvatarFallback>
                                           {bot.name.charAt(0)}
                                         </AvatarFallback>
