@@ -70,7 +70,7 @@ interface PlayerIndicatorProps {
 const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
   if (game.isCheckmate()) {
     return (
-      <div className="inline-flex items-center gap-1.5 bg-red-500/15 text-red-400 px-2.5 py-1 rounded-full">
+      <div className="inline-flex items-center gap-1.5 bg-red-500/20 text-red-500 px-2.5 py-1 rounded-full">
         <Swords className="h-3.5 w-3.5" />
         <span className="font-semibold text-xs">Checkmate!</span>
       </div>
@@ -80,7 +80,7 @@ const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
   if (game.isResigned) {
     const winner = game.resignedColor === "w" ? "Black" : "White";
     return (
-      <div className="inline-flex items-center gap-1.5 bg-orange-500/15 text-orange-400 px-2.5 py-1 rounded-full">
+      <div className="inline-flex items-center gap-1.5 bg-orange-500/20 text-orange-500 px-2.5 py-1 rounded-full">
         <Flag className="h-3.5 w-3.5" />
         <span className="font-semibold text-xs">{winner} wins (Resign)</span>
       </div>
@@ -89,7 +89,7 @@ const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
 
   if (game.isCheck()) {
     return (
-      <div className="inline-flex items-center gap-1.5 bg-yellow-500/15 text-yellow-400 px-2.5 py-1 rounded-full animate-pulse">
+      <div className="inline-flex items-center gap-1.5 bg-yellow-500/20 text-yellow-500 px-2.5 py-1 rounded-full animate-pulse">
         <AlertCircle className="h-3.5 w-3.5" />
         <span className="font-semibold text-xs">Check!</span>
       </div>
@@ -103,7 +103,7 @@ const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
     else if (game.isInsufficientMaterial())
       drawReason = "Insufficient Material!";
     return (
-      <div className="inline-flex items-center gap-1.5 bg-blue-500/15 text-blue-400 px-2.5 py-1 rounded-full">
+      <div className="inline-flex items-center gap-1.5 bg-blue-500/20 text-blue-500 px-2.5 py-1 rounded-full">
         <HandshakeIcon className="h-3.5 w-3.5" />
         <span className="font-semibold text-xs">{drawReason}</span>
       </div>
@@ -111,7 +111,7 @@ const GameStatusIndicator = ({ game }: GameStatusIndicatorProps) => {
   }
 
   return (
-    <div className="inline-flex items-center gap-1.5 bg-green-500/15 text-green-400 px-2.5 py-1 rounded-full">
+    <div className="inline-flex items-center gap-1.5 bg-green-500/20 text-green-500 px-2.5 py-1 rounded-full">
       <PlayCircle className="h-3.5 w-3.5" />
       <span className="font-semibold text-xs">In Progress</span>
     </div>
@@ -131,14 +131,14 @@ const PlayerIndicator = ({
 
   if (color === "w") {
     activeClasses =
-      "bg-blue-500/20 text-blue-300 border border-blue-500/30 shadow-sm";
+      "bg-blue-500/20 text-blue-500 border border-blue-300 shadow-sm";
     inactiveClasses =
-      "bg-foreground/5 text-muted-foreground/70 border border-transparent";
+      "bg-foreground/5 text-foreground border border-transparent";
   } else {
     activeClasses =
-      "bg-red-500/20 text-red-300 border border-red-500/30 shadow-sm";
+      "bg-red-500/20 text-red-500 border border-red-300 shadow-sm";
     inactiveClasses =
-      "bg-foreground/5 text-muted-foreground/70 border border-transparent";
+      "bg-foreground/5 text-foreground border border-transparent";
   }
 
   return (
@@ -148,7 +148,7 @@ const PlayerIndicator = ({
       <Crown
         className={`h-4.5 w-4.5 ${
           isActive ? "text-current animate-pulse" : "opacity-60"
-        } ${color === "w" ? (isActive ? "fill-blue-400" : "fill-muted-foreground") : isActive ? "fill-red-400" : "fill-muted-foreground"}`}
+        } ${color === "w" ? (isActive ? "fill-blue-500" : "fill-muted-foreground") : isActive ? "fill-red-500" : "fill-muted-foreground"}`}
       />
       <span className="font-medium text-sm">{children}</span>
     </div>
@@ -308,7 +308,7 @@ const GameControls = ({
             <span
               className={`font-mono text-base font-medium ${
                 currentTurn === "w" && !game.isGameOver()
-                  ? "text-blue-400 animate-pulse"
+                  ? "text-blue-500 animate-pulse"
                   : "text-foreground/90"
               }`}
             >
@@ -320,7 +320,7 @@ const GameControls = ({
             <span
               className={`font-mono text-base font-medium ${
                 currentTurn === "b" && !game.isGameOver()
-                  ? "text-red-400 animate-pulse"
+                  ? "text-red-500 animate-pulse"
                   : "text-foreground/90"
               }`}
             >
@@ -366,11 +366,11 @@ const GameControls = ({
                       className={`flex items-center gap-1.5 w-full py-1 pr-1.5 ${
                         isLatestMove
                           ? isWhiteMove
-                            ? "text-blue-300"
-                            : "text-red-300"
+                            ? "text-blue-500"
+                            : "text-red-500"
                           : isWhiteMove
-                            ? "text-blue-400/90"
-                            : "text-red-400/90"
+                            ? "text-blue-500/80"
+                            : "text-red-500/80"
                       } ${isLatestMove ? "font-semibold" : "font-normal"}`}
                     >
                       <div className="flex-1 flex items-center">
@@ -387,7 +387,7 @@ const GameControls = ({
                         </span>
                       </div>
                       {pieceType && (
-                        <div className="w-4 h-4 sm:w-4.5 sm:h-4.5 flex items-center justify-center opacity-80 brightness-0 dark:brightness-0 dark:invert">
+                        <div className="w-4 h-4 sm:w-4.5 sm:h-4.5 flex items-center justify-center opacity-80 brightness-0 invert-[0.25] dark:brightness-0 dark:invert [.fantasy_&]:invert [.amethyst_&]:invert [.crimson_&]:invert [.jade_&]:invert [.amber_&]:invert [.rose_&]:invert [.cyberpunk_&]:invert [.dracula_&]:invert [.midnight_&]:invert">
                           <Piece
                             type={pieceType.toUpperCase()}
                             pieceSet={pieceSet}

@@ -643,21 +643,21 @@ export const HistoryPageClient = ({
                                 className={cn(
                                   "font-medium",
                                   game.difficulty === "beginner" &&
-                                    "bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border-emerald-500/40",
+                                    "difficulty-beginner-bg difficulty-beginner-text difficulty-beginner-border",
                                   game.difficulty === "easy" &&
-                                    "bg-green-500/20 text-green-700 dark:text-green-200 border-green-500/40",
+                                    "difficulty-easy-bg difficulty-easy-text difficulty-easy-border",
                                   game.difficulty === "intermediate" &&
-                                    "bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 border-cyan-500/40",
+                                    "difficulty-intermediate-bg difficulty-intermediate-text difficulty-intermediate-border",
                                   game.difficulty === "advanced" &&
-                                    "bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/40",
+                                    "difficulty-advanced-bg difficulty-advanced-text difficulty-advanced-border",
                                   game.difficulty === "hard" &&
-                                    "bg-violet-500/20 text-violet-700 dark:text-violet-200 border-violet-500/40",
+                                    "difficulty-hard-bg difficulty-hard-text difficulty-hard-border",
                                   game.difficulty === "expert" &&
-                                    "bg-purple-500/20 text-purple-700 dark:text-purple-200 border-purple-500/40",
+                                    "difficulty-expert-bg difficulty-expert-text difficulty-expert-border",
                                   game.difficulty === "master" &&
-                                    "bg-orange-500/20 text-orange-700 dark:text-orange-200 border-orange-500/40",
+                                    "difficulty-master-bg difficulty-master-text difficulty-master-border",
                                   game.difficulty === "grandmaster" &&
-                                    "bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/40"
+                                    "difficulty-grandmaster-bg difficulty-grandmaster-text difficulty-grandmaster-border"
                                 )}
                               >
                                 {game.difficulty.charAt(0).toUpperCase() +
@@ -669,7 +669,11 @@ export const HistoryPageClient = ({
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <span>{getResultIcon(game.result)}</span>
+                                      <span
+                                        aria-label={`Game result: ${game.result}`}
+                                      >
+                                        {getResultIcon(game.result)}
+                                      </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       {game.result === "win"
@@ -689,7 +693,10 @@ export const HistoryPageClient = ({
                             <TableCell>{game.movesCount}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1.5">
-                                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                <Clock
+                                  className="h-3.5 w-3.5 text-muted-foreground"
+                                  aria-hidden="true"
+                                />
                                 {formatTime(game.timeTaken)}
                               </div>
                             </TableCell>
@@ -884,7 +891,11 @@ export const HistoryPageClient = ({
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span>{getResultIcon(game.result)}</span>
+                                  <span
+                                    aria-label={`Game result: ${game.result}`}
+                                  >
+                                    {getResultIcon(game.result)}
+                                  </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   {game.result === "win"
@@ -914,21 +925,21 @@ export const HistoryPageClient = ({
                             className={cn(
                               "font-medium text-xs px-1.5 py-0.5", // Smaller badge
                               game.difficulty === "beginner" &&
-                                "bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border-emerald-500/40",
+                                "difficulty-beginner-bg difficulty-beginner-text difficulty-beginner-border",
                               game.difficulty === "easy" &&
-                                "bg-green-500/20 text-green-700 dark:text-green-200 border-green-500/40",
+                                "difficulty-easy-bg difficulty-easy-text difficulty-easy-border",
                               game.difficulty === "intermediate" &&
-                                "bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 border-cyan-500/40",
+                                "difficulty-intermediate-bg difficulty-intermediate-text difficulty-intermediate-border",
                               game.difficulty === "advanced" &&
-                                "bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/40",
+                                "difficulty-advanced-bg difficulty-advanced-text difficulty-advanced-border",
                               game.difficulty === "hard" &&
-                                "bg-violet-500/20 text-violet-700 dark:text-violet-200 border-violet-500/40",
+                                "difficulty-hard-bg difficulty-hard-text difficulty-hard-border",
                               game.difficulty === "expert" &&
-                                "bg-purple-500/20 text-purple-700 dark:text-purple-200 border-purple-500/40",
+                                "difficulty-expert-bg difficulty-expert-text difficulty-expert-border",
                               game.difficulty === "master" &&
-                                "bg-orange-500/20 text-orange-700 dark:text-orange-200 border-orange-500/40",
+                                "difficulty-master-bg difficulty-master-text difficulty-master-border",
                               game.difficulty === "grandmaster" &&
-                                "bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/40"
+                                "difficulty-grandmaster-bg difficulty-grandmaster-text difficulty-grandmaster-border"
                             )}
                           >
                             {game.difficulty.charAt(0).toUpperCase() +
@@ -986,21 +997,21 @@ export const HistoryPageClient = ({
                           className={cn(
                             "font-medium",
                             difficulty === "beginner" &&
-                              "bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border-emerald-500/40",
+                              "difficulty-beginner-bg difficulty-beginner-text difficulty-beginner-border",
                             difficulty === "easy" &&
-                              "bg-green-500/20 text-green-700 dark:text-green-200 border-green-500/40",
+                              "difficulty-easy-bg difficulty-easy-text difficulty-easy-border",
                             difficulty === "intermediate" &&
-                              "bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 border-cyan-500/40",
+                              "difficulty-intermediate-bg difficulty-intermediate-text difficulty-intermediate-border",
                             difficulty === "advanced" &&
-                              "bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/40",
+                              "difficulty-advanced-bg difficulty-advanced-text difficulty-advanced-border",
                             difficulty === "hard" &&
-                              "bg-violet-500/20 text-violet-700 dark:text-violet-200 border-violet-500/40",
+                              "difficulty-hard-bg difficulty-hard-text difficulty-hard-border",
                             difficulty === "expert" &&
-                              "bg-purple-500/20 text-purple-700 dark:text-purple-200 border-purple-500/40",
+                              "difficulty-expert-bg difficulty-expert-text difficulty-expert-border",
                             difficulty === "master" &&
-                              "bg-orange-500/20 text-orange-700 dark:text-orange-200 border-orange-500/40",
+                              "difficulty-master-bg difficulty-master-text difficulty-master-border",
                             difficulty === "grandmaster" &&
-                              "bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/40"
+                              "difficulty-grandmaster-bg difficulty-grandmaster-text difficulty-grandmaster-border"
                           )}
                         >
                           {difficulty.charAt(0).toUpperCase() +

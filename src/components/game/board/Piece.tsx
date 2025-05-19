@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface PieceProps {
   type: string;
@@ -6,6 +7,7 @@ interface PieceProps {
   pieceSet?: string;
   forceColor?: "light" | "dark";
   canBeTaken?: boolean;
+  className?: string;
 }
 
 const Piece = ({
@@ -14,6 +16,7 @@ const Piece = ({
   pieceSet = "staunty",
   forceColor,
   canBeTaken = false,
+  className,
 }: PieceProps) => {
   // Convert piece type to Unicode chess symbol
   const getPieceSymbol = (type: string) => {
@@ -44,15 +47,18 @@ const Piece = ({
   if (variant === "symbol") {
     return (
       <div
-        className={`${
-          forceColor
-            ? forceColor === "dark"
-              ? "text-white dark:text-white"
-              : "text-black dark:text-white"
-            : type.toUpperCase() === type
-            ? "text-white dark:text-white"
-            : "text-black dark:text-black"
-        } text-xl sm:text-2xl`}
+        className={cn(
+          `${
+            forceColor
+              ? forceColor === "dark"
+                ? "text-white dark:text-white"
+                : "text-black dark:text-white"
+              : type.toUpperCase() === type
+                ? "text-white dark:text-white"
+                : "text-black dark:text-black"
+          } text-xl sm:text-2xl`,
+          className
+        )}
       >
         {getPieceSymbol(type)}
       </div>
@@ -69,7 +75,7 @@ const Piece = ({
         alt={`${type} chess piece`}
         width={90}
         height={90}
-        className="w-[90%] h-[90%] object-contain"
+        className={cn("w-[90%] h-[90%] object-contain", className)}
         priority
       />
     </div>

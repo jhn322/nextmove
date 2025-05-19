@@ -70,6 +70,7 @@ const CapturedPieces: React.FC<CapturedPiecesProps> = ({
               variant="symbol"
               pieceSet={pieceSet}
               forceColor="light"
+              className="brightness-0 invert-[0.25] dark:brightness-0 dark:invert [.fantasy_&]:invert [.amethyst_&]:invert [.crimson_&]:invert [.jade_&]:invert [.amber_&]:invert [.rose_&]:invert [.cyberpunk_&]:invert [.dracula_&]:invert [.midnight_&]:invert"
             />
           </div>
           {count > 1 && (

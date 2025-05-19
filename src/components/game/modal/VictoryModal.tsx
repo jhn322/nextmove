@@ -376,8 +376,8 @@ const VictoryModal = ({
 
   // Handle navigation to the next harder bot
   const handlePlayNextBot = () => {
-    game.reset();
-    game.isResigned = false;
+    // Reset all game state (captured pieces, history, etc.) via onNewBot
+    onNewBot();
 
     onClose();
 

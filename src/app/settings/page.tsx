@@ -490,6 +490,59 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
+// * Country code to country name map for accessible flag alt text
+const COUNTRY_CODE_TO_NAME: Record<string, string> = {
+  ad: "Andorra",
+  am: "Armenia",
+  ar: "Argentina",
+  au: "Australia",
+  ba: "Bosnia and Herzegovina",
+  bg: "Bulgaria",
+  ca: "Canada",
+  cn: "China",
+  cu: "Cuba",
+  cy: "Cyprus",
+  cz: "Czechia",
+  de: "Germany",
+  dk: "Denmark",
+  ec: "Ecuador",
+  eng: "England",
+  fi: "Finland",
+  fr: "France",
+  ge: "Georgia",
+  gr: "Greece",
+  ie: "Ireland",
+  il: "Israel",
+  in: "India",
+  is: "Iceland",
+  it: "Italy",
+  jp: "Japan",
+  kr: "South Korea",
+  lt: "Lithuania",
+  lu: "Luxembourg",
+  lv: "Latvia",
+  my: "Malaysia",
+  no: "Norway",
+  nz: "New Zealand",
+  ph: "Philippines",
+  pk: "Pakistan",
+  ps: "Palestine",
+  pt: "Portugal",
+  ro: "Romania",
+  rs: "Serbia",
+  ru: "Russia",
+  sct: "Scotland",
+  se: "Sweden",
+  sy: "Syria",
+  tr: "Turkey",
+  ua: "Ukraine",
+  ug: "Uganda",
+  us: "United States",
+  uy: "Uruguay",
+  wls: "Wales",
+  none: "None",
+};
+
 export default function SettingsPage() {
   const { status, session, signOut, refreshSession } = useAuth();
   const [settings, setSettings] = useState<SettingsState>(() => {
@@ -1118,6 +1171,7 @@ export default function SettingsPage() {
                           <Button
                             variant="outline"
                             className="p-0 h-auto w-auto rounded-full relative group"
+                            aria-label="Edit avatar"
                           >
                             <Avatar className="h-16 w-16 cursor-pointer border-2 border-primary/50 group-hover:border-primary transition-all">
                               <AvatarImage
@@ -1200,7 +1254,7 @@ export default function SettingsPage() {
                               <div className="flex items-center gap-2">
                                 <Image
                                   src={`/flags/${settings.country_flag}.webp`}
-                                  alt={settings.country_flag}
+                                  alt={`Flag of ${COUNTRY_CODE_TO_NAME[settings.country_flag] || settings.country_flag.toUpperCase()}`}
                                   width={20}
                                   height={12}
                                   className="h-3 w-5"
@@ -1274,7 +1328,7 @@ export default function SettingsPage() {
                                 <>
                                   <Image
                                     src={`/flags/${flag}.webp`}
-                                    alt={flag}
+                                    alt={`Flag of ${COUNTRY_CODE_TO_NAME[flag] || flag.toUpperCase()}`}
                                     width={20}
                                     height={12}
                                     className="h-3 w-5"
@@ -1305,6 +1359,7 @@ export default function SettingsPage() {
                           <Button
                             variant="outline"
                             className="w-full flex items-center justify-between"
+                            aria-label="Choose flair"
                           >
                             <div className="flex items-center gap-2">
                               <SmilePlus className="h-4 w-4 text-muted-foreground" />
@@ -1395,7 +1450,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="pt-6 mt-6 border-t">
-                    <h3 className="text-lg font-medium text-destructive mb-4">
+                    <h3 className="text-lg font-medium text-red-700 dark:text-red-400 mb-4">
                       Danger Zone
                     </h3>
                     <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
@@ -1413,6 +1468,7 @@ export default function SettingsPage() {
                               variant="destructive"
                               size="sm"
                               className="flex items-center gap-2"
+                              aria-label="Delete account"
                             >
                               <TooltipProvider>
                                 <Tooltip>
