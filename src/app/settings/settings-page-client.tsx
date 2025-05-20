@@ -26,7 +26,6 @@ import {
   PartyPopper,
   Clock,
   Flag,
-  SmilePlus,
   Pencil,
   Trash2,
   Contrast,
@@ -47,6 +46,7 @@ import {
   Sword,
   AlignEndHorizontal,
   AlignStartHorizontal,
+  SmilePlus,
 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -401,7 +401,6 @@ const FLAIRS = [
   "🐍",
   "🦅",
   "🦇",
-  "🐺",
   "🦊",
   "🐗",
   "🦬",
@@ -555,8 +554,6 @@ export function SettingsPageClient({
   // Renamed and using props
   const { status, session: authSession, signOut, refreshSession } = useAuth(); // authSession for clarity
   const [settings, setSettings] = useState<SettingsState>(() => {
-    // Initial state can be derived from localStorage or defaults if session isn\'t immediately available
-    // This part will be further refined when session prop is integrated
     return {
       display_name: "",
       first_name: "",
@@ -586,7 +583,7 @@ export function SettingsPageClient({
   const [initialSettings, setInitialSettings] = useState<SettingsState | null>(
     null
   );
-  const [loading, setLoading] = useState(true); // Will manage loading state based on session prop and auth context
+  const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [availableAvatars, setAvailableAvatars] = useState<string[]>([]);
@@ -596,6 +593,7 @@ export function SettingsPageClient({
   const { setTheme, theme } = useTheme();
   const [presetId, setPresetId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("profile");
+  const [isSaving, setIsSaving] = useState(false);
 
   const pieceSets = [
     "staunty",
@@ -673,22 +671,34 @@ export function SettingsPageClient({
 
   const isChanged = isProfileChanged || isSettingsChanged;
 
+  // Ref to skip session sync after save
+  const skipNextSessionSync = React.useRef(false);
+
   useEffect(() => {
     // Use initialSession passed from server component for the first load
     // Then, authSession from useAuth can take over for dynamic updates if needed
     const currentSession = initialSession || authSession;
 
+    if (isSaving) {
+      return;
+    }
+
     if (!currentSession?.user) {
       if (status === "unauthenticated") {
-        // status from useAuth
         router.push("/auth/login?callbackUrl=/settings");
       }
-      // If no session and not yet unauthenticated (e.g. loading from useAuth), show loading
       setLoading(status === "loading");
       return;
     }
 
-    setLoading(true); // Start loading when session is available and we process it
+    // Skip session sync if just saved (secondary check, isSaving is primary)
+    if (skipNextSessionSync.current) {
+      skipNextSessionSync.current = false;
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     setError(null);
     const user = currentSession.user;
 
@@ -760,7 +770,7 @@ export function SettingsPageClient({
     };
 
     setLoading(false);
-  }, [initialSession, authSession, status, router, form]); // Added form to dependencies
+  }, [initialSession, authSession, status, router, form, isSaving]);
 
   useEffect(() => {
     const avatars = [
@@ -828,8 +838,9 @@ export function SettingsPageClient({
       return;
     }
 
-    setSaveMessage("");
     setLoading(true);
+    setIsSaving(true);
+    setSaveMessage("");
     setError(null);
 
     const profileValues = form.getValues();
@@ -860,6 +871,9 @@ export function SettingsPageClient({
       highlightSquare: settings.highlightSquare,
     };
 
+    // Set flag to skip next session sync
+    skipNextSessionSync.current = true;
+
     try {
       const response = await fetch("/api/user/settings", {
         method: "PATCH",
@@ -876,60 +890,65 @@ export function SettingsPageClient({
       } else {
         saveAllSettings({
           // This saves to localStorage
-          pieceSet: settings.piece_set,
-          whitePiecesBottom: settings.white_pieces_bottom,
-          showCoordinates: settings.show_coordinates,
-          enableAnimations: settings.enable_animations,
-          soundEnabled: settings.sound_enabled,
-          enableConfetti: settings.enable_confetti,
-          timezone: settings.timezone,
-          clockFormat: settings.clock_format,
-          countryFlag: settings.country_flag,
-          flair: settings.flair,
-          highContrast: settings.highContrast,
-          autoQueen: settings.autoQueen,
-          moveInputMethod: settings.moveInputMethod,
-          boardTheme: settings.boardTheme,
+          pieceSet: dataToSend.pieceSet,
+          whitePiecesBottom: dataToSend.whitePiecesBottom,
+          showCoordinates: dataToSend.showCoordinates,
+          enableAnimations: dataToSend.enableAnimations,
+          soundEnabled: dataToSend.soundEnabled,
+          enableConfetti: dataToSend.enableConfetti,
+          timezone: dataToSend.timezone,
+          clockFormat: dataToSend.clockFormat as "12" | "24",
+          countryFlag: dataToSend.countryFlag,
+          flair: dataToSend.flair,
+          highContrast: dataToSend.highContrast,
+          autoQueen: dataToSend.autoQueen,
+          moveInputMethod: dataToSend.moveInputMethod as
+            | "click"
+            | "drag"
+            | "both",
+          boardTheme: dataToSend.boardTheme,
         });
 
         setSaveMessage("Settings saved successfully");
         await refreshSession(); // Refresh session from useAuth
-        // Update initialSettings to reflect saved state for change detection
-        setInitialSettings((prev) => {
-          const updatedSettings: SettingsState = {
-            // Ensure all fields from SettingsState are covered, using prev for safety if a field isn't in dataToSend directly
-            ...(prev ? prev : settings), // Fallback to current settings or a default structure if prev is null
-            display_name: dataToSend.name,
-            first_name: dataToSend.firstName,
-            last_name: dataToSend.lastName,
-            location: dataToSend.location,
-            avatar_url: dataToSend.image,
-            country_flag: dataToSend.countryFlag,
-            flair: dataToSend.flair,
-            timezone: dataToSend.timezone,
-            clock_format: dataToSend.clockFormat as "12" | "24",
-            preferred_difficulty: dataToSend.preferredDifficulty,
-            sound_enabled: dataToSend.soundEnabled,
-            piece_set: dataToSend.pieceSet,
-            white_pieces_bottom: dataToSend.whitePiecesBottom,
-            show_coordinates: dataToSend.showCoordinates,
-            enable_animations: dataToSend.enableAnimations,
-            enable_confetti: dataToSend.enableConfetti,
-            highContrast: dataToSend.highContrast,
-            autoQueen: dataToSend.autoQueen,
-            moveInputMethod: dataToSend.moveInputMethod as
-              | "click"
-              | "drag"
-              | "both",
-            boardTheme: dataToSend.boardTheme,
-            enablePreMadeMove: dataToSend.enablePreMadeMove,
-            showLegalMoves: dataToSend.showLegalMoves,
-            highlightSquare: dataToSend.highlightSquare,
-            // presetId is not part of dataToSend, keep from prev or current settings
-            presetId: prev?.presetId ?? settings.presetId,
-          };
-          return updatedSettings;
-        });
+
+        // Construct the definitive state based on what was successfully sent and saved
+        const successfullySavedState: SettingsState = {
+          display_name: dataToSend.name,
+          first_name: dataToSend.firstName,
+          last_name: dataToSend.lastName,
+          location: dataToSend.location,
+          avatar_url: dataToSend.image,
+          preferred_difficulty: dataToSend.preferredDifficulty,
+          sound_enabled: dataToSend.soundEnabled,
+          piece_set: dataToSend.pieceSet,
+          white_pieces_bottom: dataToSend.whitePiecesBottom,
+          show_coordinates: dataToSend.showCoordinates,
+          enable_animations: dataToSend.enableAnimations,
+          enable_confetti: dataToSend.enableConfetti,
+          timezone: dataToSend.timezone,
+          clock_format: dataToSend.clockFormat as "12" | "24",
+          country_flag: dataToSend.countryFlag,
+          flair: dataToSend.flair,
+          highContrast: dataToSend.highContrast,
+          autoQueen: dataToSend.autoQueen,
+          moveInputMethod: dataToSend.moveInputMethod as
+            | "click"
+            | "drag"
+            | "both",
+          boardTheme: dataToSend.boardTheme,
+          presetId:
+            findMatchingPreset(dataToSend.boardTheme, dataToSend.pieceSet)
+              ?.id || null,
+          enablePreMadeMove: dataToSend.enablePreMadeMove,
+          showLegalMoves: dataToSend.showLegalMoves,
+          highlightSquare: dataToSend.highlightSquare,
+        };
+
+        setSettings(successfullySavedState);
+        setInitialSettings(successfullySavedState);
+        setPresetId(successfullySavedState.presetId || null);
+
         initialProfileValues.current = {
           display_name: dataToSend.name,
           first_name: dataToSend.firstName,
@@ -943,6 +962,7 @@ export function SettingsPageClient({
       setError("An unexpected network error occurred. Please try again.");
     } finally {
       setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -1044,65 +1064,68 @@ export function SettingsPageClient({
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>User Settings</CardTitle>
-          <CardDescription>
-            Manage your account settings and preferences.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Client-side error display */}
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+    <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8 min-h-screen">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsTrigger
+            value="profile"
+            className="flex items-center gap-2"
+            aria-label="Profile"
+            onClick={() => setActiveTab("profile")}
+          >
+            <User className="h-4 w-4 text-muted-foreground" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger
+            value="game"
+            className="flex items-center gap-2"
+            aria-label="Gameplay"
+            onClick={() => setActiveTab("game")}
+          >
+            <Gamepad2 className="h-4 w-4 text-muted-foreground" />
+            Gameplay
+          </TabsTrigger>
+          <TabsTrigger
+            value="appearance"
+            className="flex items-center gap-2"
+            aria-label="Appearance"
+            onClick={() => setActiveTab("appearance")}
+          >
+            <Palette className="h-4 w-4 text-muted-foreground" />
+            Appearance
+          </TabsTrigger>
+        </TabsList>
 
-          {saveMessage && !error && (
-            <Alert className="mb-6 border-green-500 bg-card text-green-600 dark:text-green-400">
-              <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
-              <AlertTitle className="text-green-600 dark:text-green-400">
-                Success
-              </AlertTitle>
-              <AlertDescription className="text-green-600 dark:text-green-400">
-                {saveMessage}
-              </AlertDescription>
-            </Alert>
-          )}
+        <TabsContent value="profile">
+          <Card>
+            <CardHeader>
+              <CardTitle>User Settings</CardTitle>
+              <CardDescription>
+                Manage your account settings and preferences.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Client-side error display */}
+              {error && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger
-                value="profile"
-                className="flex items-center gap-2"
-                aria-label="Profile"
-              >
-                <User className="h-4 w-4 text-muted-foreground" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger
-                value="game"
-                className="flex items-center gap-2"
-                aria-label="Gameplay"
-              >
-                <Gamepad2 className="h-4 w-4 text-muted-foreground" />
-                Gameplay
-              </TabsTrigger>
-              <TabsTrigger
-                value="appearance"
-                className="flex items-center gap-2"
-                aria-label="Appearance"
-              >
-                <Palette className="h-4 w-4 text-muted-foreground" />
-                Appearance
-              </TabsTrigger>
-            </TabsList>
+              {saveMessage && !error && (
+                <Alert className="mb-6 border-green-500 bg-card text-green-600 dark:text-green-400">
+                  <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+                  <AlertTitle className="text-green-600 dark:text-green-400">
+                    Success
+                  </AlertTitle>
+                  <AlertDescription className="text-green-600 dark:text-green-400">
+                    {saveMessage}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            <TabsContent value="profile" className="space-y-6 mt-6">
               <Form {...form}>
                 <form
                   className="space-y-6"
@@ -1366,34 +1389,38 @@ export function SettingsPageClient({
 
                   <div className="space-y-2">
                     <Label>Flair</Label>
-                    <div className="flex items-center gap-4">
-                      <Dialog
-                        open={flairDialogOpen}
-                        onOpenChange={setFlairDialogOpen}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full flex items-center justify-between"
-                            aria-label="Choose flair"
+                    <Dialog
+                      open={flairDialogOpen}
+                      onOpenChange={setFlairDialogOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full flex items-center justify-start gap-3 p-3 text-left h-auto"
+                          aria-label="Choose or change your flair"
+                        >
+                          <SmilePlus className="h-4 w-4 text-muted-foreground flex-shrink-0 -mr-2" />
+                          <span
+                            className="text-2xl min-w-[28px] text-center"
+                            aria-hidden="true"
                           >
-                            <div className="flex items-center gap-2">
-                              <SmilePlus className="h-4 w-4 text-muted-foreground" />
-                              <span>{settings.flair || "Choose a flair"}</span>
-                            </div>
-                            <span className="text-2xl">{settings.flair}</span>
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>Choose Flair</DialogTitle>
-                          </DialogHeader>
-                          {flairDialogOpen && (
-                            <FlairGrid handleFlairSelect={handleFlairSelect} />
-                          )}
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                            {settings.flair || "✨"}
+                          </span>
+                          <span className="flex-grow font-normal -ml-2 text-sm">
+                            {settings.flair ? "Change Flair" : "Choose a flair"}
+                          </span>
+                          <Pencil className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Choose Flair</DialogTitle>
+                        </DialogHeader>
+                        {flairDialogOpen && (
+                          <FlairGrid handleFlairSelect={handleFlairSelect} />
+                        )}
+                      </DialogContent>
+                    </Dialog>
                   </div>
 
                   <div className="space-y-2">
@@ -1526,9 +1553,27 @@ export function SettingsPageClient({
                   </div>
                 </form>
               </Form>
-            </TabsContent>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                onClick={form.handleSubmit(handleSaveSettings)}
+                disabled={loading || !isChanged}
+              >
+                Save Settings
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
 
-            <TabsContent value="game" className="space-y-6 mt-6">
+        <TabsContent value="game">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gameplay Settings</CardTitle>
+              <CardDescription>
+                Customize your gameplay experience.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 mt-6">
               <div className="space-y-2">
                 <Label htmlFor="preferred_difficulty">
                   Preferred Difficulty
@@ -1845,9 +1890,27 @@ export function SettingsPageClient({
                   />
                 </div>
               </div>
-            </TabsContent>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                onClick={form.handleSubmit(handleSaveSettings)}
+                disabled={loading || !isChanged}
+              >
+                Save Settings
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
 
-            <TabsContent value="appearance" className="space-y-6 mt-6">
+        <TabsContent value="appearance">
+          <Card>
+            <CardHeader>
+              <CardTitle>Appearance Settings</CardTitle>
+              <CardDescription>
+                Personalize the look and feel of your chess experience.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 mt-6">
               <div className="space-y-2">
                 <Label>Board + Piece Preset</Label>
                 <p className="text-sm text-muted-foreground mb-2">
@@ -1859,11 +1922,15 @@ export function SettingsPageClient({
                   setSettings={setSettings}
                   setPresetId={setPresetId}
                 />
-                {!presetId && (
-                  <div className="mt-2 text-xs text-muted-foreground italic">
-                    Custom combination
-                  </div>
-                )}
+                {presetId === null &&
+                  !(
+                    settings.boardTheme === "auto" &&
+                    settings.piece_set === "staunty"
+                  ) && (
+                    <div className="mt-2 text-xs text-muted-foreground italic">
+                      Custom combination
+                    </div>
+                  )}
               </div>
 
               <div className="space-y-2">
@@ -1938,6 +2005,7 @@ export function SettingsPageClient({
                         <Palette className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                         <span className="capitalize truncate">
                           {settings.piece_set.replace("_", " ")}
+                          {settings.piece_set === "staunty" && " (Default)"}
                         </span>
                       </div>
                     </SelectValue>
@@ -1949,6 +2017,7 @@ export function SettingsPageClient({
                           <Palette className="h-4 w-4 text-muted-foreground" />
                           <span className="capitalize">
                             {set.replace("_", " ")}
+                            {set === "staunty" && " (Default)"}
                           </span>
                         </div>
                       </SelectItem>
@@ -2030,18 +2099,18 @@ export function SettingsPageClient({
                   Reset Board & Pieces
                 </Button>
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button
-            onClick={form.handleSubmit(handleSaveSettings)}
-            disabled={loading || !isChanged}
-          >
-            Save Settings
-          </Button>
-        </CardFooter>
-      </Card>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                onClick={form.handleSubmit(handleSaveSettings)}
+                disabled={loading || !isChanged}
+              >
+                Save Settings
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

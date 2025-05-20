@@ -8,23 +8,19 @@ import {
 
 export default function SettingsLoading() {
   return (
-    <div className="container mx-auto py-10">
+    <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8 min-h-screen">
+      {/* Tabs Skeleton */}
+      <div className="grid w-full grid-cols-3 mb-8 gap-2">
+        <Skeleton className="h-10 rounded-lg" />
+        <Skeleton className="h-10 rounded-lg" />
+        <Skeleton className="h-10 rounded-lg" />
+      </div>
       <Card>
         <CardHeader className="space-y-2">
           <Skeleton className="h-8 w-[180px]" />
           <Skeleton className="h-4 w-[300px]" />
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Tabs */}
-          <div className="grid w-full grid-cols-3 gap-2">
-            {/* Profile Tab */}
-            <Skeleton className="h-10 rounded-lg" />
-            {/* Gameplay Tab */}
-            <Skeleton className="h-10 rounded-lg" />
-            {/* Appearance Tab */}
-            <Skeleton className="h-10 rounded-lg" />
-          </div>
-
           {/* Profile Section Content */}
           <div className="space-y-6 mt-6">
             {/* Display Name */}
