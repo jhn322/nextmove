@@ -242,13 +242,13 @@ export default function PlayerProfile({
     }
   };
 
-  // If not authenticated, don't render the component
-  if (status === "unauthenticated") {
+  // If not authenticated or still loading, don't render the component
+  if (status === "unauthenticated" || status === "loading") {
     return null;
   }
 
-  // Show loading state
-  if (status === "loading" || isLoading) {
+  // Show loading state for authenticated users only
+  if (isLoading) {
     return (
       <Card
         className={`w-full bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg ${className}`}
