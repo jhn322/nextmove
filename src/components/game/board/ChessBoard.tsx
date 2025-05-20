@@ -29,6 +29,7 @@ import {
   getAutoQueen,
   getMoveInputMethod,
   getBoardTheme,
+  getEnableAnimations,
 } from "@/lib/settings";
 import AnimatedPiece from "./AnimatedPiece";
 
@@ -1135,6 +1136,30 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setShowBotSelection(false);
   };
 
+  const [enableAnimations, setEnableAnimations] = useState(true);
+
+  // Load enableAnimations from session or localStorage
+  useEffect(() => {
+    let loaded = false;
+    if (status === "authenticated" && session?.user) {
+      if (typeof session.user.enableAnimations === "boolean") {
+        setEnableAnimations(session.user.enableAnimations);
+        loaded = true;
+      }
+    }
+    if (!loaded) {
+      setEnableAnimations(getEnableAnimations());
+    }
+  }, [status, session]);
+
+  // If animations are disabled, update the board instantly (skip animation logic)
+  useEffect(() => {
+    if (!enableAnimations && isAnimating) {
+      setIsAnimating(false);
+      setAnimatingMove(null);
+    }
+  }, [enableAnimations, isAnimating]);
+
   return (
     <div className="flex flex-col h-full w-full">
       {/* TEMPORARY TEST BUTTON - HIDE LATER */}
@@ -1401,7 +1426,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     })
                   )}
                   {/* AnimatedPiece overlay */}
-                  {isAnimating && animatingMove && (
+                  {enableAnimations && isAnimating && animatingMove && (
                     <AnimatedPiece
                       type={animatingMove.type}
                       color={animatingMove.color}
