@@ -30,6 +30,7 @@ import {
   getMoveInputMethod,
   getBoardTheme,
 } from "@/lib/settings";
+import AnimatedPiece from "./AnimatedPiece";
 
 const GAME_OVER_MODAL_SHOWN_KEY = "chess_gameOverModalShown";
 const GAME_OVER_FEN_KEY = "chess_gameOverFen";
@@ -43,6 +44,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const [shouldPulse, setShouldPulse] = useState(false);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
   const [showBotSelection, setShowBotSelection] = useState(true);
+  const [isAwaitingPlay, setIsAwaitingPlay] = useState(true); // NEW: Awaiting Play state
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
     null
   );
@@ -586,37 +588,34 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   };
 
   const handleColorChange = (color: "w" | "b") => {
-    if (gameStarted) {
+    if (gameStarted && !isAwaitingPlay) {
       handleColorDialogOpen(color);
       setShowColorDialog(true);
     } else {
-      // If no game in progress, change color directly
       setPlayerColor(color);
       game.reset();
-
       if (color === "b") {
         game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
       }
-
       setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
       resetTimers();
       setGameStarted(false);
+      setIsAwaitingPlay(true);
       resetCapturedPieces();
       setLastMove(null);
       setHintMove(null);
       setIsPreMadeMove(() => () => false);
       setPreMadeMoveHandler(() => () => false);
       setIsPreMadePossibleMove(() => () => false);
-
       // Save the new state with updated color
       const newState = {
         ...DEFAULT_STATE,
         playerColor: color,
         difficulty,
         lastMove: null,
-        fen: game.fen(), // Save the current FEN which might be modified for black
+        fen: game.fen(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
     }
@@ -690,6 +689,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setTimeout(() => {
       handleGameReset(false);
       setShowBotSelection(true); // Show bot selection again
+      setIsAwaitingPlay(true);
       // highlight the difficulty section
       const difficultySection = document.querySelector(
         "[data-highlight-difficulty]"
@@ -711,6 +711,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setSelectedBot(BOTS_BY_DIFFICULTY[difficulty][0]);
     setShowBotSelection(true);
     handleGameReset(false);
+    setIsAwaitingPlay(true);
 
     // Close dialog if it was open
     setShowNewBotDialog(false);
@@ -1085,6 +1086,55 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   }, [status, session]);
 
+  const [animatingMove, setAnimatingMove] = useState<{
+    type: string;
+    color: "w" | "b";
+    from: string;
+    to: string;
+  } | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // Helper to get piece type and color from previous board state
+  const getPieceTypeFromHistory = useCallback(
+    (from: string): { type: string; color: "w" | "b" } | null => {
+      if (history.length < 2) return null;
+      const prevFen = history[history.length - 2].fen;
+      const prevBoard = new Chess(prevFen).board();
+      const file = "abcdefgh".indexOf(from[0]);
+      const rank = 8 - parseInt(from[1]);
+      const piece = prevBoard[rank][file];
+      if (!piece) return null;
+      return { type: piece.type, color: piece.color };
+    },
+    [history]
+  );
+
+  // Trigger animation on lastMove change
+  useEffect(() => {
+    if (!lastMove || !lastMove.from || !lastMove.to) return;
+    const pieceInfo = getPieceTypeFromHistory(lastMove.from);
+    if (pieceInfo) {
+      setAnimatingMove({
+        type: pieceInfo.type,
+        color: pieceInfo.color,
+        from: lastMove.from,
+        to: lastMove.to,
+      });
+      setIsAnimating(true);
+    }
+  }, [lastMove, getPieceTypeFromHistory]);
+
+  const handleAnimationEnd = () => {
+    setIsAnimating(false);
+    setAnimatingMove(null);
+  };
+
+  const handlePlayGame = () => {
+    setGameStarted(true);
+    setIsAwaitingPlay(false);
+    setShowBotSelection(false);
+  };
+
   return (
     <div className="flex flex-col h-full w-full">
       {/* TEMPORARY TEST BUTTON - HIDE LATER */}
@@ -1255,6 +1305,12 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                         moveInputMethod === "drag" ||
                         moveInputMethod === "both";
 
+                      // Hide the piece from the destination square while animating
+                      const isAnimatingDest =
+                        isAnimating &&
+                        animatingMove &&
+                        square === animatingMove.to;
+
                       return (
                         <DroppableSquare
                           key={`${actualRowIndex}-${actualColIndex}`}
@@ -1309,7 +1365,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                               : undefined
                           }
                         >
-                          {piece && (
+                          {piece && !isAnimatingDest && (
                             <DraggablePiece
                               type={piece.type}
                               color={piece.color}
@@ -1324,6 +1380,18 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                         </DroppableSquare>
                       );
                     })
+                  )}
+                  {/* AnimatedPiece overlay */}
+                  {isAnimating && animatingMove && (
+                    <AnimatedPiece
+                      type={animatingMove.type}
+                      color={animatingMove.color}
+                      pieceSet={pieceSet}
+                      from={animatingMove.from}
+                      to={animatingMove.to}
+                      squareSize={boardSize / 8}
+                      onAnimationEnd={handleAnimationEnd}
+                    />
                   )}
                 </div>
                 <ChessboardArrows
@@ -1360,7 +1428,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     selectedBot={selectedBot}
                     playerColor={playerColor}
                     onColorChange={handleColorChange}
-                    useDirectNavigation={true}
+                    useDirectNavigation={false}
+                    onPlayGame={handlePlayGame}
                   />
                 </div>
               ) : (
