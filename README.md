@@ -4,20 +4,38 @@ A modern chess application built with Next.js, TypeScript, TailwindCSS, Shadcn, 
 
 ## Features
 
-- Play chess against AI opponents of varying difficulty levels (beginner to Grandmaster equivalent ELO)
-- Game history tracking and statistics for traditional chess
-- **New Game Mode:** Chess-themed Wordle game (accessible as the 9th card on the home page)
-  - History tracking and statistics for Wordle game mode
-- User authentication with NextAuth.js (Google & Email/Password)
+- **Play chess against AI opponents** of varying difficulty levels (beginner to Grandmaster equivalent ELO), powered by Stockfish.
+- **Drag-and-Drop Chessboard:** Move pieces using drag-and-drop (react-dnd) or click, with support for premoves and pawn promotion modal.
+- **Smooth Animations:** Animated piece movement, board highlights, and confetti on victory for an engaging experience.
+- **Advanced Chessboard Features:**
+  - Move hints, last move highlighting, check/checkmate indicators, and board arrows.
+  - Customizable piece sets and board themes.
+  - Accessibility features and keyboard navigation.
+- **Bot Challenge System:**
+  - Play against a variety of AI bots with increasing difficulty and ELO badges.
+  - Progression system: defeat bots to unlock harder challenges.
+  - Bot selection panel with avatars, tooltips, and random color assignment.
+- **Game History & Stats:**
+  - Paginated history of all games played, with detailed stats and ELO changes.
+  - Wordle and chess stats tracked separately.
+  - Ability to clear history and view bot progression.
+- **Chess Wordle Mode:** Unique chess-themed Wordle game mode with its own stats and history (accessible as the 9th card on the home page).
+- **User Authentication:** NextAuth.js (Google & Email/Password)
   - Email verification with option to resend verification email
   - Secure password reset functionality (link valid for 24 hours)
   - Graceful UX handling for Google OAuth users attempting password reset
   - Automatic deletion of unverified accounts and associated tokens after 7 days for enhanced security
-- Game history tracking and statistics for traditional chess
-- Customizable user settings
-- Sound effects and animations
-- Responsive design for desktop and mobile
-- Loading states on interactive buttons for improved user feedback and skeletons
+- **Extensive User Settings:**
+  - Piece set, board theme, move input method (drag/click/both), sound, confetti, high contrast, auto-queen, coordinates, and more.
+  - All settings persist via localStorage and/or user profile.
+- **Responsive, Modern UI:**
+  - Built with Shadcn UI, Radix, and Tailwind CSS for a mobile-first, accessible experience.
+  - Skeleton loaders, tooltips, and interactive feedback throughout.
+- **Notifications & Feedback:**
+  - Toast notifications (Sonner) for game events, errors, and authentication.
+  - Loading spinners and skeletons for async actions.
+- **Security & Auth:**
+  - NextAuth.js with Google OAuth and email/password, secure password reset, and email verification.
 
 ## Tech Stack
 
@@ -34,6 +52,35 @@ A modern chess application built with Next.js, TypeScript, TailwindCSS, Shadcn, 
 - **Notifications**: `sonner`
 - **Emailing**: `Brevo`
 - **Linting/Formatting**: ESLint, Prettier (`prettier-plugin-tailwindcss`)
+
+## Project Structure
+
+```mermaid
+graph TD
+  User((User))
+  Frontend["Next.js App Router\nReact 19 + Shadcn UI"]
+  State["State & Settings\n(localStorage, Context/Zustand)"]
+  API["Next.js API Routes"]
+  Auth["NextAuth.js"]
+  DB["Prisma + MongoDB"]
+  ChessEngine["Stockfish\nchess.js"]
+  Email["Resend/Brevo"]
+  Notification["Sonner (Toasts)"]
+
+  User -- interacts --> Frontend
+  Frontend -- fetches/saves --> State
+  Frontend -- calls --> API
+  Frontend -- shows --> Notification
+  Frontend -- uses --> ChessEngine
+  API -- authenticates --> Auth
+  API -- reads/writes --> DB
+  API -- sends --> Email
+  API -- returns --> Frontend
+  Auth -- manages --> DB
+  ChessEngine -- powers --> Frontend
+  Notification -- notifies --> User
+  Email -- emails --> User
+```
 
 ## Getting Started
 
