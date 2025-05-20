@@ -96,7 +96,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   // Load user settings from session or localStorage
   const { status, session } = useAuth();
   const [pieceSet, setPieceSet] = useState("staunty");
-  const [showCoordinates, setShowCoordinates] = useState(true);
+  const [, setShowCoordinates] = useState(true);
   const [autoQueen, setAutoQueen] = useState(() => getAutoQueen());
   const [moveInputMethod, setMoveInputMethod] = useState<
     "click" | "drag" | "both"
@@ -1247,11 +1247,9 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                   {board.map((row, rowIndex) =>
                     row.map((_, colIndex) => {
                       // Determine if we should flip the board based on player color and settings
-                      // By default, always show player's pieces at the bottom
                       const shouldFlipBoard = whitePiecesBottom
                         ? playerColor === "b"
                         : playerColor === "w";
-
                       const actualRowIndex = shouldFlipBoard
                         ? 7 - rowIndex
                         : rowIndex;
@@ -1280,15 +1278,31 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                         selectedPiece.row === actualRowIndex &&
                         selectedPiece.col === actualColIndex;
 
-                      // Get the coordinates
-                      const shouldShowRank =
-                        showCoordinates && actualColIndex === 0;
-                      const shouldShowFile =
-                        showCoordinates && actualRowIndex === 7;
-                      const coordinate = shouldShowRank
-                        ? `${8 - actualRowIndex}`
-                        : shouldShowFile
-                          ? `${"abcdefgh"[actualColIndex]}`
+                      // Coordinate label logic
+                      let fileLabel = "abcdefgh"[actualColIndex];
+                      let rankLabel = `${8 - actualRowIndex}`;
+                      let showFile = false;
+                      let showRank = false;
+                      if (
+                        whitePiecesBottom
+                          ? playerColor === "w"
+                          : playerColor === "b"
+                      ) {
+                        // White at bottom
+                        showFile = actualRowIndex === 7;
+                        showRank = actualColIndex === 0;
+                      } else {
+                        // Black at bottom
+                        showFile = actualRowIndex === 0;
+                        showRank = actualColIndex === 7;
+                        // Flip file and rank for black
+                        fileLabel = "abcdefgh"[7 - actualColIndex];
+                        rankLabel = `${actualRowIndex + 1}`;
+                      }
+                      const coordinate = showRank
+                        ? rankLabel
+                        : showFile
+                          ? fileLabel
                           : undefined;
 
                       // Determine if the piece can be dragged
@@ -1328,8 +1342,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                           isPreMadeMove={isPreMadeMove(square)}
                           isPreMadePossibleMove={isPreMadePossibleMove(square)}
                           coordinate={coordinate}
-                          showRank={shouldShowRank}
-                          showFile={shouldShowFile}
+                          showRank={showRank}
+                          showFile={showFile}
                           difficulty={
                             boardTheme === "auto" ? difficulty : boardTheme
                           }
@@ -1364,6 +1378,11 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                                   handleSquareMouseUp(square, e)
                               : undefined
                           }
+                          whitePiecesBottom={
+                            whitePiecesBottom
+                              ? playerColor === "w"
+                              : playerColor === "b"
+                          }
                         >
                           {piece && !isAnimatingDest && (
                             <DraggablePiece
@@ -1390,6 +1409,11 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                       from={animatingMove.from}
                       to={animatingMove.to}
                       squareSize={boardSize / 8}
+                      whitePiecesBottom={
+                        whitePiecesBottom
+                          ? playerColor === "w"
+                          : playerColor === "b"
+                      }
                       onAnimationEnd={handleAnimationEnd}
                     />
                   )}

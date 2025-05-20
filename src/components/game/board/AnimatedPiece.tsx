@@ -9,6 +9,7 @@ interface AnimatedPieceProps {
   from: string;
   to: string;
   squareSize: number;
+  whitePiecesBottom: boolean;
   onAnimationEnd?: () => void;
   className?: string;
 }
@@ -29,6 +30,7 @@ const AnimatedPiece = ({
   from,
   to,
   squareSize,
+  whitePiecesBottom,
   onAnimationEnd,
   className,
 }: AnimatedPieceProps) => {
@@ -36,8 +38,14 @@ const AnimatedPiece = ({
   const pieceRef = useRef<HTMLDivElement>(null);
 
   // Calculate start and end positions
-  const [fromCol, fromRow] = getCoords(from);
-  const [toCol, toRow] = getCoords(to);
+  let [fromCol, fromRow] = getCoords(from);
+  let [toCol, toRow] = getCoords(to);
+  if (!whitePiecesBottom) {
+    fromCol = 7 - fromCol;
+    fromRow = 7 - fromRow;
+    toCol = 7 - toCol;
+    toRow = 7 - toRow;
+  }
 
   // Start at the from square
   const [pos, setPos] = useState({

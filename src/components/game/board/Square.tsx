@@ -112,6 +112,7 @@ interface SquareProps {
   showRank?: boolean;
   showFile?: boolean;
   onContextMenu?: (event: React.MouseEvent) => void;
+  whitePiecesBottom: boolean;
 }
 
 const Square = ({
@@ -132,10 +133,28 @@ const Square = ({
   showRank,
   showFile,
   onContextMenu,
+  whitePiecesBottom,
 }: SquareProps) => {
   let colors = boardThemes[difficulty];
   if (boardTheme && boardTheme !== "auto" && boardThemes[boardTheme]) {
     colors = boardThemes[boardTheme];
+  }
+
+  // Calculate flipped coordinates for black at bottom
+  let displayCoordinate = coordinate;
+  if (!whitePiecesBottom && coordinate) {
+    // If coordinate is a number (rank), flip it
+    if (!isNaN(Number(coordinate))) {
+      displayCoordinate = `${9 - Number(coordinate)}`;
+    } else if (
+      coordinate.length === 1 &&
+      coordinate >= "a" &&
+      coordinate <= "h"
+    ) {
+      // If coordinate is a file, flip it
+      const files = "abcdefgh";
+      displayCoordinate = files[7 - files.indexOf(coordinate)];
+    }
   }
 
   // Determine the highlight class based on the square state
@@ -184,7 +203,7 @@ const Square = ({
     ${showFile ? "right-2 bottom-2" : ""}
   `}
         >
-          {coordinate}
+          {displayCoordinate}
         </div>
       )}
       <div className="absolute inset-0 flex items-center justify-center z-5">

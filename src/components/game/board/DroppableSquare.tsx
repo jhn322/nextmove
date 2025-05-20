@@ -28,6 +28,7 @@ interface DroppableSquareProps {
   onContextMenu?: (event: React.MouseEvent) => void;
   onMouseDown?: (event: React.MouseEvent) => void;
   onMouseUp?: (event: React.MouseEvent) => void;
+  whitePiecesBottom: boolean;
 }
 
 interface DropItem {
@@ -58,6 +59,7 @@ const DroppableSquare = ({
   onContextMenu,
   onMouseDown,
   onMouseUp,
+  whitePiecesBottom,
 }: DroppableSquareProps) => {
   const position = `${"abcdefgh"[col]}${8 - row}`;
   const elementRef = useRef<HTMLDivElement>(null);
@@ -105,6 +107,7 @@ const DroppableSquare = ({
         showFile={showFile}
         onClick={onClick}
         onContextMenu={onContextMenu}
+        whitePiecesBottom={whitePiecesBottom}
       >
         {children}
       </Square>
