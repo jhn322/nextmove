@@ -388,6 +388,7 @@ export const HistoryPageClient = ({
       if (success) {
         setGameHistory([]);
         setGameStats(null);
+        setWordleStats(null);
         setSuccessMessage("Game history cleared successfully");
 
         // Clear localStorage items now that server action was successful
@@ -429,26 +430,27 @@ export const HistoryPageClient = ({
 
     return (
       <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertDialogTrigger asChild>
                 <Button
                   variant="destructive"
                   size="sm"
                   className="ml-auto"
                   disabled={isClearing}
+                  aria-label="Clear all game history and statistics"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Clear History
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Clear all game history and statistics
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </AlertDialogTrigger>
+              </AlertDialogTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="top" align="center">
+              Clear all game history and statistics
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Clear All Game History</AlertDialogTitle>
@@ -467,6 +469,9 @@ export const HistoryPageClient = ({
                 <li>
                   <strong>Bot Challenge Records</strong> - All bots you&apos;ve
                   defeated
+                </li>
+                <li>
+                  <strong>Wordle Statistics</strong> - All Wordle games played
                 </li>
               </ul>
               <p className="text-destructive font-semibold mt-2">

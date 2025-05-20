@@ -1532,9 +1532,9 @@ export function SettingsPageClient({
                                 Are you absolutely sure?
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                This action cannot be undone. This will
-                                permanently delete your account and remove all
-                                of your data from our servers.
+                                This action cannot be undone. This will{" "}
+                                <strong>permanently</strong> delete your account
+                                and remove all of your data from our servers.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

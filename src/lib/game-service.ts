@@ -248,13 +248,25 @@ export const clearUserGameHistory = async (
       return false;
     }
 
-    await prisma.game.deleteMany({
-      where: { userId: userId },
+    // Wrap operations in a transaction for atomicity
+    await prisma.$transaction(async (tx) => {
+      // Delete regular game history
+      await tx.game.deleteMany({
+        where: { userId: userId },
+      });
+
+      // Delete all Wordle attempt records for the user
+      await tx.wordleAttempt.deleteMany({
+        where: { userId: userId },
+      });
     });
 
     return true;
   } catch (error) {
-    console.error("Unexpected error clearing game history:", error);
+    console.error(
+      "Unexpected error clearing game history and Wordle stats:",
+      error
+    );
     return false;
   }
 };
