@@ -64,7 +64,7 @@ graph TD
   Auth["NextAuth.js"]
   DB["Prisma + MongoDB"]
   ChessEngine["Stockfish\nchess.js"]
-  Email["Resend/Brevo"]
+  Email["Brevo"]
   Notification["Sonner (Toasts)"]
 
   User -- interacts --> Frontend
@@ -106,10 +106,10 @@ DATABASE_URL="mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
-# Email Provider (Resend - for password reset, email verification etc.)
-# Sign up at https://resend.com/
-RESEND_API_KEY=
-EMAIL_FROM="noreply@example.com" # Your "from" email address for Resend
+# Email Provider (Brevo - for password reset, email verification etc.)
+# Sign up at https://www.brevo.com/
+BREVO_API_KEY=
+EMAIL_FROM="noreply@example.com" # Your "from" email address for Brevo
 
 # Optional: Other environment variables as needed by your application
 # Example:
@@ -232,5 +232,5 @@ For the exact structure, refer to the `prisma/schema.prisma` file.
 - [Stockfish](https://stockfishchess.org/)
 - [Zod](https://zod.dev/)
 - [React Hook Form](https://react-hook-form.com/)
-- [Resend](https://resend.com/)
+- [Brevo](https://www.brevo.com/)
 - [Sonner](https://sonner.emilkowal.ski/)
