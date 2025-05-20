@@ -26,6 +26,7 @@ import {
   Crown,
   Shuffle,
   Play,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -59,7 +60,7 @@ const BotSelectionPanel = ({
 }: BotSelectionPanelProps) => {
   const router = useRouter();
   const [isRandomColor, setIsRandomColor] = useState(false);
-  // Use a ref to track if the random button was just clicked
+  const [isShufflingColor, setIsShufflingColor] = useState(false);
   const randomButtonJustClicked = useRef(false);
 
   const difficulties = [
@@ -95,16 +96,16 @@ const BotSelectionPanel = ({
 
   // Handle random color selection
   const handleRandomColor = () => {
-    // Set the ref to true to indicate the random button was just clicked
+    if (isShufflingColor) return;
     randomButtonJustClicked.current = true;
-
+    setIsShufflingColor(true);
     setIsRandomColor(true);
-    const randomColor = Math.random() < 0.5 ? "w" : "b";
-    onColorChange(randomColor);
-
     setTimeout(() => {
+      const randomColor = Math.random() < 0.5 ? "w" : "b";
+      onColorChange(randomColor);
+      setIsShufflingColor(false);
       randomButtonJustClicked.current = false;
-    }, 100);
+    }, 500);
   };
 
   // Handle specific color selection
@@ -300,7 +301,7 @@ const BotSelectionPanel = ({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    Choose which color pieces you want to play with. You&apos;ll
+                    Choose which piece color you want to play as. You&apos;ll
                     always move first, regardless of color.
                   </p>
                 </TooltipContent>
@@ -337,8 +338,14 @@ const BotSelectionPanel = ({
                     onClick={handleRandomColor}
                     variant={isRandomColor ? "default" : "outline"}
                     className="flex-1 flex items-center justify-center gap-2"
+                    disabled={isShufflingColor}
+                    aria-label="Shuffle piece color"
                   >
-                    <Shuffle className="h-4 w-4 flex-shrink-0" />
+                    {isShufflingColor ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Shuffle className="h-4 w-4 flex-shrink-0" />
+                    )}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Random Piece Color</TooltipContent>
