@@ -860,6 +860,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   }, [game, setBoard, setGameStarted, setPlayerColor]);
 
+  const wasDragMoveRef = useRef(false);
+
   const handleDragMove = (
     item: { type: string; position: string },
     targetPosition: string
@@ -870,12 +872,9 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     // Convert the positions to the format that makeMove expects
     const fromPosition = item.position;
     const toPosition = targetPosition;
-
     if (fromPosition === toPosition) return;
-
-    // Call makeMove with the from and to positions
+    wasDragMoveRef.current = true; // Mark this move as a drag (sync)
     const moveSuccessful = makeMove(fromPosition, toPosition);
-
     if (moveSuccessful) {
       // Clear possible moves and selected piece after successful move
       setPossibleMoves([]);
@@ -885,13 +884,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       if (showBotSelection) {
         setShowBotSelection(false);
       }
-
       setBoard(game.board());
-
       if (!game.isGameOver()) {
         setTimeout(getBotMove, 1000);
       }
-
       if (!game.isGameOver()) {
         setGameStarted(true);
         // Ensure the game state is saved with gameStarted=true
@@ -910,9 +906,6 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   };
 
-  // * ========================================================================
-  // *                              ARROW DRAWING STATE
-  // * ========================================================================
   const [arrows, setArrows] = useState<Arrow[]>([]);
   const [drawingArrow, setDrawingArrow] = useState<string | null>(null);
   const rightDragJustFinishedRef = useRef<boolean>(false);
@@ -1113,6 +1106,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   // Trigger animation on lastMove change
   useEffect(() => {
     if (!lastMove || !lastMove.from || !lastMove.to) return;
+    if (wasDragMoveRef.current) {
+      wasDragMoveRef.current = false;
+      return; // Skip animation for drag-and-drop
+    }
     const pieceInfo = getPieceTypeFromHistory(lastMove.from);
     if (pieceInfo) {
       setAnimatingMove({
