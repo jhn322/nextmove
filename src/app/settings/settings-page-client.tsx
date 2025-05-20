@@ -1042,29 +1042,33 @@ export function SettingsPageClient({
     return <SettingsLoading />;
   }
 
-  // Error display based on client-side error state
-  if (error) {
-    return (
-      <div className="container mx-auto py-10">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   // If, after loading, there\'s still no session (e.g. user logged out in another tab and useAuth caught up)
-  // This check might be redundant if the main useEffect handles redirection properly, but can be a fallback.
   const currentSession = initialSession || authSession;
   if (!currentSession?.user && status !== "loading") {
-    // It should have redirected in the useEffect, but as a safeguard:
-    return <SettingsLoading />; // Or a message "Please sign in"
+    return <SettingsLoading />;
   }
 
   return (
     <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8 min-h-screen">
+      {/* Success/Error Alerts */}
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {saveMessage && !error && (
+        <Alert className="mb-6 border-green-500 bg-card text-green-600 dark:text-green-400">
+          <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+          <AlertTitle className="text-green-600 dark:text-green-400">
+            Success
+          </AlertTitle>
+          <AlertDescription className="text-green-600 dark:text-green-400">
+            {saveMessage}
+          </AlertDescription>
+        </Alert>
+      )}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger
@@ -1105,27 +1109,6 @@ export function SettingsPageClient({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Client-side error display */}
-              {error && (
-                <Alert variant="destructive" className="mb-6">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {saveMessage && !error && (
-                <Alert className="mb-6 border-green-500 bg-card text-green-600 dark:text-green-400">
-                  <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
-                  <AlertTitle className="text-green-600 dark:text-green-400">
-                    Success
-                  </AlertTitle>
-                  <AlertDescription className="text-green-600 dark:text-green-400">
-                    {saveMessage}
-                  </AlertDescription>
-                </Alert>
-              )}
-
               <Form {...form}>
                 <form
                   className="space-y-6"
