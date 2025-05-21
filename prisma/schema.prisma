@@ -41,7 +41,7 @@ model User {
   enableAnimations    Boolean? @default(true) // Game animations preference
   enableConfetti      Boolean? @default(true) // Victory confetti preference
   highContrast        Boolean? @default(false) // High contrast accessibility mode
-  autoQueen           Boolean? @default(true) // Auto promote to queen on pawn promotion
+  autoQueen           Boolean? @default(false) // Auto promote to queen on pawn promotion
   moveInputMethod     String? @default("both") // Move input method: click, drag, or both
   boardTheme          String? @default("auto") // Board theme/color preference
   enablePreMadeMove   Boolean? @default(true) // Enable pre-made move feature
