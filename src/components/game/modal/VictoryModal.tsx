@@ -24,6 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import EloBadge from "@/components/ui/elo-badge";
+import { AnimatePresence, motion } from "framer-motion";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -88,6 +89,8 @@ const VictoryModal = ({
   const [gameNewElo, setGameNewElo] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [showWinnerEffects, setShowWinnerEffects] = useState(false);
+  const winnerEffectsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -348,6 +351,26 @@ const VictoryModal = ({
     };
   }, [isOpen, isResignation]);
 
+  useEffect(() => {
+    if (isVisible && !isResignation) {
+      winnerEffectsTimeoutRef.current = setTimeout(() => {
+        setShowWinnerEffects(true);
+      }, 200);
+    } else {
+      setShowWinnerEffects(false);
+      if (winnerEffectsTimeoutRef.current) {
+        clearTimeout(winnerEffectsTimeoutRef.current);
+        winnerEffectsTimeoutRef.current = null;
+      }
+    }
+    return () => {
+      if (winnerEffectsTimeoutRef.current) {
+        clearTimeout(winnerEffectsTimeoutRef.current);
+        winnerEffectsTimeoutRef.current = null;
+      }
+    };
+  }, [isVisible, isResignation]);
+
   const handleRematch = () => {
     game.reset();
     game.isResigned = false;
@@ -448,17 +471,60 @@ const VictoryModal = ({
           </DialogDescription>
 
           <DialogHeader>
-            <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
-              {message}
-            </DialogTitle>
+            {isResignation ? (
+              <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
+                {message}
+              </DialogTitle>
+            ) : (
+              <AnimatePresence>
+                {showWinnerEffects && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
+                      {message}
+                    </DialogTitle>
+                  </motion.div>
+                )}
+                {!showWinnerEffects && (
+                  <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words opacity-0 select-none">
+                    {message}
+                  </DialogTitle>
+                )}
+              </AnimatePresence>
+            )}
             {!isResignation && (
               <div className="text-sm text-muted-foreground text-center pt-2 sm:pt-4 space-y-2">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold text-foreground">
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
-                      <AvatarImage src={playerAvatar} alt={playerName} />
-                      <AvatarFallback>{playerName.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <AnimatePresence>
+                      {showWinnerEffects && isPlayerWinner() && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.22, ease: "easeOut" }}
+                        >
+                          <Avatar className="h-8 w-8 sm:h-12 sm:w-12 ring-4 ring-green-500 ring-offset-2 ring-offset-background transition-all duration-300">
+                            <AvatarImage src={playerAvatar} alt={playerName} />
+                            <AvatarFallback>
+                              {playerName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </motion.div>
+                      )}
+                      {(!showWinnerEffects || !isPlayerWinner()) && (
+                        <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
+                          <AvatarImage src={playerAvatar} alt={playerName} />
+                          <AvatarFallback>
+                            {playerName.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </AnimatePresence>
                     <span title={playerName}>{playerName}</span>
                     <span className="text-muted-foreground text-sm sm:text-base">
                       ({playerColor === "w" ? "White" : "Black"})
@@ -466,15 +532,37 @@ const VictoryModal = ({
                   </div>
                   <span className="text-muted-foreground mx-2">vs</span>
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
-                      <AvatarImage
-                        src={selectedBot?.image}
-                        alt={selectedBot?.name}
-                      />
-                      <AvatarFallback title={selectedBot?.name}>
-                        B
-                      </AvatarFallback>
-                    </Avatar>
+                    <AnimatePresence>
+                      {showWinnerEffects && !isPlayerWinner() && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.22, ease: "easeOut" }}
+                        >
+                          <Avatar className="h-8 w-8 sm:h-12 sm:w-12 ring-4 ring-green-500 ring-offset-2 ring-offset-background transition-all duration-300">
+                            <AvatarImage
+                              src={selectedBot?.image}
+                              alt={selectedBot?.name}
+                            />
+                            <AvatarFallback title={selectedBot?.name}>
+                              B
+                            </AvatarFallback>
+                          </Avatar>
+                        </motion.div>
+                      )}
+                      {(!showWinnerEffects || isPlayerWinner()) && (
+                        <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
+                          <AvatarImage
+                            src={selectedBot?.image}
+                            alt={selectedBot?.name}
+                          />
+                          <AvatarFallback title={selectedBot?.name}>
+                            B
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </AnimatePresence>
                     <span title={selectedBot?.name}>
                       {selectedBot?.name || "Bot"}
                     </span>
