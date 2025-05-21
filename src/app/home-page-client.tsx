@@ -31,6 +31,8 @@ import {
   AudioLines,
   Blocks,
   Bot as BotIcon,
+  Settings,
+  BarChart2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -236,6 +238,69 @@ interface HomePageClientProps {
 
 // Constant for game state in localStorage
 const GAME_STATE_STORAGE_KEY = "chess-game-state";
+
+// ** Signed-in Features Info Card ** //
+const SignedInFeaturesInfo = () => (
+  <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg p-6 sticky top-6 shadow-lg animate-fadeIn">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="bg-primary/10 p-2 rounded-full">
+        <LogIn className="h-5 w-5 text-primary" />
+      </div>
+      <div className="flex-1">
+        <h3 className="font-semibold text-lg">Unlock More Features</h3>
+        <p className="text-xs text-muted-foreground">
+          Sign in to access these:
+        </p>
+      </div>
+    </div>
+    <ul className="space-y-3 mt-2">
+      <li className="flex items-start gap-3">
+        <Settings
+          className="h-5 w-5 text-primary shrink-0"
+          aria-hidden="true"
+        />
+        <span>
+          <span className="font-medium">Settings:</span> Customize piece set,
+          board theme, and advanced game options.
+        </span>
+      </li>
+      <li className="flex items-start gap-3">
+        <BarChart2
+          className="h-5 w-5 text-primary shrink-0"
+          aria-hidden="true"
+        />
+        <span>
+          <span className="font-medium">History & Stats:</span> View
+          comprehensive statistics for all your games.
+        </span>
+      </li>
+      <li className="flex items-start gap-3">
+        <ToyBrick
+          className="h-5 w-5 text-primary shrink-0"
+          aria-hidden="true"
+        />
+        <span>
+          <span className="font-medium">Chess Wordle:</span> Play the exclusive
+          chess word puzzle game.
+        </span>
+      </li>
+      <li className="flex items-start gap-3">
+        <BotIcon className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+        <span>
+          <span className="font-medium">Bot Progression:</span> Track victories
+          against all 48 unique bots.
+        </span>
+      </li>
+      <li className="flex items-start gap-3">
+        <Hash className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+        <span>
+          <span className="font-medium">ELO Rating:</span> Compete and improve
+          your ELO-based chess rating as you play.
+        </span>
+      </li>
+    </ul>
+  </div>
+);
 
 export function HomePageClient({
   session,
@@ -910,6 +975,9 @@ export function HomePageClient({
 
           {/* Right Side Content */}
           <div className="lg:row-span-1 space-y-6">
+            {/* Show signed-in features info for visitors */}
+            {!session && <SignedInFeaturesInfo />}
+
             {/* Player Profile Card */}
             <PlayerProfile
               className="mb-6"
@@ -922,7 +990,7 @@ export function HomePageClient({
             />
 
             {/* Challenge Description */}
-            <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg p-6 sticky top-6 shadow-lg">
+            <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg p-6 sticky top-6 shadow-lg animate-fadeIn">
               <div className="relative">
                 <h2 className="text-2xl font-bold mb-4 inline-block">
                   The Ultimate Chess Challenge
