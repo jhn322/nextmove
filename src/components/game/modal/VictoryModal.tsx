@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,8 @@ const VictoryModal = ({
   const { session, refreshSession } = useAuth();
   const [gameEloDelta, setGameEloDelta] = useState<number | null>(null);
   const [gameNewElo, setGameNewElo] = useState<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -318,6 +320,34 @@ const VictoryModal = ({
     renderWinnerText,
   ]);
 
+  useEffect(() => {
+    if (isOpen) {
+      if (isResignation) {
+        setIsVisible(true);
+        if (delayTimeoutRef.current) {
+          clearTimeout(delayTimeoutRef.current);
+          delayTimeoutRef.current = null;
+        }
+      } else {
+        delayTimeoutRef.current = setTimeout(() => {
+          setIsVisible(true);
+        }, 800);
+      }
+    } else {
+      setIsVisible(false);
+      if (delayTimeoutRef.current) {
+        clearTimeout(delayTimeoutRef.current);
+        delayTimeoutRef.current = null;
+      }
+    }
+    return () => {
+      if (delayTimeoutRef.current) {
+        clearTimeout(delayTimeoutRef.current);
+        delayTimeoutRef.current = null;
+      }
+    };
+  }, [isOpen, isResignation]);
+
   const handleRematch = () => {
     game.reset();
     game.isResigned = false;
@@ -389,7 +419,7 @@ const VictoryModal = ({
 
   return (
     <>
-      {showConfetti && (
+      {isVisible && showConfetti && (
         <Confetti
           width={width}
           height={height}
@@ -399,10 +429,11 @@ const VictoryModal = ({
           style={{ position: "fixed", zIndex: 100 }}
         />
       )}
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isVisible} onOpenChange={onClose}>
         <DialogContent
           className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg"
           aria-describedby="victory-modal-description"
+          overlayClassName={!isResignation ? "bg-transparent" : undefined}
         >
           <DialogDescription id="victory-modal-description" className="sr-only">
             {isResignation

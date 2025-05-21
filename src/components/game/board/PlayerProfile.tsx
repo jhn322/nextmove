@@ -28,7 +28,7 @@ interface PlayerProfileProps {
 const PlayerProfile = ({
   difficulty,
   isBot,
-  rating = 1000,
+  rating = 600,
   capturedPieces = [],
   selectedBot,
   lastMove,
