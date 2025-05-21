@@ -216,7 +216,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         setShowBotSelection(true);
         if (savedState.playerColor) setPlayerColor(savedState.playerColor);
         if (playerColor === "b" && savedState.playerColor === "b") {
-          game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+          game.reset();
           setBoard(game.board());
         }
         return;
@@ -267,9 +267,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
           setShowBotSelection(true);
           setGameStarted(false);
           if (playerColor === "b") {
-            game.load(
-              "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
-            );
+            game.reset();
             setBoard(game.board());
           }
         }
@@ -279,7 +277,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         setShowBotSelection(true);
         setGameStarted(false);
         if (playerColor === "b") {
-          game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+          game.reset();
           setBoard(game.board());
         }
       }
@@ -545,7 +543,12 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
 
   const handleRematch = () => {
     handleModalClose();
-    setTimeout(() => handleGameReset(true), 0);
+    setTimeout(() => {
+      handleGameReset(true);
+      if (playerColor === "b") {
+        setTimeout(getBotMove, 500);
+      }
+    }, 0);
   };
 
   // Game restart
@@ -555,10 +558,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
 
     // If player is black, set up the board for black to move first
     if (playerColor === "b") {
-      game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+      game.reset();
+      setBoard(game.board());
     }
 
-    setBoard(game.board());
     setSelectedPiece(null);
     setPossibleMoves([]);
     resetTimers();
@@ -596,9 +599,9 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       setPlayerColor(color);
       game.reset();
       if (color === "b") {
-        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        game.reset();
+        setBoard(game.board());
       }
-      setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
       resetTimers();
@@ -628,10 +631,10 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       game.reset();
 
       if (pendingColor === "b") {
-        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        game.reset();
+        setBoard(game.board());
       }
 
-      setBoard(game.board());
       setSelectedPiece(null);
       setPossibleMoves([]);
       resetTimers();
@@ -852,13 +855,12 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         localStorage.removeItem(STORAGE_KEY);
 
         if (savedState.playerColor === "b") {
-          game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+          game.reset();
           setBoard(game.board());
-          setPlayerColor("b");
         }
       }
     }
-  }, [game, setBoard, setGameStarted, setPlayerColor]);
+  }, [game, setBoard, setGameStarted, setPlayerColor, getBotMove]);
 
   const wasDragMoveRef = useRef(false);
 
@@ -1030,9 +1032,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       setGameStarted(true);
 
       if (playerColor === "b") {
-        game.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+        game.reset();
         setBoard(game.board());
-        setHistory([{ fen: game.fen(), lastMove: null }]);
       }
 
       localStorage.setItem("selectedBot", JSON.stringify(botWithoutDifficulty));
@@ -1046,6 +1047,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setSelectedBot,
     setShowBotSelection,
     setGameStarted,
+    getBotMove,
   ]);
 
   // Gameplay settings
@@ -1131,6 +1133,9 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     setGameStarted(true);
     setIsAwaitingPlay(false);
     setShowBotSelection(false);
+    if (playerColor === "b") {
+      setTimeout(getBotMove, 500);
+    }
   };
 
   const [enableAnimations, setEnableAnimations] = useState(true);
