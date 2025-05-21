@@ -113,6 +113,24 @@ const Navbar = () => {
   const { status, signIn, signOut } = useAuth();
   const isAuthenticated = status === "authenticated";
 
+  // Memoize last known authenticated state to prevent auth paths flicker when game is finished
+  const [wasAuthenticated, setWasAuthenticated] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated") setWasAuthenticated(true);
+    if (status === "unauthenticated") setWasAuthenticated(false);
+  }, [status]);
+  const showAuthLinks =
+    isAuthenticated || (status === "loading" && wasAuthenticated);
+
+  // Reset loading spinners on route change
+  useEffect(() => {
+    setIsHistoryLoading(false);
+    setIsSettingsLoading(false);
+  }, [pathname]);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -259,6 +277,8 @@ const Navbar = () => {
 
   const handleProtectedNavigation = async (path: string) => {
     if (isAuthenticated) {
+      if (path === "/history") setIsHistoryLoading(true);
+      if (path === "/settings") setIsSettingsLoading(true);
       await router.push(path);
     } else {
       await signIn("google", {
@@ -467,7 +487,7 @@ const Navbar = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {isAuthenticated && (
+                {showAuthLinks && (
                   <>
                     <NavigationMenuItem>
                       <Button
@@ -480,9 +500,14 @@ const Navbar = () => {
                             ? "bg-primary/10 text-primary"
                             : ""
                         )}
+                        disabled={isHistoryLoading}
                       >
-                        <History className="mr-2 h-4 w-4" />
-                        History
+                        {isHistoryLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <History className="mr-2 h-4 w-4" />
+                        )}
+                        <span>History</span>
                       </Button>
                     </NavigationMenuItem>
 
@@ -497,9 +522,14 @@ const Navbar = () => {
                             ? "bg-primary/10 text-primary"
                             : ""
                         )}
+                        disabled={isSettingsLoading}
                       >
-                        <Settings className="mr-2 h-4 w-4" />
-                        Settings
+                        {isSettingsLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Settings className="mr-2 h-4 w-4" />
+                        )}
+                        <span>Settings</span>
                       </Button>
                     </NavigationMenuItem>
                   </>
@@ -565,7 +595,7 @@ const Navbar = () => {
               </DropdownMenu>
             </div>
 
-            {isAuthenticated ? (
+            {showAuthLinks ? (
               <div className="hidden lg:block">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -611,7 +641,7 @@ const Navbar = () => {
 
           {/* Mobile Menu Trigger & Mobile Auth Button */}
           <div className="flex items-center gap-2 lg:hidden">
-            {isAuthenticated ? (
+            {showAuthLinks ? (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button className="text-base px-4 py-2 h-10 inline-flex items-center shadow-sm hover:shadow-md transition-all">
@@ -793,7 +823,7 @@ const Navbar = () => {
                         </CollapsibleContent>
                       </Collapsible>
 
-                      {isAuthenticated && (
+                      {showAuthLinks && (
                         <>
                           <Button
                             onClick={() =>
@@ -896,7 +926,7 @@ const Navbar = () => {
                           <span className="sr-only">GitHub Repository</span>
                         </Link>
 
-                        {isAuthenticated ? (
+                        {showAuthLinks ? (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button className="h-9 px-4 py-2 inline-flex items-center justify-center">
