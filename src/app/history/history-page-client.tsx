@@ -1024,7 +1024,7 @@ export const HistoryPageClient = ({
                         </Badge>
                         <span>Bots</span>
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {BOTS_BY_DIFFICULTY[
                           difficulty as keyof typeof BOTS_BY_DIFFICULTY
                         ].map((bot) => {
@@ -1156,7 +1156,7 @@ export const HistoryPageClient = ({
                                     <TooltipTrigger asChild>
                                       <Badge
                                         variant="secondary"
-                                        className="absolute top-2 right-2 bg-green-500 text-white animate-pulse"
+                                        className="absolute top-1 right-1 bg-green-500 text-white animate-pulse"
                                       >
                                         In Progress
                                       </Badge>
