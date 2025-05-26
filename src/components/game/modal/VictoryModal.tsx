@@ -424,21 +424,23 @@ const VictoryModal = ({
             <DialogTitle className="text-center text-xl sm:text-2xl font-bold mb-2">
               {message}
             </DialogTitle>
-            {typeof gameEloDelta === "number" && gameEloDelta !== 0 && (
-              <div className="flex justify-center mt-1 gap-2">
-                <span
-                  className={`px-3 py-1 rounded-lg font-semibold text-sm ${gameEloDelta > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                >
-                  ELO {gameEloDelta > 0 ? "+" : ""}
-                  {gameEloDelta}
-                </span>
-                {typeof gameNewElo === "number" && (
-                  <span className="px-3 py-1 rounded-lg text-xs font-medium bg-muted text-white">
-                    New ELO: {gameNewElo}
+            {!isResignation &&
+              typeof gameEloDelta === "number" &&
+              gameEloDelta !== 0 && (
+                <div className="flex justify-center mt-1 gap-2">
+                  <span
+                    className={`px-3 py-1 rounded-lg font-semibold text-sm ${gameEloDelta > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                  >
+                    ELO {gameEloDelta > 0 ? "+" : ""}
+                    {gameEloDelta}
                   </span>
-                )}
-              </div>
-            )}
+                  {typeof gameNewElo === "number" && (
+                    <span className="px-3 py-1 rounded-lg text-xs font-medium bg-muted text-white">
+                      New ELO: {gameNewElo}
+                    </span>
+                  )}
+                </div>
+              )}
             {!isResignation && (
               <div className="text-center text-muted-foreground text-sm mt-2">
                 <span className="capitalize">{difficulty} Difficulty</span>
