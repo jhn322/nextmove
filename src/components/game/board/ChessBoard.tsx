@@ -556,11 +556,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     game.reset();
     game.isResigned = false;
 
-    // If player is black, set up the board for black to move first
-    if (playerColor === "b") {
-      game.reset();
-      setBoard(game.board());
-    }
+    setBoard(game.board());
 
     setSelectedPiece(null);
     setPossibleMoves([]);
