@@ -716,25 +716,27 @@ export function HomePageClient({
                           {isGameActive &&
                             activeGameDifficulty?.toLowerCase() ===
                               level.name.toLowerCase() && (
-                              <div
-                                className="relative sm:hidden"
-                                title="Game In Progress"
-                              >
+                              <>
                                 <div
-                                  className={`${
-                                    level.color.split(" ")[0]
-                                  } px-2 py-1 rounded-full animate-pulse flex items-center gap-1.5`}
+                                  className="relative hidden [@media(max-width:400px)]:block"
+                                  title="Game In Progress"
                                 >
-                                  <Save
-                                    className={`h-4 w-4 ${level.textColor}`}
-                                  />
-                                  <span
-                                    className={`text-xs font-medium ${level.textColor}`}
+                                  <div className="inline-flex items-center rounded-full border border-transparent bg-green-500 px-2 py-0.5">
+                                    <Save className="h-4 w-4 text-white animate-pulse" />
+                                  </div>
+                                </div>
+                                <div
+                                  className="relative [@media(max-width:400px)]:hidden sm:hidden"
+                                  title="Game In Progress"
+                                >
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-green-500 text-white animate-pulse"
                                   >
                                     In Progress
-                                  </span>
+                                  </Badge>
                                 </div>
-                              </div>
+                              </>
                             )}
                         </div>
                         <div className="flex items-center gap-1.5 mt-1">

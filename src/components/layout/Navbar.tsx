@@ -41,7 +41,6 @@ import {
   Home,
   Play,
   Github,
-  Save,
   Flower2,
   Flame,
   Leaf,
@@ -454,9 +453,9 @@ const Navbar = () => {
                                     item.title.toLowerCase() ? (
                                     <Badge
                                       variant="secondary"
-                                      className="bg-green-500 animate-pulse"
+                                      className="bg-green-500 text-white animate-pulse"
                                     >
-                                      <Save className="h-3 w-3" />
+                                      In Progress
                                     </Badge>
                                   ) : null}
                                 </div>
@@ -792,9 +791,9 @@ const Navbar = () => {
                                       item.title.toLowerCase() ? (
                                       <Badge
                                         variant="secondary"
-                                        className="bg-green-500 animate-pulse"
+                                        className="bg-green-500 text-white animate-pulse"
                                       >
-                                        <Save className="h-3 w-3" />
+                                        In Progress
                                       </Badge>
                                     ) : null}
                                   </div>
