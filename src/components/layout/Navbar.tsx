@@ -825,6 +825,7 @@ const Navbar = () => {
                       {showAuthLinks && (
                         <>
                           <Button
+                            variant="ghost"
                             onClick={() =>
                               handleProtectedNavigation("/history")
                             }
@@ -840,6 +841,7 @@ const Navbar = () => {
                           </Button>
 
                           <Button
+                            variant="ghost"
                             onClick={() =>
                               handleProtectedNavigation("/settings")
                             }
