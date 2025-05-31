@@ -571,7 +571,7 @@ const GameControls = ({
                       🎉 Congratulations! 🎉
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      You've defeated all 48 bots! You are a chess master!
+                      You&apos;ve defeated all 48 bots! You are a chess master!
                     </p>
                   </div>
                   <Button

@@ -598,8 +598,8 @@ const VictoryModal = ({
                             🎉 Congratulations! 🎉
                           </h3>
                           <p className="text-sm text-muted-foreground mt-2">
-                            You've defeated all 48 bots! You are a true chess
-                            master!
+                            You&apos;ve defeated all 48 bots! You are a true
+                            chess master!
                           </p>
                         </div>
                         <Button
