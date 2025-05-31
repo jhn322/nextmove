@@ -1073,7 +1073,7 @@ export function HomePageClient({
                         <div className="bg-primary/10 p-2 rounded-full">
                           <Medal className="h-5 w-5 text-primary" />
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <h3 className="font-medium">Next Challenge</h3>
                           <p className="text-sm text-muted-foreground">
                             Beat this bot to progress on your journey
@@ -1085,7 +1085,7 @@ export function HomePageClient({
                             nextBot.difficulty.toLowerCase() && (
                             <Badge
                               variant="secondary"
-                              className="ml-auto bg-green-500 animate-pulse"
+                              className="ml-auto bg-green-500 animate-pulse whitespace-nowrap shrink-0"
                             >
                               In Progress
                             </Badge>
