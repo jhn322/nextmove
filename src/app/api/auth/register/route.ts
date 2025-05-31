@@ -98,7 +98,6 @@ export async function POST(req: Request) {
 
       // Send the verification email with the *unhashed* token
       await sendVerificationEmail(email, token);
-      console.log(`Verification email process initiated for ${email}`);
     } catch (verificationError) {
       console.error(
         `Error during email verification process for ${email}:`,

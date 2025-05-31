@@ -44,10 +44,6 @@ export async function POST(req: Request) {
     );
   }
 
-  console.log(
-    `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: Authorized. Starting cleanup of unverified users.`
-  );
-
   let deletedUsersCount = 0;
   let deletedTokensCount = 0;
 
@@ -64,9 +60,6 @@ export async function POST(req: Request) {
     });
 
     if (expiredTokens.length === 0) {
-      console.log(
-        `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: No expired verification tokens found.`
-      );
       return NextResponse.json(
         {
           message: "No expired tokens to process.",
@@ -77,16 +70,8 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log(
-      `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: Found ${expiredTokens.length} expired token(s).`
-    );
-
     // * 3. Process each expired token
     for (const token of expiredTokens) {
-      console.log(
-        `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: Processing token for ${token.identifier} (Token ID: ${token.id})`
-      );
-
       const user = await prisma.user.findUnique({
         where: { email: token.identifier },
         select: { id: true, emailVerified: true, email: true },
@@ -107,9 +92,6 @@ export async function POST(req: Request) {
 
       // * 4. Check if user is still unverified (emailVerified is null)
       if (user.emailVerified === null) {
-        console.log(
-          `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: User ${user.email} (ID: ${user.id}) is unverified. Attempting to delete user and token.`
-        );
         try {
           // Use a transaction to ensure both user and token are deleted, or neither.
           await prisma.$transaction([
@@ -122,9 +104,6 @@ export async function POST(req: Request) {
           ]);
           deletedUsersCount++;
           deletedTokensCount++;
-          console.log(
-            `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: Successfully deleted unverified user ${user.email} and their token.`
-          );
         } catch (transactionError) {
           console.error(
             `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: Error in transaction deleting user ${user.email} (ID: ${user.id}) and token ${token.id}:`,
@@ -134,9 +113,6 @@ export async function POST(req: Request) {
         }
       } else {
         // User is verified, but the token is expired. Just delete the token.
-        console.log(
-          `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: User ${user.email} (ID: ${user.id}) is already verified. Deleting expired token ${token.id}.`
-        );
         await prisma.verificationToken.delete({
           where: { id: token.id },
         });
@@ -145,9 +121,6 @@ export async function POST(req: Request) {
     }
 
     const summaryMessage = `Cleanup finished. Deleted ${deletedUsersCount} user(s) and ${deletedTokensCount} token(s).`;
-    console.log(
-      `POST ${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}: ${summaryMessage}`
-    );
     return NextResponse.json(
       {
         message: summaryMessage,

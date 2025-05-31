@@ -170,7 +170,6 @@ export const useChessGame = (difficulty: string) => {
             setTimeout(() => {
               try {
                 playSound("game-end");
-                console.log("Checkmate detected, playing game-end sound");
               } catch (err) {
                 console.error("Failed to play checkmate sound:", err);
               }

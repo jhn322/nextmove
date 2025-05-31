@@ -71,7 +71,6 @@ export const useGameSounds = () => {
             audio.load();
             // Store in cache
             audioCache[type] = audio;
-            console.log(`Preloaded sound: ${type}`);
           } catch (err) {
             console.error(`Failed to preload sound ${type}:`, err);
           }
@@ -127,7 +126,6 @@ export const useGameSounds = () => {
 
       // Skip playing sound if user hasn't interacted with the board yet
       if (!hasInteracted && typeof window !== "undefined") {
-        console.log("Sound not played: waiting for user interaction");
         return;
       }
 
@@ -156,7 +154,6 @@ export const useGameSounds = () => {
 
         audio.play().catch((err) => {
           if (err.name === "NotAllowedError") {
-            console.log("Sound not allowed: user interaction required");
           } else {
             console.error(`Error playing sound ${type}:`, err);
             // Remove the problematic audio from cache
