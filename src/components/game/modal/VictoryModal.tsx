@@ -24,6 +24,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import EloBadge from "@/components/ui/elo-badge";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -90,6 +92,7 @@ const VictoryModal = ({
   const [gameNewElo, setGameNewElo] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isCalculatingElo, setIsCalculatingElo] = useState(false);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -142,6 +145,7 @@ const VictoryModal = ({
         setResultSaved(false);
         setGameEloDelta(null);
         setGameNewElo(null);
+        setIsCalculatingElo(false);
       }
     }
   }, [game, gameStateId, isOpen]);
@@ -186,6 +190,7 @@ const VictoryModal = ({
         const isEffectivelyOver = game.isGameOver() || game.isResigned === true;
 
         if (isEffectivelyOver) {
+          setIsCalculatingElo(true);
           try {
             const gameSaveResponse = await saveGameAction({
               userId: session.user.id,
@@ -224,6 +229,8 @@ const VictoryModal = ({
             }
           } catch (error) {
             console.error("Error saving game result and updating ELO:", error);
+          } finally {
+            setIsCalculatingElo(false);
           }
         }
       }
@@ -442,23 +449,34 @@ const VictoryModal = ({
             <DialogTitle className="text-center text-xl sm:text-2xl font-bold mb-2">
               {message}
             </DialogTitle>
-            {!isResignation &&
-              typeof gameEloDelta === "number" &&
-              gameEloDelta !== 0 && (
-                <div className="flex justify-center mt-1 gap-2">
-                  <span
-                    className={`px-3 py-1 rounded-lg font-semibold text-sm ${gameEloDelta > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                  >
-                    ELO {gameEloDelta > 0 ? "+" : ""}
-                    {gameEloDelta}
-                  </span>
-                  {typeof gameNewElo === "number" && (
-                    <span className="px-3 py-1 rounded-lg text-xs font-medium bg-muted text-white">
-                      New ELO: {gameNewElo}
+            {!isResignation && (
+              <div className="flex justify-center mt-1 gap-2">
+                {isCalculatingElo ? (
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/50 animate-pulse">
+                    <div className="h-2 w-2 bg-muted-foreground/50 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-muted-foreground">
+                      Calculating ELO...
                     </span>
-                  )}
-                </div>
-              )}
+                  </div>
+                ) : (
+                  <>
+                    {typeof gameEloDelta === "number" && gameEloDelta !== 0 && (
+                      <span
+                        className={`px-3 py-1 rounded-lg font-semibold text-sm ${gameEloDelta > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                      >
+                        ELO {gameEloDelta > 0 ? "+" : ""}
+                        {gameEloDelta}
+                      </span>
+                    )}
+                    {typeof gameNewElo === "number" && (
+                      <span className="px-3 py-1 rounded-lg text-xs font-medium bg-muted text-white">
+                        New ELO: {gameNewElo}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
             {!isResignation && (
               <div className="text-center text-muted-foreground text-sm mt-2">
                 <span className="capitalize">{difficulty} Difficulty</span>
@@ -544,7 +562,7 @@ const VictoryModal = ({
                   <>
                     <div className="mb-2 text-center">
                       <span className="text-sm text-muted-foreground">
-                        Ready for a tougher challenge?
+                        Ready for a tougher opponent?
                       </span>
                       {(() => {
                         const nextBotInfo = findNextHarderBot();
@@ -563,9 +581,41 @@ const VictoryModal = ({
                               <span className="font-medium">
                                 {nextBotInfo.bot.name}
                               </span>
-                              <span className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-full capitalize">
-                                {nextBotInfo.difficulty}
-                              </span>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-xs",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "beginner" &&
+                                    "difficulty-beginner-bg difficulty-beginner-text difficulty-beginner-border",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "easy" &&
+                                    "difficulty-easy-bg difficulty-easy-text difficulty-easy-border",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "intermediate" &&
+                                    "difficulty-intermediate-bg difficulty-intermediate-text difficulty-intermediate-border",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "advanced" &&
+                                    "difficulty-advanced-bg difficulty-advanced-text difficulty-advanced-border",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "hard" &&
+                                    "difficulty-hard-bg difficulty-hard-text difficulty-hard-border",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "expert" &&
+                                    "difficulty-expert-bg difficulty-expert-text difficulty-expert-border",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "master" &&
+                                    "difficulty-master-bg difficulty-master-text difficulty-master-border",
+                                  nextBotInfo.difficulty.toLowerCase() ===
+                                    "grandmaster" &&
+                                    "difficulty-grandmaster-bg difficulty-grandmaster-text difficulty-grandmaster-border"
+                                )}
+                              >
+                                {nextBotInfo.difficulty
+                                  .charAt(0)
+                                  .toUpperCase() +
+                                  nextBotInfo.difficulty.slice(1).toLowerCase()}
+                              </Badge>
                               <EloBadge elo={nextBotInfo.bot.rating} />
                             </div>
                           );
@@ -577,10 +627,10 @@ const VictoryModal = ({
                       onClick={handlePlayNextBot}
                       variant="default"
                       className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
-                      aria-label="Next Challenge"
+                      aria-label="Next Challenger"
                     >
                       <TrendingUp className="h-5 w-5" />
-                      Next Challenge
+                      Next Challenger
                     </Button>
                   </>
                 )}

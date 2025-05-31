@@ -20,6 +20,8 @@ import { useRouter } from "next/navigation";
 import { Bot } from "@/components/game/data/bots";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import EloBadge from "@/components/ui/elo-badge";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface CustomChess extends Chess {
   isResigned?: boolean;
@@ -449,7 +451,7 @@ const GameControls = ({
             <>
               <div className="my-3 text-center space-y-1">
                 <span className="text-xs text-muted-foreground">
-                  Ready for a tougher challenge?
+                  Ready for a tougher opponent?
                 </span>
                 {(() => {
                   const nextBotInfo = findNextHarderBot();
@@ -468,9 +470,35 @@ const GameControls = ({
                         <span className="font-medium text-foreground/90">
                           {nextBotInfo.bot.name}
                         </span>
-                        <span className="px-1.5 py-0.5 bg-blue-500/15 text-blue-400 rounded-full capitalize">
-                          {nextBotInfo.difficulty}
-                        </span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-xs px-1.5 py-0.5",
+                            nextBotInfo.difficulty.toLowerCase() ===
+                              "beginner" &&
+                              "difficulty-beginner-bg difficulty-beginner-text difficulty-beginner-border",
+                            nextBotInfo.difficulty.toLowerCase() === "easy" &&
+                              "difficulty-easy-bg difficulty-easy-text difficulty-easy-border",
+                            nextBotInfo.difficulty.toLowerCase() ===
+                              "intermediate" &&
+                              "difficulty-intermediate-bg difficulty-intermediate-text difficulty-intermediate-border",
+                            nextBotInfo.difficulty.toLowerCase() ===
+                              "advanced" &&
+                              "difficulty-advanced-bg difficulty-advanced-text difficulty-advanced-border",
+                            nextBotInfo.difficulty.toLowerCase() === "hard" &&
+                              "difficulty-hard-bg difficulty-hard-text difficulty-hard-border",
+                            nextBotInfo.difficulty.toLowerCase() === "expert" &&
+                              "difficulty-expert-bg difficulty-expert-text difficulty-expert-border",
+                            nextBotInfo.difficulty.toLowerCase() === "master" &&
+                              "difficulty-master-bg difficulty-master-text difficulty-master-border",
+                            nextBotInfo.difficulty.toLowerCase() ===
+                              "grandmaster" &&
+                              "difficulty-grandmaster-bg difficulty-grandmaster-text difficulty-grandmaster-border"
+                          )}
+                        >
+                          {nextBotInfo.difficulty.charAt(0).toUpperCase() +
+                            nextBotInfo.difficulty.slice(1).toLowerCase()}
+                        </Badge>
                         <EloBadge elo={nextBotInfo.bot.rating} />
                       </div>
                     );
@@ -482,10 +510,10 @@ const GameControls = ({
                 onClick={handlePlayNextBot}
                 variant="default"
                 className="w-full py-2 text-sm font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
-                aria-label="Play next challenge"
+                aria-label="Play next challenger"
               >
                 <TrendingUp className="h-4 w-4" />
-                Next Challenge
+                Next Challenger
               </Button>
             </>
           )}
