@@ -1561,6 +1561,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     onHintRequested={handleHintRequest}
                     isCalculatingHint={isCalculating}
                     selectedBot={selectedBot || undefined}
+                    beatenBots={gameStats?.beatenBots || []}
                   />
                 </div>
               )}

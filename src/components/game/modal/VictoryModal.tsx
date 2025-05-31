@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
-import { HandshakeIcon, UserPlus, TrendingUp } from "lucide-react";
+import { HandshakeIcon, UserPlus, TrendingUp, Trophy } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -415,6 +415,33 @@ const VictoryModal = ({
     }
   };
 
+  // Check if all bots are beaten
+  const getAllBots = useCallback(() => {
+    const allBots: Array<Bot & { difficulty: string }> = [];
+    Object.keys(BOTS_BY_DIFFICULTY).forEach((difficulty) => {
+      BOTS_BY_DIFFICULTY[difficulty as keyof typeof BOTS_BY_DIFFICULTY].forEach(
+        (bot) => {
+          allBots.push({
+            ...bot,
+            difficulty,
+          });
+        }
+      );
+    });
+    return allBots;
+  }, []);
+
+  const allBots = getAllBots();
+  const allBotsBeaten =
+    beatenBots && beatenBots.length >= allBots.length && allBots.length > 0;
+
+  // Handle start challenge again
+  const handleStartChallengeAgain = () => {
+    onNewBot();
+    onClose();
+    router.push("/play/beginner");
+  };
+
   return (
     <>
       {isVisible && showConfetti && (
@@ -560,78 +587,111 @@ const VictoryModal = ({
                 {/* Next Bot button only when player wins */}
                 {isPlayerWinner() && !game.isDraw() && (
                   <>
-                    <div className="mb-2 text-center">
-                      <span className="text-sm text-muted-foreground">
-                        Ready for a tougher opponent?
-                      </span>
-                      {(() => {
-                        const nextBotInfo = findNextHarderBot();
-                        if (nextBotInfo) {
-                          return (
-                            <div className="flex items-center justify-center gap-2 mt-1">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage
-                                  src={nextBotInfo.bot.image}
-                                  alt={nextBotInfo.bot.name}
-                                />
-                                <AvatarFallback title={nextBotInfo.bot.name}>
-                                  B
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="font-medium">
-                                {nextBotInfo.bot.name}
-                              </span>
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "text-xs",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "beginner" &&
-                                    "difficulty-beginner-bg difficulty-beginner-text difficulty-beginner-border",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "easy" &&
-                                    "difficulty-easy-bg difficulty-easy-text difficulty-easy-border",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "intermediate" &&
-                                    "difficulty-intermediate-bg difficulty-intermediate-text difficulty-intermediate-border",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "advanced" &&
-                                    "difficulty-advanced-bg difficulty-advanced-text difficulty-advanced-border",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "hard" &&
-                                    "difficulty-hard-bg difficulty-hard-text difficulty-hard-border",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "expert" &&
-                                    "difficulty-expert-bg difficulty-expert-text difficulty-expert-border",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "master" &&
-                                    "difficulty-master-bg difficulty-master-text difficulty-master-border",
-                                  nextBotInfo.difficulty.toLowerCase() ===
-                                    "grandmaster" &&
-                                    "difficulty-grandmaster-bg difficulty-grandmaster-text difficulty-grandmaster-border"
-                                )}
-                              >
-                                {nextBotInfo.difficulty
-                                  .charAt(0)
-                                  .toUpperCase() +
-                                  nextBotInfo.difficulty.slice(1).toLowerCase()}
-                              </Badge>
-                              <EloBadge elo={nextBotInfo.bot.rating} />
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                    <Button
-                      onClick={handlePlayNextBot}
-                      variant="default"
-                      className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
-                      aria-label="Next Challenger"
-                    >
-                      <TrendingUp className="h-5 w-5" />
-                      Next Challenger
-                    </Button>
+                    {allBotsBeaten ? (
+                      // Congratulations message when all bots are beaten
+                      <div className="mb-2 text-center space-y-4 py-4">
+                        <div className="bg-primary/10 p-4 rounded-full inline-block">
+                          <Trophy className="h-8 w-8 text-primary animate-bounce" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-xl text-primary">
+                            🎉 Congratulations! 🎉
+                          </h3>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            You've defeated all 48 bots! You are a true chess
+                            master!
+                          </p>
+                        </div>
+                        <Button
+                          onClick={handleStartChallengeAgain}
+                          variant="default"
+                          className="w-full text-base py-2 h-auto bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                          aria-label="Start challenge again from the beginning"
+                        >
+                          <Trophy className="h-5 w-5" />
+                          Start Challenge Again
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mb-2 text-center">
+                          <span className="text-sm text-muted-foreground">
+                            Ready for a tougher opponent?
+                          </span>
+                          {(() => {
+                            const nextBotInfo = findNextHarderBot();
+                            if (nextBotInfo) {
+                              return (
+                                <div className="flex items-center justify-center gap-2 mt-1">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarImage
+                                      src={nextBotInfo.bot.image}
+                                      alt={nextBotInfo.bot.name}
+                                    />
+                                    <AvatarFallback
+                                      title={nextBotInfo.bot.name}
+                                    >
+                                      B
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="font-medium">
+                                    {nextBotInfo.bot.name}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      "text-xs",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "beginner" &&
+                                        "difficulty-beginner-bg difficulty-beginner-text difficulty-beginner-border",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "easy" &&
+                                        "difficulty-easy-bg difficulty-easy-text difficulty-easy-border",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "intermediate" &&
+                                        "difficulty-intermediate-bg difficulty-intermediate-text difficulty-intermediate-border",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "advanced" &&
+                                        "difficulty-advanced-bg difficulty-advanced-text difficulty-advanced-border",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "hard" &&
+                                        "difficulty-hard-bg difficulty-hard-text difficulty-hard-border",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "expert" &&
+                                        "difficulty-expert-bg difficulty-expert-text difficulty-expert-border",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "master" &&
+                                        "difficulty-master-bg difficulty-master-text difficulty-master-border",
+                                      nextBotInfo.difficulty.toLowerCase() ===
+                                        "grandmaster" &&
+                                        "difficulty-grandmaster-bg difficulty-grandmaster-text difficulty-grandmaster-border"
+                                    )}
+                                  >
+                                    {nextBotInfo.difficulty
+                                      .charAt(0)
+                                      .toUpperCase() +
+                                      nextBotInfo.difficulty
+                                        .slice(1)
+                                        .toLowerCase()}
+                                  </Badge>
+                                  <EloBadge elo={nextBotInfo.bot.rating} />
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                        <Button
+                          onClick={handlePlayNextBot}
+                          variant="default"
+                          className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                          aria-label="Next Challenger"
+                        >
+                          <TrendingUp className="h-5 w-5" />
+                          Next Challenger
+                        </Button>
+                      </>
+                    )}
                   </>
                 )}
                 <div className="flex gap-3">
