@@ -126,11 +126,8 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   }, [status, session?.user?.id]);
 
   // Initialize game timer
-  const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
-    game,
-    gameStarted,
-    undefined
-  );
+  const { gameTime, whiteTime, blackTime, resetTimers, loadTimerState } =
+    useGameTimer(game, gameStarted, undefined);
 
   // Add state for player name
   const [playerName, setPlayerName] = useState("Player");
@@ -255,6 +252,18 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         if (savedState.pieceSet) setPieceSet(savedState.pieceSet);
         if (savedState.capturedPieces)
           setCapturedPieces(savedState.capturedPieces);
+
+        if (
+          savedState.gameTime !== undefined &&
+          savedState.whiteTime !== undefined &&
+          savedState.blackTime !== undefined
+        ) {
+          loadTimerState({
+            gameTime: savedState.gameTime,
+            whiteTime: savedState.whiteTime,
+            blackTime: savedState.blackTime,
+          });
+        }
 
         setGameStarted(true);
         setShowBotSelection(false);

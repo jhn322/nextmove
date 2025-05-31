@@ -37,10 +37,18 @@ export const useGameTimer = (
     setBlackTime(0);
   };
 
+  // Load saved timer values from external state
+  const loadTimerState = (timerState: TimerState) => {
+    setGameTime(timerState.gameTime);
+    setWhiteTime(timerState.whiteTime);
+    setBlackTime(timerState.blackTime);
+  };
+
   return {
     gameTime,
     whiteTime,
     blackTime,
     resetTimers,
+    loadTimerState,
   };
 };

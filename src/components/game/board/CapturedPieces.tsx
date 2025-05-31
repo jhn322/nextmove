@@ -70,7 +70,11 @@ const CapturedPieces: React.FC<CapturedPiecesProps> = ({
               variant="symbol"
               pieceSet={pieceSet}
               forceColor="light"
-              className="brightness-0 invert-[0.25] dark:brightness-0 dark:invert [.fantasy_&]:invert [.amethyst_&]:invert [.crimson_&]:invert [.jade_&]:invert [.amber_&]:invert [.rose_&]:invert [.cyberpunk_&]:invert [.dracula_&]:invert [.midnight_&]:invert !text-base sm:!text-lg !leading-none !max-h-4 sm:!max-h-5 overflow-hidden flex items-center justify-center"
+              className={cn(
+                "brightness-0 invert-[0.25] dark:brightness-0 dark:invert [.fantasy_&]:invert [.amethyst_&]:invert [.crimson_&]:invert [.jade_&]:invert [.amber_&]:invert [.rose_&]:invert [.cyberpunk_&]:invert [.dracula_&]:invert [.midnight_&]:invert",
+                // Make pawn pieces smaller to match visual size of other pieces
+                pieceType.toLowerCase() === "p" && "text-lg sm:text-xl"
+              )}
             />
           </div>
           {count > 1 && (
