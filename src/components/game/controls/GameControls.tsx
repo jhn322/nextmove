@@ -487,12 +487,7 @@ const GameControls = ({
             title="Previous move (←)"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span className="flex items-center gap-1">
-              Back
-              <span className="hidden sm:inline text-xs opacity-75 ml-1">
-                ←
-              </span>
-            </span>
+            Back
           </Button>
           <Button
             variant="outline"
@@ -503,12 +498,7 @@ const GameControls = ({
             aria-label="Next move"
             title="Next move (→)"
           >
-            <span className="flex items-center gap-1">
-              Forward
-              <span className="hidden sm:inline text-xs opacity-75 ml-1">
-                →
-              </span>
-            </span>
+            Forward
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
