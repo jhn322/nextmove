@@ -100,6 +100,10 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     }
 
     const responseData = await response.json();
+    console.log(
+      `Password reset email dispatched successfully via Brevo HTTP API to ${email}:`,
+      responseData
+    );
   } catch (error) {
     console.error(
       `Error during Brevo HTTP API call for password reset to ${email}:`,
@@ -206,6 +210,10 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     }
 
     const responseData = await response.json();
+    console.log(
+      `Verification email dispatched successfully via Brevo HTTP API to ${email}:`,
+      responseData // Contains messageId etc.
+    );
   } catch (error) {
     console.error(
       `Error during Brevo HTTP API call for ${email}:`,

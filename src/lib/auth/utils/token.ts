@@ -34,6 +34,7 @@ export async function createVerificationToken(
         identifier: email,
       },
     });
+    console.log(`Deleting ${deleteResult.count} existing tokens for ${email}`);
   } catch (error) {
     console.error(`Error deleting old tokens for ${email}:`, error);
     // Continue anyway, this is just a precaution
@@ -201,11 +202,9 @@ export const generateAndSaveVerificationToken = async (
   try {
     // * 2. Delete any existing verification tokens for this email
     // This ensures only the latest verification link is valid for this purpose.
-    const deleteResult = await prisma.verificationToken.deleteMany({
+    await prisma.verificationToken.deleteMany({
       where: { identifier: email },
     });
-    if (deleteResult.count > 0) {
-    }
 
     // * 3. Save the new verification token
     await prisma.verificationToken.create({
