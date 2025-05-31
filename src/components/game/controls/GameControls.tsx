@@ -202,13 +202,38 @@ const GameControls = ({
           onHintRequested();
         }
       }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (canMoveBack && !isGameOver) {
+          onMoveBack();
+        }
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (canMoveForward && !isGameOver) {
+          onMoveForward();
+        }
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [game, currentTurn, playerColor, isCalculatingHint, onHintRequested]);
+  }, [
+    game,
+    currentTurn,
+    playerColor,
+    isCalculatingHint,
+    onHintRequested,
+    canMoveBack,
+    canMoveForward,
+    isGameOver,
+    onMoveBack,
+    onMoveForward,
+  ]);
 
   const isPlayerWinner = useCallback(() => {
     if (!isGameOver) return false;
@@ -459,9 +484,15 @@ const GameControls = ({
             disabled={!canMoveBack || isGameOver}
             className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5"
             aria-label="Previous move"
+            title="Previous move (←)"
           >
             <ChevronLeft className="h-4 w-4" />
-            Back
+            <span className="flex items-center gap-1">
+              Back
+              <span className="hidden sm:inline text-xs opacity-75 ml-1">
+                ←
+              </span>
+            </span>
           </Button>
           <Button
             variant="outline"
@@ -470,8 +501,14 @@ const GameControls = ({
             disabled={!canMoveForward || isGameOver}
             className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5"
             aria-label="Next move"
+            title="Next move (→)"
           >
-            Forward
+            <span className="flex items-center gap-1">
+              Forward
+              <span className="hidden sm:inline text-xs opacity-75 ml-1">
+                →
+              </span>
+            </span>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
