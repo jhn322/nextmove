@@ -27,10 +27,11 @@ import {
   Shuffle,
   Play,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { Bot } from "@/components/game/data/bots";
+import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import EloBadge from "@/components/ui/elo-badge";
@@ -45,6 +46,7 @@ interface BotSelectionPanelProps {
   onColorChange: (color: "w" | "b") => void;
   useDirectNavigation?: boolean;
   onPlayGame?: () => void;
+  beatenBots?: Array<{ name: string; difficulty: string; id: number }>;
 }
 
 const BotSelectionPanel = ({
@@ -57,6 +59,7 @@ const BotSelectionPanel = ({
   onColorChange,
   useDirectNavigation = false,
   onPlayGame,
+  beatenBots = [],
 }: BotSelectionPanelProps) => {
   const router = useRouter();
   const [isRandomColor, setIsRandomColor] = useState(false);
@@ -73,6 +76,23 @@ const BotSelectionPanel = ({
     "master",
     "grandmaster",
   ];
+
+  const getEloRange = (difficulty: string) => {
+    const difficultyBots =
+      BOTS_BY_DIFFICULTY[difficulty as keyof typeof BOTS_BY_DIFFICULTY];
+    if (!difficultyBots || difficultyBots.length === 0) return "N/A";
+
+    const ratings = difficultyBots.map((bot) => bot.rating);
+    const minRating = Math.min(...ratings);
+    const maxRating = Math.max(...ratings);
+
+    return `${minRating}-${maxRating}`;
+  };
+
+  // * Check if a bot has been beaten
+  const isBotBeaten = (botName: string) => {
+    return beatenBots.some((bot) => bot.name === botName);
+  };
 
   // Determine if the word starts with a vowel
   const getGrammar = (word: string) => {
@@ -159,7 +179,6 @@ const BotSelectionPanel = ({
     if (useDirectNavigation && selectedBot && selectedBot.id) {
       // Navigate to the specific bot ID
       const url = `/play/${difficulty}/${selectedBot.id}`;
-      console.log("Navigating to:", url);
       router.push(url);
     } else if (onPlayGame) {
       onPlayGame();
@@ -211,10 +230,24 @@ const BotSelectionPanel = ({
                 className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 onClick={() => handleBotSelect(bot)}
               >
-                <Avatar className="h-10 w-10 flex-shrink-0">
-                  <AvatarImage src={bot.image} alt={bot.name} />
-                  <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-10 w-10 flex-shrink-0">
+                    <AvatarImage src={bot.image} alt={bot.name} />
+                    <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  {isBotBeaten(bot.name) && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5">
+                            <CheckCircle2 className="h-3 w-3 text-white" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>Bot defeated</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
                 <div className="min-w-0 flex-1">
                   <div
                     className="text-sm font-medium truncate"
@@ -250,10 +283,24 @@ const BotSelectionPanel = ({
                 className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 onClick={() => handleBotSelect(bot)}
               >
-                <Avatar className="h-12 w-12 flex-shrink-0">
-                  <AvatarImage src={bot.image} alt={bot.name} />
-                  <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-12 w-12 flex-shrink-0">
+                    <AvatarImage src={bot.image} alt={bot.name} />
+                    <AvatarFallback>{bot.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  {isBotBeaten(bot.name) && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5">
+                            <CheckCircle2 className="h-4 w-4 text-white" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>Bot defeated</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
@@ -378,17 +425,22 @@ const BotSelectionPanel = ({
           <Select value={difficulty} onValueChange={onDifficultyChange}>
             <SelectTrigger className="w-full">
               <SelectValue>
-                <div className="flex items-center gap-2">
-                  {(() => {
-                    const { icon: Icon, color } =
-                      difficultyIcons[
-                        difficulty as keyof typeof difficultyIcons
-                      ];
-                    return (
-                      <Icon className={`h-4 w-4 flex-shrink-0 ${color}`} />
-                    );
-                  })()}
-                  <span className="capitalize truncate">{difficulty}</span>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const { icon: Icon, color } =
+                        difficultyIcons[
+                          difficulty as keyof typeof difficultyIcons
+                        ];
+                      return (
+                        <Icon className={`h-4 w-4 flex-shrink-0 ${color}`} />
+                      );
+                    })()}
+                    <span className="capitalize truncate">{difficulty}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    ELO {getEloRange(difficulty)}
+                  </span>
                 </div>
               </SelectValue>
             </SelectTrigger>
@@ -396,11 +448,17 @@ const BotSelectionPanel = ({
               {difficulties.map((diff) => {
                 const { icon: Icon, color } =
                   difficultyIcons[diff as keyof typeof difficultyIcons];
+                const eloRange = getEloRange(diff);
                 return (
                   <SelectItem key={diff} value={diff}>
-                    <div className="flex items-center gap-2">
-                      <Icon className={`h-4 w-4 ${color}`} />
-                      <span className="capitalize">{diff}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`h-4 w-4 ${color}`} />
+                        <span className="capitalize">{diff}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-4">
+                        ELO {eloRange}
+                      </span>
                     </div>
                   </SelectItem>
                 );

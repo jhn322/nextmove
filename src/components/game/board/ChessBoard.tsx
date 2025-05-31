@@ -32,6 +32,7 @@ import {
   getEnableAnimations,
 } from "@/lib/settings";
 import AnimatedPiece from "./AnimatedPiece";
+import { type GameStats } from "@/types/stats";
 
 const GAME_OVER_MODAL_SHOWN_KEY = "chess_gameOverModalShown";
 const GAME_OVER_FEN_KEY = "chess_gameOverFen";
@@ -49,6 +50,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const [hintMove, setHintMove] = useState<{ from: string; to: string } | null>(
     null
   );
+  const [gameStats, setGameStats] = useState<GameStats | null>(null);
 
   const [whitePiecesBottom, setWhitePiecesBottom] = useState(true);
   const [isPreMadeMove, setIsPreMadeMove] = useState<
@@ -1154,6 +1156,32 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     }
   }, [status, session]);
 
+  // * Fetch game stats for beaten bots
+  useEffect(() => {
+    const fetchGameStats = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        try {
+          const response = await fetch("/api/game-stats");
+          if (response.ok) {
+            const data = await response.json();
+            setGameStats(data.gameStats);
+          } else {
+            console.error(
+              "Failed to fetch game stats:",
+              response.status,
+              response.statusText
+            );
+          }
+        } catch (error) {
+          console.error("Failed to fetch game stats:", error);
+        }
+      } else {
+      }
+    };
+
+    fetchGameStats();
+  }, [status, session]);
+
   // If animations are disabled, update the board instantly (skip animation logic)
   useEffect(() => {
     if (!enableAnimations && isAnimating) {
@@ -1481,6 +1509,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     onColorChange={handleColorChange}
                     useDirectNavigation={false}
                     onPlayGame={handlePlayGame}
+                    beatenBots={gameStats?.beatenBots || []}
                   />
                 </div>
               ) : (
