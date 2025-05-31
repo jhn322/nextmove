@@ -68,9 +68,6 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   };
 
   // * 3. Send Email via Brevo HTTP API
-  console.log(
-    `Attempting to send password reset email to ${email} via Brevo HTTP API...`
-  );
   try {
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -181,9 +178,6 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   };
 
   // * 3. Send Email via Brevo HTTP API
-  console.log(
-    `Attempting to send verification email to ${email} via Brevo HTTP API...`
-  );
   try {
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",

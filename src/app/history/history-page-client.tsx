@@ -299,6 +299,8 @@ export const HistoryPageClient = ({
         return <X className="h-4 w-4 text-red-500" />;
       case "draw":
         return <Minus className="h-4 w-4 text-blue-500" />;
+      case "stalemate":
+        return <Hourglass className="h-4 w-4 text-purple-500" />;
       case "resign":
         return <Flag className="h-4 w-4 text-orange-500" />;
       default:
@@ -687,9 +689,11 @@ export const HistoryPageClient = ({
                                           ? "Loss"
                                           : game.result === "draw"
                                             ? "Draw"
-                                            : game.result === "resign"
-                                              ? "Resigned"
-                                              : "Result"}
+                                            : game.result === "stalemate"
+                                              ? "Stalemate"
+                                              : game.result === "resign"
+                                                ? "Resigned"
+                                                : "Result"}
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
@@ -844,8 +848,8 @@ export const HistoryPageClient = ({
                     </div>
                   </div>
 
-                  {/* Wins/Losses/Draws/Resigns Breakdown */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center pt-4 border-t border-border/20">
+                  {/* Wins/Losses/Draws/Stalemates/Resigns Breakdown */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center pt-4 border-t border-border/20">
                     <div>
                       <div className="text-2xl font-semibold text-yellow-500">
                         {gameStats.wins}
@@ -868,6 +872,14 @@ export const HistoryPageClient = ({
                       </div>
                       <div className="text-xs text-muted-foreground uppercase tracking-wider">
                         Draws
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-semibold text-purple-500">
+                        {gameStats.stalemates}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Stalemates
                       </div>
                     </div>
                     <div>
@@ -909,9 +921,11 @@ export const HistoryPageClient = ({
                                       ? "Loss"
                                       : game.result === "draw"
                                         ? "Draw"
-                                        : game.result === "resign"
-                                          ? "Resigned"
-                                          : "Result"}
+                                        : game.result === "stalemate"
+                                          ? "Stalemate"
+                                          : game.result === "resign"
+                                            ? "Resigned"
+                                            : "Result"}
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>

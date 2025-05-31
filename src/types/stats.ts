@@ -4,6 +4,7 @@ export interface GameStats {
   wins: number;
   losses: number;
   draws: number;
+  stalemates: number; // Number of stalemate games
   resigns: number; // Number of games resigned by the user
   winRate: number; // Percentage, 0-100
   averageMovesPerGame: number;

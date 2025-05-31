@@ -136,7 +136,6 @@ const VictoryModal = ({
 
       // Only consider a game saved if both FEN and game ID match
       if (savedGameId === gameStateId && savedGameFen === game.fen()) {
-        console.log("Game result already saved, preventing duplicate save");
         setResultSaved(true);
       } else {
         // Reset resultSaved when viewing a new game state

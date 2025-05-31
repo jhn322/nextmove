@@ -17,9 +17,6 @@ const getEnvVar = (varName: string, defaultValue?: string): string => {
 
 async function handleCleanupTrigger() {
   const internalTriggerPath = "/api/internal/trigger-cleanup";
-  console.log(
-    `${internalTriggerPath}: Received request to trigger cleanup worker.`
-  );
 
   const cronSecret = getEnvVar("CRON_SECRET");
   const appUrl = getEnvVar("NEXT_PUBLIC_APP_URL");
@@ -47,9 +44,6 @@ async function handleCleanupTrigger() {
   const workerUrl = `${appUrl}${API_AUTH_PATHS.CLEANUP_UNVERIFIED_USERS}`;
 
   try {
-    console.log(
-      `${internalTriggerPath}: Attempting to call worker: ${workerUrl}`
-    );
     const response = await fetch(workerUrl, {
       method: "POST", // The cleanup worker expects POST
       headers: {
@@ -89,10 +83,6 @@ async function handleCleanupTrigger() {
       );
     }
 
-    console.log(
-      `${internalTriggerPath}: Successfully triggered cleanup worker. Worker response:`,
-      responseData
-    );
     return NextResponse.json(
       {
         message: "Cleanup worker triggered successfully.",

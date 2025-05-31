@@ -7,7 +7,6 @@ import prisma from "@/lib/prisma";
  */
 export function generateToken(): string {
   const token = randomBytes(32).toString("hex");
-  console.log(`New generated token starts with: ${token.substring(0, 10)}...`);
   return token;
 }
 
@@ -21,16 +20,12 @@ export async function createVerificationToken(
   email: string,
   expiresIn = 24
 ): Promise<string> {
-  console.log(`Starting createVerificationToken for ${email}`);
-
   // Generate token first so we have it ready
   const token = generateToken();
 
   // Set expiration date
   const expires = new Date();
   expires.setHours(expires.getHours() + expiresIn);
-
-  console.log(`Deleting existing tokens for ${email}`);
 
   // Delete any existing tokens for this user
   try {
@@ -39,13 +34,11 @@ export async function createVerificationToken(
         identifier: email,
       },
     });
-    console.log(`${deleteResult.count} old tokens deleted for ${email}`);
+    console.log(`Deleting ${deleteResult.count} existing tokens for ${email}`);
   } catch (error) {
     console.error(`Error deleting old tokens for ${email}:`, error);
     // Continue anyway, this is just a precaution
   }
-
-  console.log(`Creating new token for ${email}: ${token.substring(0, 10)}...`);
 
   // Create a new token
   try {
@@ -68,16 +61,12 @@ export async function createVerificationToken(
     if (!createdToken) {
       console.error(`CRITICAL: Token was not created correctly for ${email}`);
     } else {
-      console.log(
-        `Token confirmed in database for ${email}, expires: ${createdToken.expires.toISOString()}`
-      );
     }
   } catch (error) {
     console.error(`Error creating token for ${email}:`, error);
     throw error; // This is a critical error, so we rethrow it
   }
 
-  console.log(`Returning token for ${email}: ${token.substring(0, 10)}...`);
   return token;
 }
 
@@ -91,10 +80,6 @@ export async function validateVerificationToken(
   token: string,
   email?: string
 ): Promise<boolean> {
-  console.log(
-    `Validating token for ${email || "unknown"}: ${token.substring(0, 10)}...`
-  );
-
   const whereClause = {
     token,
     ...(email ? { identifier: email } : {}),
@@ -103,13 +88,10 @@ export async function validateVerificationToken(
     },
   };
 
-  console.log("Where clause:", JSON.stringify(whereClause, null, 2));
-
   const tokenRecord = await prisma.verificationToken.findFirst({
     where: whereClause,
   });
 
-  console.log("Token validation result:", !!tokenRecord);
   if (!tokenRecord) {
     // Om ingen token hittades, let's check if it might be expired
     const expiredToken = await prisma.verificationToken.findFirst({
@@ -120,11 +102,7 @@ export async function validateVerificationToken(
     });
 
     if (expiredToken) {
-      console.log(
-        `Token found but expired. Expired at: ${expiredToken.expires}`
-      );
     } else {
-      console.log("No token found with the provided values");
     }
   }
 
@@ -156,25 +134,17 @@ export async function consumeVerificationToken(
   email?: string
 ): Promise<boolean> {
   try {
-    console.log(
-      `Attempting to consume token for ${email || "unknown"}: ${token.substring(0, 10)}...`
-    );
-
     // For email verification, we just validate without deleting
     // This prevents issues with email clients pre-fetching URLs
     const isValid = await validateVerificationToken(token, email);
 
     if (!isValid) {
-      console.log("Token validation failed, cannot consume");
       return false;
     }
 
     // We don't delete the token here anymore - it will remain valid until the user
     // is marked as verified in the database, which prevents the pre-fetch issue
 
-    console.log(
-      `Token validated successfully, not consumed to prevent prefetch issues`
-    );
     return true;
   } catch (error) {
     console.error("Error consuming verification token:", error);
@@ -210,7 +180,6 @@ const getVerificationTokenExpires = (): Date => {
  */
 export function generateRawToken(): string {
   const token = randomBytes(32).toString("hex");
-  // console.log(`Generated new raw token starting with: ${token.substring(0, 10)}...`); // Optional: for debugging
   return token;
 }
 
@@ -230,21 +199,12 @@ export const generateAndSaveVerificationToken = async (
   const token = generateRawToken();
   const expires = getVerificationTokenExpires();
 
-  console.log(
-    `Generating new verification token for ${email} (expires: ${expires.toISOString()})`
-  );
-
   try {
     // * 2. Delete any existing verification tokens for this email
     // This ensures only the latest verification link is valid for this purpose.
-    const deleteResult = await prisma.verificationToken.deleteMany({
+    await prisma.verificationToken.deleteMany({
       where: { identifier: email },
     });
-    if (deleteResult.count > 0) {
-      console.log(
-        `Deleted ${deleteResult.count} existing verification token(s) for ${email}`
-      );
-    }
 
     // * 3. Save the new verification token
     await prisma.verificationToken.create({
@@ -254,7 +214,6 @@ export const generateAndSaveVerificationToken = async (
         expires,
       },
     });
-    console.log(`Successfully saved new verification token for ${email}`);
 
     // * 4. Return the generated token
     return token;

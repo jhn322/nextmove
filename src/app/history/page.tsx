@@ -16,6 +16,9 @@ const calculateGameStats = (history: GameHistory[]): GameStats | null => {
   const wins = history.filter((game) => game.result === "win").length;
   const losses = history.filter((game) => game.result === "loss").length;
   const draws = history.filter((game) => game.result === "draw").length;
+  const stalemates = history.filter(
+    (game) => game.result === "stalemate"
+  ).length;
   const resigns = history.filter((game) => game.result === "resign").length;
   const totalGames = history.length;
   const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
@@ -54,6 +57,7 @@ const calculateGameStats = (history: GameHistory[]): GameStats | null => {
     wins,
     losses,
     draws,
+    stalemates,
     resigns,
     winRate,
     averageMovesPerGame,

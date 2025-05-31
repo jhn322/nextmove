@@ -91,10 +91,6 @@ export const saveGameResult = async ({
     const result = determineGameResult(game, playerColor, isResignation);
     const normalizedDifficulty = normalizeDifficulty(difficulty);
 
-    console.log(
-      `Saving game: ${result} against ${selectedBot.name} (${normalizedDifficulty})`
-    );
-
     const savedGame = await prisma.game.create({
       data: {
         userId: userId,
@@ -165,6 +161,7 @@ export const getUserGameStats = async (userId: string) => {
         wins: 0,
         losses: 0,
         draws: 0,
+        stalemates: 0,
         resigns: 0,
         winRate: 0,
         averageMovesPerGame: 0,
@@ -180,6 +177,9 @@ export const getUserGameStats = async (userId: string) => {
     const wins = gameHistory.filter((game) => game.result === "win").length;
     const losses = gameHistory.filter((game) => game.result === "loss").length;
     const draws = gameHistory.filter((game) => game.result === "draw").length;
+    const stalemates = gameHistory.filter(
+      (game) => game.result === "stalemate"
+    ).length;
     const resigns = gameHistory.filter(
       (game) => game.result === "resign"
     ).length;
@@ -224,6 +224,7 @@ export const getUserGameStats = async (userId: string) => {
       wins,
       losses,
       draws,
+      stalemates,
       resigns,
       winRate,
       averageMovesPerGame,
