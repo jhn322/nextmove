@@ -56,6 +56,7 @@ interface VictoryModalProps {
   playerName: string;
   gameTime: number;
   movesCount: number;
+  beatenBots?: Array<{ name: string; difficulty: string; id: number }>;
 }
 
 const VictoryModal = ({
@@ -72,6 +73,7 @@ const VictoryModal = ({
   playerName: defaultPlayerName,
   gameTime,
   movesCount,
+  beatenBots,
 }: VictoryModalProps) => {
   const router = useRouter();
   const [message, setMessage] = useState<string | React.ReactNode>("");
@@ -348,6 +350,11 @@ const VictoryModal = ({
       "grandmaster",
     ];
 
+    // Helper function to check if a bot is already beaten
+    const isBotBeaten = (botName: string) => {
+      return beatenBots?.some((beaten) => beaten.name === botName) ?? false;
+    };
+
     // Find current difficulty index
     const currentDifficultyIndex = difficulties.indexOf(difficulty);
 
@@ -359,23 +366,35 @@ const VictoryModal = ({
       (bot) => bot.id === selectedBot.id
     );
 
-    // If there's a next bot in the same difficulty
-    if (currentBotIndex < botsInCurrentDifficulty.length - 1) {
-      const nextBot = botsInCurrentDifficulty[currentBotIndex + 1];
-      return { bot: nextBot, difficulty };
+    // Look for the next unbeaten bot in the same difficulty (after current bot)
+    for (let i = currentBotIndex + 1; i < botsInCurrentDifficulty.length; i++) {
+      const nextBot = botsInCurrentDifficulty[i];
+      if (!isBotBeaten(nextBot.name)) {
+        return { bot: nextBot, difficulty };
+      }
     }
 
-    // If we need to move to the next difficulty
-    if (currentDifficultyIndex < difficulties.length - 1) {
-      const nextDifficulty = difficulties[currentDifficultyIndex + 1];
+    // If no unbeaten bot in current difficulty, move to next difficulties
+    for (
+      let diffIndex = currentDifficultyIndex + 1;
+      diffIndex < difficulties.length;
+      diffIndex++
+    ) {
+      const nextDifficulty = difficulties[diffIndex];
       const nextDifficultyBots = BOTS_BY_DIFFICULTY[nextDifficulty];
       if (nextDifficultyBots && nextDifficultyBots.length > 0) {
-        return { bot: nextDifficultyBots[0], difficulty: nextDifficulty };
+        // Find the first unbeaten bot in this difficulty
+        const firstUnbeatenBot = nextDifficultyBots.find(
+          (bot) => !isBotBeaten(bot.name)
+        );
+        if (firstUnbeatenBot) {
+          return { bot: firstUnbeatenBot, difficulty: nextDifficulty };
+        }
       }
     }
 
     return null;
-  }, [selectedBot, difficulty]);
+  }, [selectedBot, difficulty, beatenBots]);
 
   // Handle navigation to the next harder bot
   const handlePlayNextBot = () => {
@@ -555,27 +574,15 @@ const VictoryModal = ({
                         return null;
                       })()}
                     </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            onClick={handlePlayNextBot}
-                            variant="default"
-                            className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
-                            aria-label="Next Challenge"
-                          >
-                            <TrendingUp className="h-5 w-5" />
-                            Next Challenge
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Face the next stronger, more skilled bot in The
-                            Ultimate Chess Challenge.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Button
+                      onClick={handlePlayNextBot}
+                      variant="default"
+                      className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                      aria-label="Next Challenge"
+                    >
+                      <TrendingUp className="h-5 w-5" />
+                      Next Challenge
+                    </Button>
                   </>
                 )}
                 <div className="flex gap-3">

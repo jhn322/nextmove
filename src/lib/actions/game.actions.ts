@@ -2,10 +2,17 @@
 
 import { Chess } from "chess.js";
 import { type Bot } from "@/components/game/data/bots";
-import { saveGameResult, type GameHistory } from "@/lib/game-service";
+import {
+  saveGameResult,
+  type GameHistory,
+  getUserGameStats,
+} from "@/lib/game-service";
 import { clearUserGameHistory } from "@/lib/game-service";
 import prisma from "@/lib/prisma";
 import { calculateNewElo } from "@/lib/elo";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth/options";
+import { type GameStats } from "@/types/stats";
 
 const DEFAULT_START_ELO = 600; // Fallback, though Prisma schema default should handle new users
 
@@ -139,5 +146,23 @@ export const clearUserGameHistoryAction = async (
       error
     );
     return false;
+  }
+};
+
+export const getUserGameStatsAction = async (): Promise<{
+  gameStats?: GameStats | null;
+  error?: string;
+}> => {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { error: "User not authenticated." };
+    }
+
+    const gameStats = await getUserGameStats(session.user.id);
+    return { gameStats };
+  } catch (error) {
+    console.error("Error in getUserGameStatsAction:", error);
+    return { error: "Failed to fetch game statistics." };
   }
 };

@@ -276,9 +276,11 @@ const Navbar = () => {
 
   const handleProtectedNavigation = async (path: string) => {
     if (isAuthenticated) {
-      if (path === "/history") setIsHistoryLoading(true);
-      if (path === "/settings") setIsSettingsLoading(true);
-      await router.push(path);
+      if (pathname !== path) {
+        if (path === "/history") setIsHistoryLoading(true);
+        if (path === "/settings") setIsSettingsLoading(true);
+        await router.push(path);
+      }
     } else {
       await signIn("google", {
         callbackUrl: `${window.location.origin}${path}`,
