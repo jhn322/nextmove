@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Piece from "@/components/game/board/Piece";
 import { Chess, Square } from "chess.js";
@@ -15,13 +15,6 @@ import {
   Swords,
   TrendingUp,
 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useRouter } from "next/navigation";
 import { Bot } from "@/components/game/data/bots";
@@ -180,6 +173,8 @@ const GameControls = ({
   const currentTurn = game.turn();
   const isGameOver = game.isGameOver() || game.isResigned;
 
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
+
   const isPlayerWinner = useCallback(() => {
     if (!isGameOver) return false;
 
@@ -232,18 +227,26 @@ const GameControls = ({
     }
   };
 
-  useEffect(() => {
-    const scrollViewport = document.querySelector(
-      "[data-radix-scroll-area-viewport]"
-    ) as HTMLElement | null;
-    if (scrollViewport) {
-      const hasScrollbar =
-        scrollViewport.scrollHeight > scrollViewport.clientHeight;
-      if (hasScrollbar) {
-        scrollViewport.scrollTop = scrollViewport.scrollHeight;
+  const scrollToBottom = useCallback(() => {
+    if (scrollViewportRef.current && history.length > 1) {
+      try {
+        const element = scrollViewportRef.current;
+        requestAnimationFrame(() => {
+          element.scrollTop = element.scrollHeight;
+        });
+      } catch (error) {
+        console.debug("Scroll error:", error);
       }
     }
   }, [history.length]);
+
+  // Scroll to bottom when history changes, with a small delay
+  useEffect(() => {
+    if (history.length > 1) {
+      const timer = setTimeout(scrollToBottom, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [history.length, scrollToBottom]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -335,7 +338,10 @@ const GameControls = ({
       {/* Move History */}
       <div className="flex flex-col flex-grow min-h-0 space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Move History</h3>
-        <ScrollArea className="flex-grow w-full rounded-lg border border-border/30 bg-background/50 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent scrollbar-thumb-rounded-full h-[300px] sm:h-[400px] md:h-[350px] lg:h-[420px] xl:h-[450px] laptop-screen:h-[calc(100vh-510px)]">
+        <div
+          ref={scrollViewportRef}
+          className="flex-grow w-full rounded-lg border border-border/30 bg-background/50 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent scrollbar-thumb-rounded-full h-[300px] sm:h-[400px] md:h-[350px] lg:h-[420px] xl:h-[450px] laptop-screen:h-[calc(100vh-510px)] overflow-y-auto"
+        >
           <div className="p-2.5 space-y-1">
             {history.length <= 1 && (
               <p className="text-center text-xs text-muted-foreground py-4">
@@ -401,7 +407,7 @@ const GameControls = ({
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       <div className="h-px bg-border/30" />
@@ -472,126 +478,78 @@ const GameControls = ({
                   return null;
                 })()}
               </div>
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={handlePlayNextBot}
-                      variant="default"
-                      className="w-full py-2 text-sm font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
-                      aria-label="Play next challenge"
-                    >
-                      <TrendingUp className="h-4 w-4" />
-                      Next Challenge
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      Face the next stronger, more skilled bot in The Ultimate
-                      Chess Challenge.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                onClick={handlePlayNextBot}
+                variant="default"
+                className="w-full py-2 text-sm font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
+                aria-label="Play next challenge"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Next Challenge
+              </Button>
             </>
           )}
 
           <div className="flex gap-2.5">
             {!isGameOver && (
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={onHintRequested}
-                      variant="outline"
-                      disabled={
-                        game.isGameOver() ||
-                        currentTurn !== playerColor ||
-                        isCalculatingHint
-                      }
-                      className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300 disabled:opacity-70 disabled:bg-fuchsia-500/5 disabled:text-fuchsia-500/50 disabled:border-fuchsia-500/20"
-                      aria-label="Get a hint"
-                    >
-                      <Lightbulb
-                        className={`h-4 w-4 ${
-                          isCalculatingHint
-                            ? "animate-ping opacity-50"
-                            : "text-fuchsia-400"
-                        }`}
-                      />
-                      {isCalculatingHint ? (
-                        <div className="h-4 w-4 border-2 border-fuchsia-400/50 border-t-fuchsia-400 rounded-full animate-spin" />
-                      ) : (
-                        "Hint"
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Get a suggestion for your next move.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                onClick={onHintRequested}
+                variant="outline"
+                disabled={
+                  game.isGameOver() ||
+                  currentTurn !== playerColor ||
+                  isCalculatingHint
+                }
+                className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300 disabled:opacity-70 disabled:bg-fuchsia-500/5 disabled:text-fuchsia-500/50 disabled:border-fuchsia-500/20"
+                aria-label="Get a hint"
+              >
+                <Lightbulb
+                  className={`h-4 w-4 ${
+                    isCalculatingHint
+                      ? "animate-ping opacity-50"
+                      : "text-fuchsia-400"
+                  }`}
+                />
+                {isCalculatingHint ? (
+                  <div className="h-4 w-4 border-2 border-fuchsia-400/50 border-t-fuchsia-400 rounded-full animate-spin" />
+                ) : (
+                  "Hint"
+                )}
+              </Button>
             )}
 
             {isGameOver ? (
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={onRematch}
-                      variant="outline"
-                      className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400"
-                      aria-label="Rematch game"
-                    >
-                      <HandshakeIcon className="h-4 w-4" />
-                      Rematch
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Play again versus the same bot and settings.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                onClick={onRematch}
+                variant="outline"
+                className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400"
+                aria-label="Rematch game"
+              >
+                <HandshakeIcon className="h-4 w-4" />
+                Rematch
+              </Button>
             ) : (
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={onResign}
-                      variant="destructive"
-                      className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5"
-                      aria-label="Resign game"
-                    >
-                      <Flag className="h-4 w-4" />
-                      Resign
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Forfeit the current game.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                onClick={onResign}
+                variant="destructive"
+                className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5"
+                aria-label="Resign game"
+              >
+                <Flag className="h-4 w-4" />
+                Resign
+              </Button>
             )}
           </div>
 
-          <TooltipProvider delayDuration={200}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={handleNewBotDialog}
-                  variant="outline"
-                  className="w-full py-2 text-sm font-medium flex items-center justify-center gap-2"
-                  aria-label="Select new bot"
-                >
-                  <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
-                  New Bot
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Choose a different bot to play against and settings.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Button
+            onClick={handleNewBotDialog}
+            variant="outline"
+            className="w-full py-2 text-sm font-medium flex items-center justify-center gap-2"
+            aria-label="Select new bot"
+          >
+            <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
+            New Bot
+          </Button>
         </div>
       </div>
     </div>

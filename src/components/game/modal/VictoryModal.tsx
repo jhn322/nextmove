@@ -24,7 +24,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import EloBadge from "@/components/ui/elo-badge";
-import { AnimatePresence, motion } from "framer-motion";
 
 const VICTORY_MESSAGES = [
   "Brilliant moves! Sweet victory!",
@@ -57,6 +56,7 @@ interface VictoryModalProps {
   playerName: string;
   gameTime: number;
   movesCount: number;
+  beatenBots?: Array<{ name: string; difficulty: string; id: number }>;
 }
 
 const VictoryModal = ({
@@ -73,6 +73,7 @@ const VictoryModal = ({
   playerName: defaultPlayerName,
   gameTime,
   movesCount,
+  beatenBots,
 }: VictoryModalProps) => {
   const router = useRouter();
   const [message, setMessage] = useState<string | React.ReactNode>("");
@@ -89,8 +90,6 @@ const VictoryModal = ({
   const [gameNewElo, setGameNewElo] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [showWinnerEffects, setShowWinnerEffects] = useState(false);
-  const winnerEffectsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -149,7 +148,6 @@ const VictoryModal = ({
 
   const renderWinnerText = useCallback(() => {
     let baseMessageText: string;
-    let eloDisplay: React.ReactNode = null;
 
     if (isResignation) {
       baseMessageText = "Are you sure you want to resign?";
@@ -171,39 +169,13 @@ const VictoryModal = ({
       baseMessageText = `${selectedBot?.name || "Bot"} won by resignation!`;
     }
 
-    if (typeof gameEloDelta === "number" && gameEloDelta !== 0) {
-      const eloChangeString =
-        gameEloDelta > 0 ? `+${gameEloDelta}` : `${gameEloDelta}`;
-      const eloColor = gameEloDelta > 0 ? "text-green-500" : "text-red-500";
-      eloDisplay = (
-        <>
-          <br />
-          <span className={`font-semibold ${eloColor}`}>
-            ELO Change: {eloChangeString}
-          </span>
-          {typeof gameNewElo === "number" && (
-            <span className="block text-sm text-muted-foreground mt-0.5">
-              New ELO: {gameNewElo}
-            </span>
-          )}
-        </>
-      );
-    }
-
-    return (
-      <>
-        {baseMessageText}
-        {eloDisplay}
-      </>
-    );
+    return baseMessageText;
   }, [
     game,
     isResignation,
     selectedBot,
     victoryMessage,
     defeatMessage,
-    gameEloDelta,
-    gameNewElo,
     isPlayerWinner,
   ]);
 
@@ -333,7 +305,7 @@ const VictoryModal = ({
       } else {
         delayTimeoutRef.current = setTimeout(() => {
           setIsVisible(true);
-        }, 800);
+        }, 600);
       }
     } else {
       setIsVisible(false);
@@ -349,26 +321,6 @@ const VictoryModal = ({
       }
     };
   }, [isOpen, isResignation]);
-
-  useEffect(() => {
-    if (isVisible && !isResignation) {
-      winnerEffectsTimeoutRef.current = setTimeout(() => {
-        setShowWinnerEffects(true);
-      }, 200);
-    } else {
-      setShowWinnerEffects(false);
-      if (winnerEffectsTimeoutRef.current) {
-        clearTimeout(winnerEffectsTimeoutRef.current);
-        winnerEffectsTimeoutRef.current = null;
-      }
-    }
-    return () => {
-      if (winnerEffectsTimeoutRef.current) {
-        clearTimeout(winnerEffectsTimeoutRef.current);
-        winnerEffectsTimeoutRef.current = null;
-      }
-    };
-  }, [isVisible, isResignation]);
 
   const handleRematch = () => {
     game.reset();
@@ -397,6 +349,11 @@ const VictoryModal = ({
       "grandmaster",
     ];
 
+    // Helper function to check if a bot is already beaten
+    const isBotBeaten = (botName: string) => {
+      return beatenBots?.some((beaten) => beaten.name === botName) ?? false;
+    };
+
     // Find current difficulty index
     const currentDifficultyIndex = difficulties.indexOf(difficulty);
 
@@ -408,23 +365,35 @@ const VictoryModal = ({
       (bot) => bot.id === selectedBot.id
     );
 
-    // If there's a next bot in the same difficulty
-    if (currentBotIndex < botsInCurrentDifficulty.length - 1) {
-      const nextBot = botsInCurrentDifficulty[currentBotIndex + 1];
-      return { bot: nextBot, difficulty };
+    // Look for the next unbeaten bot in the same difficulty (after current bot)
+    for (let i = currentBotIndex + 1; i < botsInCurrentDifficulty.length; i++) {
+      const nextBot = botsInCurrentDifficulty[i];
+      if (!isBotBeaten(nextBot.name)) {
+        return { bot: nextBot, difficulty };
+      }
     }
 
-    // If we need to move to the next difficulty
-    if (currentDifficultyIndex < difficulties.length - 1) {
-      const nextDifficulty = difficulties[currentDifficultyIndex + 1];
+    // If no unbeaten bot in current difficulty, move to next difficulties
+    for (
+      let diffIndex = currentDifficultyIndex + 1;
+      diffIndex < difficulties.length;
+      diffIndex++
+    ) {
+      const nextDifficulty = difficulties[diffIndex];
       const nextDifficultyBots = BOTS_BY_DIFFICULTY[nextDifficulty];
       if (nextDifficultyBots && nextDifficultyBots.length > 0) {
-        return { bot: nextDifficultyBots[0], difficulty: nextDifficulty };
+        // Find the first unbeaten bot in this difficulty
+        const firstUnbeatenBot = nextDifficultyBots.find(
+          (bot) => !isBotBeaten(bot.name)
+        );
+        if (firstUnbeatenBot) {
+          return { bot: firstUnbeatenBot, difficulty: nextDifficulty };
+        }
       }
     }
 
     return null;
-  }, [selectedBot, difficulty]);
+  }, [selectedBot, difficulty, beatenBots]);
 
   // Handle navigation to the next harder bot
   const handlePlayNextBot = () => {
@@ -453,9 +422,9 @@ const VictoryModal = ({
       )}
       <Dialog open={isVisible} onOpenChange={onClose}>
         <DialogContent
-          className="sm:max-w-lg w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-lg"
+          className="sm:max-w-md w-[95%] mx-auto p-4 sm:p-6 rounded-lg border bg-background shadow-2xl backdrop-blur-md"
           aria-describedby="victory-modal-description"
-          overlayClassName={!isResignation ? "bg-transparent" : undefined}
+          overlayClassName={!isResignation ? "bg-black/40" : undefined}
         >
           <DialogDescription id="victory-modal-description" className="sr-only">
             {isResignation
@@ -470,120 +439,92 @@ const VictoryModal = ({
           </DialogDescription>
 
           <DialogHeader>
-            {isResignation ? (
-              <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
-                {message}
-              </DialogTitle>
-            ) : (
-              <AnimatePresence>
-                {showWinnerEffects && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
+            <DialogTitle className="text-center text-xl sm:text-2xl font-bold mb-2">
+              {message}
+            </DialogTitle>
+            {!isResignation &&
+              typeof gameEloDelta === "number" &&
+              gameEloDelta !== 0 && (
+                <div className="flex justify-center mt-1 gap-2">
+                  <span
+                    className={`px-3 py-1 rounded-lg font-semibold text-sm ${gameEloDelta > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                   >
-                    <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words">
-                      {message}
-                    </DialogTitle>
-                  </motion.div>
-                )}
-                {!showWinnerEffects && (
-                  <DialogTitle className="text-center text-xl sm:text-2xl font-bold break-words opacity-0 select-none">
-                    {message}
-                  </DialogTitle>
-                )}
-              </AnimatePresence>
-            )}
+                    ELO {gameEloDelta > 0 ? "+" : ""}
+                    {gameEloDelta}
+                  </span>
+                  {typeof gameNewElo === "number" && (
+                    <span className="px-3 py-1 rounded-lg text-xs font-medium bg-muted text-white">
+                      New ELO: {gameNewElo}
+                    </span>
+                  )}
+                </div>
+              )}
             {!isResignation && (
-              <div className="text-sm text-muted-foreground text-center pt-2 sm:pt-4 space-y-2">
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold text-foreground">
-                  <div className="flex items-center gap-2">
-                    <AnimatePresence>
-                      {showWinnerEffects && isPlayerWinner() && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ duration: 0.22, ease: "easeOut" }}
-                        >
-                          <Avatar className="h-8 w-8 sm:h-12 sm:w-12 ring-4 ring-green-500 ring-offset-2 ring-offset-background transition-all duration-300">
-                            <AvatarImage src={playerAvatar} alt={playerName} />
-                            <AvatarFallback>
-                              {playerName.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                        </motion.div>
-                      )}
-                      {(!showWinnerEffects || !isPlayerWinner()) && (
-                        <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
-                          <AvatarImage src={playerAvatar} alt={playerName} />
-                          <AvatarFallback>
-                            {playerName.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                    </AnimatePresence>
-                    <span title={playerName}>{playerName}</span>
-                    <span className="text-muted-foreground text-sm sm:text-base">
-                      ({playerColor === "w" ? "White" : "Black"})
-                    </span>
-                  </div>
-                  <span className="text-muted-foreground mx-2">vs</span>
-                  <div className="flex items-center gap-2">
-                    <AnimatePresence>
-                      {showWinnerEffects && !isPlayerWinner() && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ duration: 0.22, ease: "easeOut" }}
-                        >
-                          <Avatar className="h-8 w-8 sm:h-12 sm:w-12 ring-4 ring-green-500 ring-offset-2 ring-offset-background transition-all duration-300">
-                            <AvatarImage
-                              src={selectedBot?.image}
-                              alt={selectedBot?.name}
-                            />
-                            <AvatarFallback title={selectedBot?.name}>
-                              B
-                            </AvatarFallback>
-                          </Avatar>
-                        </motion.div>
-                      )}
-                      {(!showWinnerEffects || isPlayerWinner()) && (
-                        <Avatar className="h-8 w-8 sm:h-12 sm:w-12">
-                          <AvatarImage
-                            src={selectedBot?.image}
-                            alt={selectedBot?.name}
-                          />
-                          <AvatarFallback title={selectedBot?.name}>
-                            B
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                    </AnimatePresence>
-                    <span title={selectedBot?.name}>
-                      {selectedBot?.name || "Bot"}
-                    </span>
-                    <span className="text-muted-foreground text-sm sm:text-base">
-                      ({playerColor === "w" ? "Black" : "White"})
-                    </span>
-                  </div>
-                </div>
-                <div className="text-sm sm:text-base font-medium text-muted-foreground capitalize">
-                  {difficulty} Difficulty
-                </div>
+              <div className="text-center text-muted-foreground text-sm mt-2">
+                <span className="capitalize">{difficulty} Difficulty</span>
+                <span className="mx-2">·</span>
+                <span>{movesCount} moves</span>
+                <span className="mx-2">·</span>
+                <span>
+                  {Math.floor(gameTime / 60)}:
+                  {(gameTime % 60).toString().padStart(2, "0")} min
+                </span>
               </div>
             )}
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 mt-4 sm:mt-6">
+          {/* Player vs Bot Card Layout */}
+          {!isResignation && (
+            <div className="flex flex-row items-center justify-center gap-6 mt-2">
+              {/* Player Card */}
+              <div className="flex flex-col items-center bg-muted/40 rounded-lg p-4 shadow w-32 min-h-[7.5rem]">
+                <Avatar className="h-10 w-10 sm:h-14 sm:w-14 rounded-full">
+                  <AvatarImage src={playerAvatar} alt={playerName} />
+                  <AvatarFallback>{playerName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span
+                  className="mt-2 font-semibold text-base text-foreground break-words text-center w-full"
+                  title={playerName}
+                >
+                  {playerName}
+                </span>
+                <span className="text-xs text-muted-foreground mt-0.5">
+                  {playerColor === "w" ? "White" : "Black"}
+                </span>
+              </div>
+              <span className="text-lg font-bold text-muted-foreground select-none">
+                VS
+              </span>
+              {/* Bot Card */}
+              <div className="flex flex-col items-center bg-muted/40 rounded-lg p-4 shadow w-32 min-h-[7.5rem]">
+                <Avatar className="h-10 w-10 sm:h-14 sm:w-14 rounded-full">
+                  <AvatarImage
+                    src={selectedBot?.image}
+                    alt={selectedBot?.name}
+                  />
+                  <AvatarFallback title={selectedBot?.name}>B</AvatarFallback>
+                </Avatar>
+                <span
+                  className="mt-2 font-semibold text-base text-foreground break-words text-center w-full"
+                  title={selectedBot?.name}
+                >
+                  {selectedBot?.name || "Bot"}
+                </span>
+                <span className="text-xs text-muted-foreground mt-0.5">
+                  {playerColor === "w" ? "Black" : "White"}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-2 flex flex-col gap-3">
             {isResignation ? (
               <>
                 <Button
                   onClick={() => onConfirmResign?.(game)}
                   variant="destructive"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
+                  aria-label="Confirm resignation"
                 >
                   Confirm
                 </Button>
@@ -591,13 +532,14 @@ const VictoryModal = ({
                   onClick={onClose}
                   variant="outline"
                   className="flex-1 text-sm sm:text-base py-2 h-auto"
+                  aria-label="Cancel resignation"
                 >
                   Cancel
                 </Button>
               </>
             ) : (
               <>
-                {/* "Next Bot" button only when player wins */}
+                {/* Next Bot button only when player wins */}
                 {isPlayerWinner() && !game.isDraw() && (
                   <>
                     <div className="mb-2 text-center">
@@ -631,29 +573,17 @@ const VictoryModal = ({
                         return null;
                       })()}
                     </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            onClick={handlePlayNextBot}
-                            variant="default"
-                            className="w-full text-sm sm:text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg transition-all duration-300 font-semibold flex items-center justify-center gap-2"
-                          >
-                            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                            Next Challenge
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Face the next stronger, more skilled bot in The
-                            Ultimate Chess Challenge.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Button
+                      onClick={handlePlayNextBot}
+                      variant="default"
+                      className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                      aria-label="Next Challenge"
+                    >
+                      <TrendingUp className="h-5 w-5" />
+                      Next Challenge
+                    </Button>
                   </>
                 )}
-
                 <div className="flex gap-3">
                   <TooltipProvider>
                     <Tooltip>
@@ -661,9 +591,10 @@ const VictoryModal = ({
                         <Button
                           onClick={handleRematch}
                           variant="outline"
-                          className="flex-1 text-sm sm:text-base py-2 h-auto border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400 font-medium flex items-center justify-center gap-2"
+                          className="flex-1 text-base py-2 h-auto border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400 font-medium flex items-center justify-center gap-2 rounded-lg"
+                          aria-label="Rematch"
                         >
-                          <HandshakeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <HandshakeIcon className="h-5 w-5" />
                           Rematch
                         </Button>
                       </TooltipTrigger>
@@ -672,16 +603,16 @@ const VictoryModal = ({
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           onClick={handleNewBot}
                           variant="outline"
-                          className="flex-1 text-sm sm:text-base py-2 h-auto font-medium flex items-center justify-center gap-2"
+                          className="flex-1 text-base py-2 h-auto font-medium flex items-center justify-center gap-2 rounded-lg"
+                          aria-label="New Bot"
                         >
-                          <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <UserPlus className="h-5 w-5" />
                           New Bot
                         </Button>
                       </TooltipTrigger>

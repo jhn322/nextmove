@@ -19,17 +19,16 @@ export default function Clock() {
   useEffect(() => {
     // Set timezone and format from session if available
     if (status === "authenticated" && session?.user) {
-      setTimezone(session.user.timezone || "UTC");
-      // Ensure clockFormat is either "12" or "24", default to "24"
-      const formatFromSession = session.user.clockFormat;
-      setClockFormat(formatFromSession === "12" ? "12" : "24");
+      const userTimezone = session.user.timezone || "UTC";
+      const userClockFormat = session.user.clockFormat === "12" ? "12" : "24";
+
+      setTimezone(userTimezone);
+      setClockFormat(userClockFormat);
     } else {
-      // Optionally load from localStorage if not authenticated (or reset to defaults)
-      // For simplicity, we'll just use defaults if not logged in
       setTimezone("UTC");
       setClockFormat("24");
     }
-  }, [session?.user, status]); // Depend on session user object
+  }, [status, session?.user?.timezone, session?.user?.clockFormat]);
 
   useEffect(() => {
     const timer = setInterval(() => {

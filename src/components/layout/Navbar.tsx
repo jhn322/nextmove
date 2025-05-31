@@ -41,7 +41,6 @@ import {
   Home,
   Play,
   Github,
-  Save,
   Flower2,
   Flame,
   Leaf,
@@ -277,9 +276,11 @@ const Navbar = () => {
 
   const handleProtectedNavigation = async (path: string) => {
     if (isAuthenticated) {
-      if (path === "/history") setIsHistoryLoading(true);
-      if (path === "/settings") setIsSettingsLoading(true);
-      await router.push(path);
+      if (pathname !== path) {
+        if (path === "/history") setIsHistoryLoading(true);
+        if (path === "/settings") setIsSettingsLoading(true);
+        await router.push(path);
+      }
     } else {
       await signIn("google", {
         callbackUrl: `${window.location.origin}${path}`,
@@ -454,9 +455,9 @@ const Navbar = () => {
                                     item.title.toLowerCase() ? (
                                     <Badge
                                       variant="secondary"
-                                      className="bg-green-500 animate-pulse"
+                                      className="bg-green-500 text-white animate-pulse"
                                     >
-                                      <Save className="h-3 w-3" />
+                                      In Progress
                                     </Badge>
                                   ) : null}
                                 </div>
@@ -792,9 +793,9 @@ const Navbar = () => {
                                       item.title.toLowerCase() ? (
                                       <Badge
                                         variant="secondary"
-                                        className="bg-green-500 animate-pulse"
+                                        className="bg-green-500 text-white animate-pulse"
                                       >
-                                        <Save className="h-3 w-3" />
+                                        In Progress
                                       </Badge>
                                     ) : null}
                                   </div>
@@ -826,6 +827,7 @@ const Navbar = () => {
                       {showAuthLinks && (
                         <>
                           <Button
+                            variant="ghost"
                             onClick={() =>
                               handleProtectedNavigation("/history")
                             }
@@ -841,6 +843,7 @@ const Navbar = () => {
                           </Button>
 
                           <Button
+                            variant="ghost"
                             onClick={() =>
                               handleProtectedNavigation("/settings")
                             }

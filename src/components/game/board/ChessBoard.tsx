@@ -32,6 +32,7 @@ import {
   getEnableAnimations,
 } from "@/lib/settings";
 import AnimatedPiece from "./AnimatedPiece";
+import { getUserGameStatsAction } from "@/lib/actions/game.actions";
 import { type GameStats } from "@/types/stats";
 
 const GAME_OVER_MODAL_SHOWN_KEY = "chess_gameOverModalShown";
@@ -101,10 +102,28 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
   const [pieceSet, setPieceSet] = useState("staunty");
   const [, setShowCoordinates] = useState(true);
   const [autoQueen, setAutoQueen] = useState(() => getAutoQueen());
-  const [moveInputMethod, setMoveInputMethod] = useState<
-    "click" | "drag" | "both"
-  >(() => getMoveInputMethod());
-  const [boardTheme, setBoardTheme] = useState<string>(() => getBoardTheme());
+  const [moveInputMethod, setMoveInputMethod] = useState(() =>
+    getMoveInputMethod()
+  );
+  const [boardTheme, setBoardTheme] = useState(() => getBoardTheme());
+
+  // Fetch game stats when user is authenticated
+  useEffect(() => {
+    const fetchGameStats = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        try {
+          const result = await getUserGameStatsAction();
+          if (result.gameStats) {
+            setGameStats(result.gameStats);
+          }
+        } catch (error) {
+          console.error("Error fetching game stats:", error);
+        }
+      }
+    };
+
+    fetchGameStats();
+  }, [status, session?.user?.id]);
 
   // Initialize game timer
   const { gameTime, whiteTime, blackTime, resetTimers } = useGameTimer(
@@ -558,11 +577,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     game.reset();
     game.isResigned = false;
 
-    // If player is black, set up the board for black to move first
-    if (playerColor === "b") {
-      game.reset();
-      setBoard(game.board());
-    }
+    setBoard(game.board());
 
     setSelectedPiece(null);
     setPossibleMoves([]);
@@ -1091,6 +1106,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
     to: string;
   } | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [enableAnimations, setEnableAnimations] = useState(true);
 
   // Helper to get piece type and color from previous board state
   const getPieceTypeFromHistory = useCallback(
@@ -1114,6 +1130,9 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       wasDragMoveRef.current = false;
       return; // Skip animation for drag-and-drop
     }
+    if (!enableAnimations) {
+      return;
+    }
     const pieceInfo = getPieceTypeFromHistory(lastMove.from);
     if (pieceInfo) {
       setAnimatingMove({
@@ -1124,7 +1143,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       });
       setIsAnimating(true);
     }
-  }, [lastMove, getPieceTypeFromHistory]);
+  }, [lastMove, getPieceTypeFromHistory, enableAnimations]);
 
   const handleAnimationEnd = () => {
     setIsAnimating(false);
@@ -1139,8 +1158,6 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
       setTimeout(getBotMove, 500);
     }
   };
-
-  const [enableAnimations, setEnableAnimations] = useState(true);
 
   // Load enableAnimations from session or localStorage
   useEffect(() => {
@@ -1558,6 +1575,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
         movesCount={history.length - 1}
         isResignation={isResignationModal}
         onConfirmResign={handleConfirmResign}
+        beatenBots={gameStats?.beatenBots || []}
       />
 
       <GameDialogs

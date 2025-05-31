@@ -24,12 +24,12 @@ export const useGameDialogs = () => {
   const { playSound } = useGameSounds();
 
   const handleCancelDialog = () => {
+    setIsResignationModal(false);
     setShowResignDialog(false);
     setShowDifficultyDialog(false);
     setShowColorDialog(false);
     setShowNewBotDialog(false);
     setShowVictoryModal(false);
-    setIsResignationModal(false);
   };
 
   const handleResign = () => {
