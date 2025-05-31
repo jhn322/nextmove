@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Piece from "@/components/game/board/Piece";
 import { Chess, Square } from "chess.js";
@@ -175,7 +175,40 @@ const GameControls = ({
   const currentTurn = game.turn();
   const isGameOver = game.isGameOver() || game.isResigned;
 
+  // Platform detection for keyboard shortcuts
+  const [isMac, setIsMac] = useState(false);
+
   const scrollViewportRef = useRef<HTMLDivElement>(null);
+
+  // Detect platform on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+H (Windows/Linux) or Cmd+H (Mac)
+      if (event.key.toLowerCase() === "h" && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+
+        const isHintEnabled =
+          !game.isGameOver() &&
+          currentTurn === playerColor &&
+          !isCalculatingHint;
+
+        if (isHintEnabled) {
+          onHintRequested();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [game, currentTurn, playerColor, isCalculatingHint, onHintRequested]);
 
   const isPlayerWinner = useCallback(() => {
     if (!isGameOver) return false;
@@ -530,6 +563,7 @@ const GameControls = ({
                 }
                 className="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300 disabled:opacity-70 disabled:bg-fuchsia-500/5 disabled:text-fuchsia-500/50 disabled:border-fuchsia-500/20"
                 aria-label="Get a hint"
+                title={`Get a hint (${isMac ? "⌘" : "Ctrl"}+H)`}
               >
                 <Lightbulb
                   className={`h-4 w-4 ${
@@ -538,11 +572,18 @@ const GameControls = ({
                       : "text-fuchsia-400"
                   }`}
                 />
-                {isCalculatingHint ? (
-                  <div className="h-4 w-4 border-2 border-fuchsia-400/50 border-t-fuchsia-400 rounded-full animate-spin" />
-                ) : (
-                  "Hint"
-                )}
+                <span className="flex items-center gap-1">
+                  {isCalculatingHint ? (
+                    <div className="h-4 w-4 border-2 border-fuchsia-400/50 border-t-fuchsia-400 rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Hint
+                      <span className="hidden sm:inline text-xs opacity-75 ml-1">
+                        {isMac ? "⌘H" : "Ctrl+H"}
+                      </span>
+                    </>
+                  )}
+                </span>
               </Button>
             )}
 
