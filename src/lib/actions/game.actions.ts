@@ -149,6 +149,55 @@ export const clearUserGameHistoryAction = async (
   }
 };
 
+export const resetUserProgressAction = async (
+  userId: string
+): Promise<boolean> => {
+  if (!userId) {
+    console.error("resetUserProgressAction: Missing userId");
+    return false;
+  }
+  try {
+    // Wrap operations in a transaction for atomicity
+    await prisma.$transaction(async (tx) => {
+      // Delete all chess game history
+      await tx.game.deleteMany({
+        where: { userId: userId },
+      });
+
+      // Reset user's ELO back to default starting value
+      await tx.user.update({
+        where: { id: userId },
+        data: { elo: DEFAULT_START_ELO },
+      });
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error in resetUserProgressAction:", error);
+    return false;
+  }
+};
+
+export const resetUserWordleStatsAction = async (
+  userId: string
+): Promise<boolean> => {
+  if (!userId) {
+    console.error("resetUserWordleStatsAction: Missing userId");
+    return false;
+  }
+  try {
+    // Delete all Wordle attempt records for the user
+    await prisma.wordleAttempt.deleteMany({
+      where: { userId: userId },
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error in resetUserWordleStatsAction:", error);
+    return false;
+  }
+};
+
 export const getUserGameStatsAction = async (): Promise<{
   gameStats?: GameStats | null;
   error?: string;

@@ -12,7 +12,7 @@ export default function HistoryLoading() {
         <Skeleton className="h-10 rounded-lg" />
         {/* Bot Challenges Tab */}
         <Skeleton className="h-10 rounded-lg" />
-        {/* Wordle Statistics Tab */}
+        {/* Chess Wordle Statistics Tab */}
         <Skeleton className="h-10 rounded-lg" />
       </div>
 

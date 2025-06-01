@@ -33,6 +33,8 @@ import {
   Bot as BotIcon,
   Settings,
   BarChart2,
+  Play,
+  RotateCcw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -60,6 +62,8 @@ import { type GameStats } from "@/types/stats";
 import { DEFAULT_STATE } from "@/config/game";
 import EloBadge from "@/components/ui/elo-badge";
 import { getUserWordleStatsAction } from "@/lib/actions/wordle.actions";
+import { resetUserProgressAction } from "@/lib/actions/game.actions";
+import { useAuth } from "@/context/auth-context";
 import {
   Tooltip,
   TooltipTrigger,
@@ -309,6 +313,7 @@ export function HomePageClient({
   allBotsBeaten,
 }: HomePageClientProps) {
   const router = useRouter();
+  const { refreshSession } = useAuth();
   const [showGameInProgressDialog, setShowGameInProgressDialog] =
     useState(false);
   const [pendingNavigationTarget, setPendingNavigationTarget] = useState<{
@@ -331,6 +336,8 @@ export function HomePageClient({
     useState<string | null>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [isBotProgressionLoading, setIsBotProgressionLoading] = useState(false);
+  const [isResettingProgress, setIsResettingProgress] = useState(false);
+  const [showResetConfirmDialog, setShowResetConfirmDialog] = useState(false);
 
   // State for Wordle total wins fetched from backend
   const [wordleTotalWins, setWordleTotalWins] = useState<number | null>(null);
@@ -525,6 +532,43 @@ export function HomePageClient({
       ...prev,
       [levelName]: !prev[levelName],
     }));
+  };
+
+  // Handle replay journey - keep progress
+  const handleReplayJourney = () => {
+    router.push("/play/beginner");
+  };
+
+  // Handle reset all progress - true restart
+  const handleResetProgress = async () => {
+    if (!session?.user?.id) return;
+
+    setIsResettingProgress(true);
+    try {
+      const success = await resetUserProgressAction(session.user.id);
+      if (success) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("chess-game-state");
+          localStorage.removeItem("selectedBot");
+          localStorage.removeItem("last-saved-game-id");
+          localStorage.removeItem("last-saved-game-fen");
+          localStorage.removeItem("chess-game-history");
+          localStorage.removeItem("chess-game-stats");
+          localStorage.removeItem("chess-last-game-result");
+        }
+
+        // Refresh session to get updated user data
+        await refreshSession();
+
+        // Navigate to beginner after successful reset
+        router.push("/play/beginner");
+      }
+    } catch (error) {
+      console.error("Error resetting progress:", error);
+    } finally {
+      setIsResettingProgress(false);
+      setShowResetConfirmDialog(false);
+    }
   };
 
   return (
@@ -849,7 +893,7 @@ export function HomePageClient({
                         {level.description}
                       </p>
 
-                      {/* ELO Rating Bar or Wordle Stats for Desktop */}
+                      {/* ELO Rating Bar or Chess Wordle Statistics for Desktop */}
                       <div className="mt-4 space-y-1.5">
                         {level.statType === "wordleWins" ? (
                           <>
@@ -1056,16 +1100,54 @@ export function HomePageClient({
                       </div>
                       <h3 className="font-bold text-xl">Congratulations!</h3>
                       <p className="text-muted-foreground">
-                        You&apos;ve beaten all the bots! Want to challenge
-                        yourself again?
+                        You&apos;ve beaten all the bots! What would you like to
+                        do next?
                       </p>
-                      <Button
-                        className="w-full mt-2"
-                        size="lg"
-                        onClick={() => router.push("/play/beginner")}
-                      >
-                        Start Again
-                      </Button>
+                      <div className="flex gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                className="flex-1"
+                                size="lg"
+                                onClick={handleReplayJourney}
+                              >
+                                <Play className="mr-2 h-4 w-4" />
+                                Replay Journey
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                Keep your game history, progression and play
+                                again
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="flex-1 border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                                size="lg"
+                                onClick={() => setShowResetConfirmDialog(true)}
+                                disabled={isResettingProgress}
+                              >
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Start Fresh
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                Clear all chess progress, ELO, and game history
+                                to start the bot challenge fresh
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </div>
                   ) : nextBot ? (
                     <>
@@ -1244,6 +1326,55 @@ export function HomePageClient({
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmNavigation}>
               Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={showResetConfirmDialog}
+        onOpenChange={setShowResetConfirmDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset All Chess Progress</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <div>
+                This will permanently delete <strong>ALL</strong> of your chess
+                progress:
+              </div>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>
+                  <strong>Game History</strong> - All past chess games
+                </li>
+                <li>
+                  <strong>ELO Rating</strong> - Reset back to starting value
+                </li>
+                <li>
+                  <strong>Bot Challenge Records</strong> - All bots you&apos;ve
+                  defeated
+                </li>
+                <li>
+                  <strong>Game Statistics</strong> - Win/loss records and
+                  averages
+                </li>
+              </ul>
+              <div className="text-destructive font-semibold mt-2">
+                This action cannot be undone! Your Chess Wordle statistics will
+                not be affected.
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetProgress}
+              disabled={isResettingProgress}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isResettingProgress
+                ? "Resetting..."
+                : "Reset All Chess Progress"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

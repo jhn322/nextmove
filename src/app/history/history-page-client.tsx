@@ -66,6 +66,7 @@ import {
 import { useRouter } from "next/navigation";
 import { type GameHistory as PrismaGameHistory } from "@/lib/game-service";
 import { clearUserGameHistoryAction } from "@/lib/actions/game.actions";
+import { resetUserWordleStatsAction } from "@/lib/actions/game.actions";
 import { Session } from "next-auth";
 import Link from "next/link";
 import { DEFAULT_STATE } from "@/config/game";
@@ -117,6 +118,7 @@ export const HistoryPageClient = ({
   const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState<string | null>(initialError || null);
   const [isClearing, setIsClearing] = useState(false);
+  const [isResettingWordleStats, setIsResettingWordleStats] = useState(false);
   const router = useRouter();
 
   // State for new game confirmation dialog
@@ -140,12 +142,12 @@ export const HistoryPageClient = ({
     null
   );
 
-  // State for Wordle statistics fetched from backend
+  // State for Chess Wordle statistics fetched from backend
   const [wordleStats, setWordleStats] = useState<UserWordleStats | null>(null);
   const [isLoadingWordleStats, setIsLoadingWordleStats] = useState(true);
   const [wordleStatsError, setWordleStatsError] = useState<string | null>(null);
 
-  // Removed temporary placeholder Wordle stats
+  // Removed temporary placeholder Chess Wordle statistics
   // const wordleTotalWins = 0;
   // const wordleTotalPlays = 0;
   // const wordleCurrentStreak = 0;
@@ -243,7 +245,7 @@ export const HistoryPageClient = ({
         localStorage.removeItem(SELECTED_BOT_STORAGE_KEY); // Belt and braces
       }
 
-      // Fetch Wordle stats from backend
+      // Fetch Chess Wordle statistics from backend
       const fetchWordleStats = async () => {
         if (session?.user?.id) {
           setIsLoadingWordleStats(true);
@@ -256,14 +258,14 @@ export const HistoryPageClient = ({
             setWordleStats(result.stats);
           } else {
             // Should not happen if action is implemented correctly
-            setWordleStatsError("Failed to retrieve Wordle stats.");
+            setWordleStatsError("Failed to retrieve Chess Wordle statistics.");
           }
           setIsLoadingWordleStats(false);
         } else {
-          // No user session, so no stats to fetch for Wordle
+          // No user session, so no stats to fetch for Chess Wordle
           // Display a relevant message or leave stats as null/empty
           setIsLoadingWordleStats(false);
-          // setWordleStatsError("Sign in to view your Wordle statistics."); // Optional: prompt to sign in
+          // setWordleStatsError("Sign in to view your Chess Wordle statistics."); // Optional: prompt to sign in
         }
       };
 
@@ -426,9 +428,105 @@ export const HistoryPageClient = ({
     }
   };
 
+  const handleResetWordleStats = async () => {
+    if (!session?.user?.id) {
+      setError(
+        "You need to be signed in to reset your Chess Wordle statistics"
+      );
+      return;
+    }
+
+    setIsResettingWordleStats(true);
+    setError(null);
+    setSuccessMessage("");
+
+    try {
+      const success = await resetUserWordleStatsAction(session.user.id);
+      if (success) {
+        setWordleStats(null);
+        setSuccessMessage("Chess Wordle statistics cleared successfully");
+      } else {
+        setError("Failed to clear Chess Wordle statistics. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error clearing Chess Wordle statistics:", error);
+      setError(
+        "An unexpected error occurred clearing Chess Wordle statistics. Please try again."
+      );
+    } finally {
+      setIsResettingWordleStats(false);
+    }
+  };
+
   const renderClearHistoryButton = () => {
-    // Render button only if logged in and there is history
-    if (!session || gameHistory.length === 0) return null;
+    if (!session) return null;
+
+    // Show Clear Chess Wordle Statistics button on wordle-stats tab
+    if (defaultTab === "wordle-stats") {
+      // Only show if there are Chess Wordle statistics to clear
+      if (!wordleStats || wordleStats.totalPlays === 0) return null;
+
+      return (
+        <AlertDialog>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="ml-auto"
+                    disabled={isResettingWordleStats}
+                    aria-label="Clear all Chess Wordle statistics"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Clear Chess Wordle Statistics
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="center">
+                Clear all Chess Wordle statistics
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Clear Chess Wordle Statistics</AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <div>
+                  This will permanently delete all your Chess Wordle statistics
+                  including:
+                </div>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Total games played and words guessed</li>
+                  <li>Current and longest winning streaks</li>
+                  <li>Guess distribution data</li>
+                  <li>Win percentage and averages</li>
+                </ul>
+                <div className="text-destructive font-semibold mt-2">
+                  This action cannot be undone!
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleResetWordleStats}
+                disabled={isResettingWordleStats}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isResettingWordleStats
+                  ? "Clearing..."
+                  : "Clear Chess Wordle Statistics"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      );
+    }
+
+    // Show Clear History button on other tabs (if there is history)
+    if (gameHistory.length === 0) return null;
 
     return (
       <AlertDialog>
@@ -457,9 +555,9 @@ export const HistoryPageClient = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Clear All Game History</AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
-              <p>
+              <div>
                 This will permanently delete <strong>ALL</strong> of your:
-              </p>
+              </div>
               <ul className="list-disc pl-6 space-y-1">
                 <li>
                   <strong>Game History</strong> - All past games
@@ -472,13 +570,10 @@ export const HistoryPageClient = ({
                   <strong>Bot Challenge Records</strong> - All bots you&apos;ve
                   defeated
                 </li>
-                <li>
-                  <strong>Wordle Statistics</strong> - All Wordle games played
-                </li>
               </ul>
-              <p className="text-destructive font-semibold mt-2">
+              <div className="text-destructive font-semibold mt-2">
                 This action cannot be undone!
-              </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -546,7 +641,7 @@ export const HistoryPageClient = ({
             onClick={() => setDefaultTab("wordle-stats")}
           >
             <ToyBrick className="h-4 w-4" />
-            <span className="hidden sm:inline">Wordle Statistics</span>
+            <span className="hidden sm:inline">Chess Wordle Statistics</span>
             <span className="sm:hidden">Wordle</span>
           </TabsTrigger>
         </TabsList>
@@ -1210,35 +1305,39 @@ export const HistoryPageClient = ({
           </Card>
         </TabsContent>
 
-        {/* Wordle Stats Tab */}
+        {/* Chess Wordle Statistics Tab */}
         <TabsContent value="wordle-stats">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <ToyBrick className="h-6 w-6 text-amber-500" /> Chess Wordle
-                Statistics
-              </CardTitle>
-              <CardDescription>
-                Track your performance in the Chess Wordle puzzles.
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <ToyBrick className="h-6 w-6 text-amber-500" /> Chess Wordle
+                    Statistics
+                  </CardTitle>
+                  <CardDescription>
+                    Track your performance in the Chess Wordle puzzles.
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {isLoadingWordleStats ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
                   <p className="text-muted-foreground">
-                    Loading Wordle Statistics...
+                    Loading Chess Wordle Statistics...
                   </p>
                 </div>
               ) : wordleStatsError ? (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error Loading Wordle Stats</AlertTitle>
+                  <AlertTitle>Error Loading Chess Wordle Statistics</AlertTitle>
                   <AlertDescription>{wordleStatsError}</AlertDescription>
                 </Alert>
               ) : wordleStats && wordleStats.totalPlays > 0 ? (
                 <>
-                  {/* Wordle Stats Cards */}
+                  {/* Chess Wordle Statistics Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <StatCardItem
                       icon={Gamepad2}

@@ -2,7 +2,14 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Bot, BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
-import { HandshakeIcon, UserPlus, TrendingUp, Trophy } from "lucide-react";
+import {
+  HandshakeIcon,
+  UserPlus,
+  TrendingUp,
+  Trophy,
+  Play,
+  RotateCcw,
+} from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -11,9 +18,22 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Chess } from "chess.js";
 import Confetti from "react-confetti";
-import { saveGameAction } from "@/lib/actions/game.actions";
+import {
+  saveGameAction,
+  resetUserProgressAction,
+} from "@/lib/actions/game.actions";
 import { useAuth } from "@/context/auth-context";
 import { getConfettiEnabled } from "@/lib/settings";
 import { useRouter } from "next/navigation";
@@ -93,6 +113,8 @@ const VictoryModal = ({
   const [isVisible, setIsVisible] = useState(false);
   const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isCalculatingElo, setIsCalculatingElo] = useState(false);
+  const [isResettingProgress, setIsResettingProgress] = useState(false);
+  const [showResetConfirmDialog, setShowResetConfirmDialog] = useState(false);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -435,11 +457,44 @@ const VictoryModal = ({
   const allBotsBeaten =
     beatenBots && beatenBots.length >= allBots.length && allBots.length > 0;
 
-  // Handle start challenge again
-  const handleStartChallengeAgain = () => {
+  // Handle start challenge again - replay journey (keep progress)
+  const handleReplayJourney = () => {
     onNewBot();
     onClose();
     router.push("/play/beginner");
+  };
+
+  // Handle reset all progress - true restart
+  const handleResetProgress = async () => {
+    if (!session?.user?.id) return;
+
+    setIsResettingProgress(true);
+    try {
+      const success = await resetUserProgressAction(session.user.id);
+      if (success) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("chess-game-state");
+          localStorage.removeItem("selectedBot");
+          localStorage.removeItem("last-saved-game-id");
+          localStorage.removeItem("last-saved-game-fen");
+          localStorage.removeItem("chess-game-history");
+          localStorage.removeItem("chess-game-stats");
+          localStorage.removeItem("chess-last-game-result");
+        }
+
+        // Refresh session to get updated user data
+        await refreshSession();
+
+        onNewBot();
+        onClose();
+        router.push("/play/beginner");
+      }
+    } catch (error) {
+      console.error("Error resetting progress:", error);
+    } finally {
+      setIsResettingProgress(false);
+      setShowResetConfirmDialog(false);
+    }
   };
 
   return (
@@ -588,7 +643,7 @@ const VictoryModal = ({
                 {isPlayerWinner() && !game.isDraw() && (
                   <>
                     {allBotsBeaten ? (
-                      // Congratulations message when all bots are beaten
+                      // Choice between replay and reset when all bots are beaten
                       <div className="mb-2 text-center space-y-4 py-4">
                         <div className="bg-primary/10 p-4 rounded-full inline-block">
                           <Trophy className="h-8 w-8 text-primary animate-bounce" />
@@ -598,19 +653,58 @@ const VictoryModal = ({
                             🎉 Congratulations! 🎉
                           </h3>
                           <p className="text-sm text-muted-foreground mt-2">
-                            You&apos;ve defeated all 48 bots! You are a true
-                            chess master!
+                            You&apos;ve defeated all 48 bots! What would you
+                            like to do next?
                           </p>
                         </div>
-                        <Button
-                          onClick={handleStartChallengeAgain}
-                          variant="default"
-                          className="w-full text-base py-2 h-auto bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
-                          aria-label="Start challenge again from the beginning"
-                        >
-                          <Trophy className="h-5 w-5" />
-                          Start Challenge Again
-                        </Button>
+                        <div className="flex gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={handleReplayJourney}
+                                  variant="default"
+                                  className="flex-1 text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                  aria-label="Replay journey keeping your current progress"
+                                >
+                                  <Play className="h-5 w-5" />
+                                  Replay Journey
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Start playing again while keeping all your
+                                  game history and progression
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={() =>
+                                    setShowResetConfirmDialog(true)
+                                  }
+                                  disabled={isResettingProgress}
+                                  variant="outline"
+                                  className="flex-1 text-base py-2 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                  aria-label="Reset all progress and start completely fresh"
+                                >
+                                  <RotateCcw className="h-5 w-5" />
+                                  Start Fresh
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Clear all chess progress, ELO, and game
+                                  history to start the bot challenge fresh
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </div>
                     ) : (
                       <>
@@ -739,6 +833,56 @@ const VictoryModal = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Reset Progress Confirmation Dialog */}
+      <AlertDialog
+        open={showResetConfirmDialog}
+        onOpenChange={setShowResetConfirmDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset All Chess Progress</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <div>
+                This will permanently delete <strong>ALL</strong> of your chess
+                progress:
+              </div>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>
+                  <strong>Game History</strong> - All past chess games
+                </li>
+                <li>
+                  <strong>ELO Rating</strong> - Reset back to starting value
+                </li>
+                <li>
+                  <strong>Bot Challenge Records</strong> - All bots you&apos;ve
+                  defeated
+                </li>
+                <li>
+                  <strong>Game Statistics</strong> - Win/loss records and
+                  averages
+                </li>
+              </ul>
+              <div className="text-destructive font-semibold mt-2">
+                This action cannot be undone! Your Chess Wordle statistics will
+                not be affected.
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetProgress}
+              disabled={isResettingProgress}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isResettingProgress
+                ? "Resetting..."
+                : "Reset All Chess Progress"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

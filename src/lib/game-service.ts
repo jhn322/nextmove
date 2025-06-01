@@ -238,7 +238,7 @@ export const getUserGameStats = async (userId: string) => {
 };
 
 /**
- * Clears game history for a user using Prisma
+ * Clears chess game history for a user using Prisma (does not affect Wordle stats)
  */
 export const clearUserGameHistory = async (
   userId: string
@@ -249,25 +249,14 @@ export const clearUserGameHistory = async (
       return false;
     }
 
-    // Wrap operations in a transaction for atomicity
-    await prisma.$transaction(async (tx) => {
-      // Delete regular game history
-      await tx.game.deleteMany({
-        where: { userId: userId },
-      });
-
-      // Delete all Wordle attempt records for the user
-      await tx.wordleAttempt.deleteMany({
-        where: { userId: userId },
-      });
+    // Delete chess game history only
+    await prisma.game.deleteMany({
+      where: { userId: userId },
     });
 
     return true;
   } catch (error) {
-    console.error(
-      "Unexpected error clearing game history and Wordle stats:",
-      error
-    );
+    console.error("Unexpected error clearing chess game history:", error);
     return false;
   }
 };
