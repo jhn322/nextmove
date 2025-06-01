@@ -11,6 +11,7 @@ import CapturedPieces from "./CapturedPieces";
 import { CapturedPiece } from "@/lib/calculateMaterialAdvantage";
 import { useAuth } from "@/context/auth-context";
 import EloBadge from "@/components/ui/elo-badge";
+import { Star } from "lucide-react";
 
 interface PlayerProfileProps {
   difficulty: string;
@@ -23,6 +24,7 @@ interface PlayerProfileProps {
   game?: Chess;
   playerColor?: "w" | "b";
   pieceSet?: string;
+  prestigeLevel?: number;
 }
 
 const PlayerProfile = ({
@@ -35,6 +37,7 @@ const PlayerProfile = ({
   game,
   playerColor = "w",
   pieceSet: initialPieceSet = "staunty",
+  prestigeLevel,
 }: PlayerProfileProps) => {
   const { session, status } = useAuth();
   const [message, setMessage] = useState<string>("");
@@ -195,6 +198,24 @@ const PlayerProfile = ({
                   ? selectedBot?.name || `${capitalizedDifficulty} Bot`
                   : playerName}
               </span>
+              {!isBot && prestigeLevel !== undefined && prestigeLevel > 0 && (
+                <div className="flex items-center">
+                  {Array.from(
+                    { length: Math.min(prestigeLevel, 3) },
+                    (_, i) => (
+                      <Star
+                        key={i}
+                        className="h-3 w-3 text-yellow-500 fill-yellow-500"
+                      />
+                    )
+                  )}
+                  {prestigeLevel > 3 && (
+                    <span className="text-xs text-muted-foreground ml-1">
+                      +{prestigeLevel - 3}
+                    </span>
+                  )}
+                </div>
+              )}
               {isBot && selectedBot ? (
                 <Image
                   src={selectedBot.flag}
