@@ -33,7 +33,6 @@ import {
   Bot as BotIcon,
   Settings,
   BarChart2,
-  Play,
   Star,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -1394,12 +1393,12 @@ export function HomePageClient({
                   <strong>🔄 Resets:</strong> Bot challenge progression only
                 </li>
                 <li>
-                  <strong>⭐ Adds:</strong> A prestige star to show you've
+                  <strong>⭐ Adds:</strong> A prestige star to show you&apos;ve
                   completed the challenge before
                 </li>
               </ul>
               <div className="text-primary font-semibold mt-2">
-                You'll earn prestige recognition while keeping all your
+                You&apos;ll earn prestige recognition while keeping all your
                 achievements!
               </div>
             </AlertDialogDescription>

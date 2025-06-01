@@ -5,7 +5,6 @@ import {
   getUserGameStats,
   type GameHistory,
 } from "@/lib/game-service";
-import { BOTS_BY_DIFFICULTY, Bot } from "@/components/game/data/bots";
 import { HistoryPageClient } from "./history-page-client";
 import React from "react";
 import { redirect } from "next/navigation";
