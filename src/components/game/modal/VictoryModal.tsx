@@ -115,6 +115,7 @@ const VictoryModal = ({
   const [isCalculatingElo, setIsCalculatingElo] = useState(false);
   const [isResettingProgress, setIsResettingProgress] = useState(false);
   const [showResetConfirmDialog, setShowResetConfirmDialog] = useState(false);
+  const [isReplayMode, setIsReplayMode] = useState(false);
 
   const isPlayerWinner = useCallback(() => {
     if (game.isCheckmate()) {
@@ -457,10 +458,14 @@ const VictoryModal = ({
   const allBotsBeaten =
     beatenBots && beatenBots.length >= allBots.length && allBots.length > 0;
 
-  // Handle start challenge again - replay journey (keep progress)
+  // Handle replay journey - keep progress
   const handleReplayJourney = () => {
     onNewBot();
     onClose();
+    // Set replay mode flag
+    if (typeof window !== "undefined") {
+      localStorage.setItem("chess-replay-mode", "true");
+    }
     router.push("/play/beginner");
   };
 
@@ -480,6 +485,7 @@ const VictoryModal = ({
           localStorage.removeItem("chess-game-history");
           localStorage.removeItem("chess-game-stats");
           localStorage.removeItem("chess-last-game-result");
+          localStorage.removeItem("chess-replay-mode");
         }
 
         // Refresh session to get updated user data
@@ -496,6 +502,36 @@ const VictoryModal = ({
       setShowResetConfirmDialog(false);
     }
   };
+
+  // Handle random opponent selection
+  const handleRandomOpponent = () => {
+    onNewBot();
+    onClose();
+
+    // Get a random bot from all available bots
+    const allBots: Array<Bot & { difficulty: string }> = [];
+    Object.keys(BOTS_BY_DIFFICULTY).forEach((difficulty) => {
+      BOTS_BY_DIFFICULTY[difficulty as keyof typeof BOTS_BY_DIFFICULTY].forEach(
+        (bot) => {
+          allBots.push({
+            ...bot,
+            difficulty,
+          });
+        }
+      );
+    });
+
+    const randomBot = allBots[Math.floor(Math.random() * allBots.length)];
+    router.push(`/play/${randomBot.difficulty}/${randomBot.id}`);
+  };
+
+  // Check if user is in replay mode
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const replayMode = localStorage.getItem("chess-replay-mode");
+      setIsReplayMode(replayMode === "true");
+    }
+  }, []);
 
   return (
     <>
@@ -643,69 +679,95 @@ const VictoryModal = ({
                 {isPlayerWinner() && !game.isDraw() && (
                   <>
                     {allBotsBeaten ? (
-                      // Choice between replay and reset when all bots are beaten
-                      <div className="mb-2 text-center space-y-4 py-4">
-                        <div className="bg-primary/10 p-4 rounded-full inline-block">
-                          <Trophy className="h-8 w-8 text-primary animate-bounce" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-xl text-primary">
-                            🎉 Congratulations! 🎉
-                          </h3>
-                          <p className="text-sm text-muted-foreground mt-2">
-                            You&apos;ve defeated all 48 bots! What would you
-                            like to do next?
-                          </p>
-                        </div>
-                        <div className="space-y-3">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={handleReplayJourney}
-                                  variant="default"
-                                  className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
-                                  aria-label="Replay journey keeping your current progress"
-                                >
-                                  <Play className="h-5 w-5" />
-                                  Replay Journey
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>
-                                  Start playing again while keeping all your
-                                  game history and progression
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                      // Different UI based on replay mode
+                      isReplayMode ? (
+                        // In replay mode - show Random Opponent button
+                        <Button
+                          onClick={handleRandomOpponent}
+                          variant="default"
+                          className="w-full text-base py-2 h-auto bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                          aria-label="Challenge a random opponent"
+                        >
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 10V3L4 14h7v7l9-11h-7z"
+                            />
+                          </svg>
+                          Random Opponent
+                        </Button>
+                      ) : (
+                        // First time completion - show congratulations and choice
+                        <div className="mb-2 text-center space-y-4 py-4">
+                          <div className="bg-primary/10 p-4 rounded-full inline-block">
+                            <Trophy className="h-8 w-8 text-primary animate-bounce" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-xl text-primary">
+                              🎉 Congratulations! 🎉
+                            </h3>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              You&apos;ve defeated all 48 bots! What would you
+                              like to do next?
+                            </p>
+                          </div>
+                          <div className="space-y-3">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    onClick={handleReplayJourney}
+                                    variant="default"
+                                    className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                    aria-label="Replay journey keeping your current progress"
+                                  >
+                                    <Play className="h-5 w-5" />
+                                    Replay Journey
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Start playing again while keeping all your
+                                    game history and progression
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
 
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={() =>
-                                    setShowResetConfirmDialog(true)
-                                  }
-                                  disabled={isResettingProgress}
-                                  variant="outline"
-                                  className="w-full text-base py-2 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 font-semibold flex items-center justify-center gap-2 rounded-lg"
-                                  aria-label="Reset all progress and start completely fresh"
-                                >
-                                  <RotateCcw className="h-5 w-5" />
-                                  Start Fresh
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>
-                                  Clear all chess progress, ELO, and game
-                                  history to start the bot challenge fresh
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    onClick={() =>
+                                      setShowResetConfirmDialog(true)
+                                    }
+                                    disabled={isResettingProgress}
+                                    variant="outline"
+                                    className="w-full text-base py-2 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                    aria-label="Reset all progress and start completely fresh"
+                                  >
+                                    <RotateCcw className="h-5 w-5" />
+                                    Start Fresh
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Clear all chess progress, ELO, and game
+                                    history to start the bot challenge fresh
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
                         </div>
-                      </div>
+                      )
                     ) : (
                       <>
                         <div className="mb-2 text-center">

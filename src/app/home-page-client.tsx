@@ -70,6 +70,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { BOTS_BY_DIFFICULTY } from "@/components/game/data/bots";
 
 // ** Type Difficulty Cards ** //
 interface GameCardConfig {
@@ -242,6 +243,7 @@ interface HomePageClientProps {
 
 // Constant for game state in localStorage
 const GAME_STATE_STORAGE_KEY = "chess-game-state";
+const SELECTED_BOT_STORAGE_KEY = "selectedBot";
 
 // ** Signed-in Features Info Card ** //
 const SignedInFeaturesInfo = () => (
@@ -338,6 +340,7 @@ export function HomePageClient({
   const [isBotProgressionLoading, setIsBotProgressionLoading] = useState(false);
   const [isResettingProgress, setIsResettingProgress] = useState(false);
   const [showResetConfirmDialog, setShowResetConfirmDialog] = useState(false);
+  const [isReplayMode, setIsReplayMode] = useState(false);
 
   // State for Wordle total wins fetched from backend
   const [wordleTotalWins, setWordleTotalWins] = useState<number | null>(null);
@@ -367,14 +370,19 @@ export function HomePageClient({
       if (typeof window === "undefined") return false;
 
       const savedGameState = localStorage.getItem(GAME_STATE_STORAGE_KEY);
-      const savedSelectedBot = localStorage.getItem("selectedBot");
+      const savedSelectedBot = localStorage.getItem(SELECTED_BOT_STORAGE_KEY);
+      let gameIsActive = false;
+
+      // Check if user is in replay mode
+      const replayMode = localStorage.getItem("chess-replay-mode");
+      setIsReplayMode(replayMode === "true");
 
       if (savedGameState) {
         try {
           const gameState = JSON.parse(savedGameState);
-          const isActive = gameState.fen && gameState.fen !== DEFAULT_STATE.fen;
+          gameIsActive = gameState.fen && gameState.fen !== DEFAULT_STATE.fen;
 
-          if (isActive) {
+          if (gameIsActive) {
             setActiveGameDifficulty(
               gameState.difficulty?.toLowerCase() || null
             );
@@ -421,12 +429,12 @@ export function HomePageClient({
           } else {
             // Game state exists but isn't truly active
             localStorage.removeItem(GAME_STATE_STORAGE_KEY);
-            localStorage.removeItem("selectedBot");
+            localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
           }
         } catch (e) {
           console.error("Error parsing gameState:", e);
           localStorage.removeItem(GAME_STATE_STORAGE_KEY);
-          localStorage.removeItem("selectedBot");
+          localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
         }
       }
       // Reset all if no active game state
@@ -511,7 +519,7 @@ export function HomePageClient({
   const handleConfirmNavigation = () => {
     if (pendingNavigationTarget) {
       localStorage.removeItem(GAME_STATE_STORAGE_KEY);
-      localStorage.removeItem("selectedBot");
+      localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
       setIsGameActive(false);
       setActiveGameDifficulty(null);
       setActiveGameSpecificBotId(null);
@@ -536,6 +544,10 @@ export function HomePageClient({
 
   // Handle replay journey - keep progress
   const handleReplayJourney = () => {
+    // Set replay mode flag
+    if (typeof window !== "undefined") {
+      localStorage.setItem("chess-replay-mode", "true");
+    }
     router.push("/play/beginner");
   };
 
@@ -548,13 +560,14 @@ export function HomePageClient({
       const success = await resetUserProgressAction(session.user.id);
       if (success) {
         if (typeof window !== "undefined") {
-          localStorage.removeItem("chess-game-state");
-          localStorage.removeItem("selectedBot");
+          localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+          localStorage.removeItem(SELECTED_BOT_STORAGE_KEY);
           localStorage.removeItem("last-saved-game-id");
           localStorage.removeItem("last-saved-game-fen");
           localStorage.removeItem("chess-game-history");
           localStorage.removeItem("chess-game-stats");
           localStorage.removeItem("chess-last-game-result");
+          localStorage.removeItem("chess-replay-mode");
         }
 
         // Refresh session to get updated user data
@@ -569,6 +582,25 @@ export function HomePageClient({
       setIsResettingProgress(false);
       setShowResetConfirmDialog(false);
     }
+  };
+
+  // Handle random opponent selection
+  const handleRandomOpponent = () => {
+    // Get a random bot from all available bots
+    const allBots: Array<Bot & { difficulty: string }> = [];
+    Object.keys(BOTS_BY_DIFFICULTY).forEach((difficulty) => {
+      BOTS_BY_DIFFICULTY[difficulty as keyof typeof BOTS_BY_DIFFICULTY].forEach(
+        (bot: Bot) => {
+          allBots.push({
+            ...bot,
+            difficulty,
+          });
+        }
+      );
+    });
+
+    const randomBot = allBots[Math.floor(Math.random() * allBots.length)];
+    router.push(`/play/${randomBot.difficulty}/${randomBot.id}`);
   };
 
   return (
@@ -1094,62 +1126,91 @@ export function HomePageClient({
               <div className="space-y-4">
                 {session ? ( // Check if user is logged in
                   allBotsBeaten ? (
-                    <div className="text-center space-y-4 py-4">
-                      <div className="bg-primary/10 p-4 rounded-full inline-block">
-                        <PartyPopper className="h-8 w-8 text-primary animate-bounce" />
-                      </div>
-                      <h3 className="font-bold text-xl">Congratulations!</h3>
-                      <p className="text-muted-foreground">
-                        You&apos;ve beaten all the bots! What would you like to
-                        do next?
-                      </p>
-                      <div className="space-y-3">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={handleReplayJourney}
-                                variant="default"
-                                className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
-                                aria-label="Replay journey keeping your current progress"
-                              >
-                                <Play className="h-5 w-5" />
-                                Replay Journey
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                Start playing again while keeping all your game
-                                history and progression
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                    // Different UI based on replay mode
+                    isReplayMode ? (
+                      // In replay mode - show Random Opponent button
+                      <Button
+                        onClick={handleRandomOpponent}
+                        variant="default"
+                        className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2"
+                        size="lg"
+                      >
+                        <svg
+                          className="h-5 w-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                        Random Opponent
+                      </Button>
+                    ) : (
+                      // First time completion - show congratulations and choice
+                      <div className="text-center space-y-4 py-4">
+                        <div className="bg-primary/10 p-4 rounded-full inline-block">
+                          <PartyPopper className="h-8 w-8 text-primary animate-bounce" />
+                        </div>
+                        <h3 className="font-bold text-xl">Congratulations!</h3>
+                        <p className="text-muted-foreground">
+                          You&apos;ve beaten all the bots! What would you like
+                          to do next?
+                        </p>
+                        <div className="space-y-3">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={handleReplayJourney}
+                                  variant="default"
+                                  className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                  aria-label="Replay journey keeping your current progress"
+                                >
+                                  <Play className="h-5 w-5" />
+                                  Replay Journey
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Start playing again while keeping all your
+                                  game history and progression
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
 
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={() => setShowResetConfirmDialog(true)}
-                                disabled={isResettingProgress}
-                                variant="outline"
-                                className="w-full text-base py-2 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 font-semibold flex items-center justify-center gap-2 rounded-lg"
-                                aria-label="Reset all progress and start completely fresh"
-                              >
-                                <RotateCcw className="h-5 w-5" />
-                                Start Fresh
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                Clear all chess progress, ELO, and game history
-                                to start the bot challenge fresh
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={() =>
+                                    setShowResetConfirmDialog(true)
+                                  }
+                                  disabled={isResettingProgress}
+                                  variant="outline"
+                                  className="w-full text-base py-2 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                  aria-label="Reset all progress and start completely fresh"
+                                >
+                                  <RotateCcw className="h-5 w-5" />
+                                  Start Fresh
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Clear all chess progress, ELO, and game
+                                  history to start the bot challenge fresh
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </div>
-                    </div>
+                    )
                   ) : nextBot ? (
                     <>
                       <div className="flex items-center gap-3">
