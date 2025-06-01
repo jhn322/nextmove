@@ -17,6 +17,7 @@ interface SaveGameResultParams {
   isResignation?: boolean;
   eloDelta?: number;
   newElo?: number;
+  prestigeLevel?: number;
 }
 
 /**
@@ -81,6 +82,7 @@ export const saveGameResult = async ({
   isResignation = false,
   eloDelta,
   newElo,
+  prestigeLevel = 0,
 }: SaveGameResultParams): Promise<GameHistory | null> => {
   try {
     if (!userId || !selectedBot) {
@@ -102,6 +104,7 @@ export const saveGameResult = async ({
         fen: game.fen(),
         eloDelta: eloDelta,
         newElo: newElo,
+        prestigeLevel: prestigeLevel,
       },
     });
 
@@ -153,6 +156,17 @@ export const getUserGameStats = async (userId: string) => {
       throw new Error("Authentication required or User ID missing");
     }
 
+    // Get user's current prestige level
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { prestigeLevel: true },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const currentPrestigeLevel = user.prestigeLevel ?? 0;
     const gameHistory = await getUserGameHistory(userId);
 
     if (gameHistory.length === 0) {
@@ -171,8 +185,13 @@ export const getUserGameStats = async (userId: string) => {
           difficulty: string;
           id: number;
         }>,
+        prestigeLevel: currentPrestigeLevel,
       };
     }
+
+    const currentPrestigeGames = gameHistory.filter(
+      (game) => (game.prestigeLevel ?? 0) === currentPrestigeLevel
+    );
 
     const wins = gameHistory.filter((game) => game.result === "win").length;
     const losses = gameHistory.filter((game) => game.result === "loss").length;
@@ -198,10 +217,10 @@ export const getUserGameStats = async (userId: string) => {
     );
     const averageGameTime = totalGames > 0 ? totalTime / totalGames : 0;
 
-    // Calculate beatenBots: unique bots defeated (by name)
+    // Calculate beatenBots: unique bots defeated in CURRENT prestige level only
     const beatenBots: Array<{ name: string; difficulty: string; id: number }> =
       [];
-    gameHistory.forEach((game) => {
+    currentPrestigeGames.forEach((game) => {
       if (game.result === "win") {
         const botName = game.opponent;
         const difficulty = normalizeDifficulty(game.difficulty);
@@ -230,6 +249,7 @@ export const getUserGameStats = async (userId: string) => {
       averageMovesPerGame,
       averageGameTime,
       beatenBots,
+      prestigeLevel: currentPrestigeLevel,
     };
   } catch (error) {
     console.error("Error calculating game stats:", error);

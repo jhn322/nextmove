@@ -14,4 +14,5 @@ export interface GameStats {
     difficulty: string;
     id: number; // Bot ID
   }>;
+  prestigeLevel: number; // Current prestige level
 }

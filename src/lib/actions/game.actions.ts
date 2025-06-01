@@ -44,7 +44,7 @@ export const saveGameAction = async ({
   selectedBot,
   gameTime,
   movesCount,
-  isResignation,
+  isResignation = false,
 }: SaveGameActionParams): Promise<SaveGameResultWithElo | null> => {
   if (!userId || !selectedBot) {
     console.error("saveGameAction: Missing userId or selectedBot");
@@ -111,6 +111,7 @@ export const saveGameAction = async ({
       isResignation: actualGameResult === "resign",
       eloDelta,
       newElo,
+      prestigeLevel: user.prestigeLevel ?? 0, // Include current prestige level
     });
 
     if (!savedGame) {
@@ -198,6 +199,26 @@ export const resetUserWordleStatsAction = async (
   }
 };
 
+export const prestigeUserAction = async (userId: string): Promise<boolean> => {
+  if (!userId) {
+    console.error("prestigeUserAction: Missing userId");
+    return false;
+  }
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        prestigeLevel: { increment: 1 },
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error in prestigeUserAction:", error);
+    return false;
+  }
+};
+
 export const getUserGameStatsAction = async (): Promise<{
   gameStats?: GameStats | null;
   error?: string;
@@ -213,5 +234,80 @@ export const getUserGameStatsAction = async (): Promise<{
   } catch (error) {
     console.error("Error in getUserGameStatsAction:", error);
     return { error: "Failed to fetch game statistics." };
+  }
+};
+
+// Development action to add wins against 47 bots for testing
+export const addTestWinsAction = async (): Promise<boolean> => {
+  if (process.env.NODE_ENV !== "development") {
+    console.error("addTestWinsAction: Only available in development mode");
+    return false;
+  }
+
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      console.error("addTestWinsAction: User not authenticated");
+      return false;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { prestigeLevel: true },
+    });
+
+    if (!user) {
+      console.error("addTestWinsAction: User not found");
+      return false;
+    }
+
+    const currentPrestigeLevel = user.prestigeLevel ?? 0;
+
+    // Get all bots except the first beginner bot
+    const { BOTS_BY_DIFFICULTY } = await import("@/components/game/data/bots");
+    const allBots: Array<{ name: string; difficulty: string; id: number }> = [];
+
+    Object.keys(BOTS_BY_DIFFICULTY).forEach((difficulty) => {
+      BOTS_BY_DIFFICULTY[difficulty as keyof typeof BOTS_BY_DIFFICULTY].forEach(
+        (bot) => {
+          allBots.push({
+            name: bot.name,
+            difficulty,
+            id: bot.id,
+          });
+        }
+      );
+    });
+
+    // Skip the first bot (should be the first beginner bot)
+    const botsToWin = allBots.slice(1);
+
+    // Create game records for wins against these bots
+    const gamePromises = botsToWin.map((bot, index) => {
+      return prisma.game.create({
+        data: {
+          userId: session.user.id,
+          opponent: bot.name,
+          result: "win",
+          difficulty: bot.difficulty,
+          movesCount: 30 + Math.floor(Math.random() * 20), // Random moves 30-50
+          timeTaken: 300 + Math.floor(Math.random() * 600), // Random time 5-15 minutes
+          fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // Starting position
+          prestigeLevel: currentPrestigeLevel,
+          eloDelta: 10 + Math.floor(Math.random() * 10), // Random ELO gain 10-20
+          newElo: 600 + index * 5, // Progressive ELO
+        },
+      });
+    });
+
+    await Promise.all(gamePromises);
+
+    console.log(
+      `addTestWinsAction: Added ${botsToWin.length} test wins for user ${session.user.id}`
+    );
+    return true;
+  } catch (error) {
+    console.error("Error in addTestWinsAction:", error);
+    return false;
   }
 };
