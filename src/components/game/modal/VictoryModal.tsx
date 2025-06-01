@@ -7,8 +7,7 @@ import {
   UserPlus,
   TrendingUp,
   Trophy,
-  Play,
-  RotateCcw,
+  Star,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -30,10 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Chess } from "chess.js";
 import Confetti from "react-confetti";
-import {
-  saveGameAction,
-  resetUserProgressAction,
-} from "@/lib/actions/game.actions";
+import { saveGameAction, prestigeUserAction } from "@/lib/actions/game.actions";
 import { useAuth } from "@/context/auth-context";
 import { getConfettiEnabled } from "@/lib/settings";
 import { useRouter } from "next/navigation";
@@ -113,8 +109,9 @@ const VictoryModal = ({
   const [isVisible, setIsVisible] = useState(false);
   const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isCalculatingElo, setIsCalculatingElo] = useState(false);
-  const [isResettingProgress, setIsResettingProgress] = useState(false);
-  const [showResetConfirmDialog, setShowResetConfirmDialog] = useState(false);
+  const [isPrestiging, setIsPrestiging] = useState(false);
+  const [showPrestigeConfirmDialog, setShowPrestigeConfirmDialog] =
+    useState(false);
   const [isReplayMode, setIsReplayMode] = useState(false);
 
   const isPlayerWinner = useCallback(() => {
@@ -458,33 +455,19 @@ const VictoryModal = ({
   const allBotsBeaten =
     beatenBots && beatenBots.length >= allBots.length && allBots.length > 0;
 
-  // Handle replay journey - keep progress
-  const handleReplayJourney = () => {
-    onNewBot();
-    onClose();
-    // Set replay mode flag
-    if (typeof window !== "undefined") {
-      localStorage.setItem("chess-replay-mode", "true");
-    }
-    router.push("/play/beginner");
-  };
-
-  // Handle reset all progress - true restart
-  const handleResetProgress = async () => {
+  // Handle prestige - reset bot progression while keeping history and ELO
+  const handlePrestige = async () => {
     if (!session?.user?.id) return;
 
-    setIsResettingProgress(true);
+    setIsPrestiging(true);
     try {
-      const success = await resetUserProgressAction(session.user.id);
+      const success = await prestigeUserAction(session.user.id);
       if (success) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("chess-game-state");
           localStorage.removeItem("selectedBot");
           localStorage.removeItem("last-saved-game-id");
           localStorage.removeItem("last-saved-game-fen");
-          localStorage.removeItem("chess-game-history");
-          localStorage.removeItem("chess-game-stats");
-          localStorage.removeItem("chess-last-game-result");
           localStorage.removeItem("chess-replay-mode");
         }
 
@@ -496,10 +479,10 @@ const VictoryModal = ({
         router.push("/play/beginner");
       }
     } catch (error) {
-      console.error("Error resetting progress:", error);
+      console.error("Error prestiging:", error);
     } finally {
-      setIsResettingProgress(false);
-      setShowResetConfirmDialog(false);
+      setIsPrestiging(false);
+      setShowPrestigeConfirmDialog(false);
     }
   };
 
@@ -529,9 +512,25 @@ const VictoryModal = ({
   useEffect(() => {
     if (typeof window !== "undefined") {
       const replayMode = localStorage.getItem("chess-replay-mode");
-      setIsReplayMode(replayMode === "true");
+      // Only consider replay mode if user has prestige level > 0 OR explicitly set replay mode
+      // This prevents fresh completions from being treated as replay mode
+
+      // For now, clear replay mode for fresh completions to fix the prestige button issue
+      // TODO: Implement proper replay mode detection based on user's prestige level
+      if (
+        replayMode === "true" &&
+        allBotsBeaten &&
+        beatenBots &&
+        beatenBots.length >= 48
+      ) {
+        // If user just completed all bots for the first time, clear replay mode
+        localStorage.removeItem("chess-replay-mode");
+        setIsReplayMode(false);
+      } else {
+        setIsReplayMode(replayMode === "true");
+      }
     }
-  }, []);
+  }, [allBotsBeaten, beatenBots]);
 
   return (
     <>
@@ -679,8 +678,53 @@ const VictoryModal = ({
                 {isPlayerWinner() && !game.isDraw() && (
                   <>
                     {allBotsBeaten ? (
-                      // Different UI based on replay mode
-                      isReplayMode ? (
+                      // For now, always show first-time completion UI
+                      // TODO: Implement proper replay mode detection
+                      !isReplayMode ? (
+                        // First time completion - show congratulations and choice
+                        <div className="mb-2 text-center space-y-4 py-4">
+                          <div className="bg-primary/10 p-4 rounded-full inline-block">
+                            <Trophy className="h-8 w-8 text-primary animate-bounce" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-xl text-primary">
+                              🎉 Congratulations! 🎉
+                            </h3>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              You&apos;ve defeated all 48 bots! You can now
+                              prestige to earn a star and start the challenge
+                              again.
+                            </p>
+                          </div>
+                          <div className="space-y-3">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    onClick={() =>
+                                      setShowPrestigeConfirmDialog(true)
+                                    }
+                                    disabled={isPrestiging}
+                                    variant="default"
+                                    className="w-full text-base py-2 h-auto bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                    aria-label="Start a new prestige run - reset bot progression while keeping history"
+                                  >
+                                    <Star className="h-5 w-5" />
+                                    Prestige
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Start a new prestige run - reset bot
+                                    challenge progression while keeping your
+                                    game history and ELO
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </div>
+                      ) : (
                         // In replay mode - show Random Opponent button
                         <Button
                           onClick={handleRandomOpponent}
@@ -703,70 +747,6 @@ const VictoryModal = ({
                           </svg>
                           Random Opponent
                         </Button>
-                      ) : (
-                        // First time completion - show congratulations and choice
-                        <div className="mb-2 text-center space-y-4 py-4">
-                          <div className="bg-primary/10 p-4 rounded-full inline-block">
-                            <Trophy className="h-8 w-8 text-primary animate-bounce" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-xl text-primary">
-                              🎉 Congratulations! 🎉
-                            </h3>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              You&apos;ve defeated all 48 bots! What would you
-                              like to do next?
-                            </p>
-                          </div>
-                          <div className="space-y-3">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    onClick={handleReplayJourney}
-                                    variant="default"
-                                    className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
-                                    aria-label="Replay journey keeping your current progress"
-                                  >
-                                    <Play className="h-5 w-5" />
-                                    Replay Journey
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>
-                                    Start playing again while keeping all your
-                                    game history and progression
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    onClick={() =>
-                                      setShowResetConfirmDialog(true)
-                                    }
-                                    disabled={isResettingProgress}
-                                    variant="outline"
-                                    className="w-full text-base py-2 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 font-semibold flex items-center justify-center gap-2 rounded-lg"
-                                    aria-label="Reset all progress and start completely fresh"
-                                  >
-                                    <RotateCcw className="h-5 w-5" />
-                                    Start Fresh
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>
-                                    Clear all chess progress, ELO, and game
-                                    history to start the bot challenge fresh
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                        </div>
                       )
                     ) : (
                       <>
@@ -896,51 +876,46 @@ const VictoryModal = ({
         </DialogContent>
       </Dialog>
 
-      {/* Reset Progress Confirmation Dialog */}
+      {/* Prestige Confirmation Dialog */}
       <AlertDialog
-        open={showResetConfirmDialog}
-        onOpenChange={setShowResetConfirmDialog}
+        open={showPrestigeConfirmDialog}
+        onOpenChange={setShowPrestigeConfirmDialog}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reset All Chess Progress</AlertDialogTitle>
+            <AlertDialogTitle>Start Prestige Run</AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <div>
-                This will permanently delete <strong>ALL</strong> of your chess
-                progress:
+                Congratulations on completing the bot challenge! You can now
+                start a <strong>Prestige Run</strong>:
               </div>
               <ul className="list-disc pl-6 space-y-1">
                 <li>
-                  <strong>Game History</strong> - All past chess games
+                  <strong>✅ Keeps:</strong> All game history, ELO rating, and
+                  statistics
                 </li>
                 <li>
-                  <strong>ELO Rating</strong> - Reset back to starting value
+                  <strong>🔄 Resets:</strong> Bot challenge progression only
                 </li>
                 <li>
-                  <strong>Bot Challenge Records</strong> - All bots you&apos;ve
-                  defeated
-                </li>
-                <li>
-                  <strong>Game Statistics</strong> - Win/loss records and
-                  averages
+                  <strong>⭐ Adds:</strong> A prestige star to show you've
+                  completed the challenge before
                 </li>
               </ul>
-              <div className="text-destructive font-semibold mt-2">
-                This action cannot be undone! Your Chess Wordle statistics will
-                not be affected.
+              <div className="text-primary font-semibold mt-2">
+                You'll earn prestige recognition while keeping all your
+                achievements!
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleResetProgress}
-              disabled={isResettingProgress}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handlePrestige}
+              disabled={isPrestiging}
+              className="bg-yellow-500 text-yellow-50 hover:bg-yellow-600"
             >
-              {isResettingProgress
-                ? "Resetting..."
-                : "Reset All Chess Progress"}
+              {isPrestiging ? "Starting Prestige Run..." : "Start Prestige Run"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
