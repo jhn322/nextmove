@@ -1103,23 +1103,24 @@ export function HomePageClient({
                         You&apos;ve beaten all the bots! What would you like to
                         do next?
                       </p>
-                      <div className="flex gap-2">
+                      <div className="space-y-3">
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                className="flex-1"
-                                size="lg"
                                 onClick={handleReplayJourney}
+                                variant="default"
+                                className="w-full text-base py-2 h-auto bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                aria-label="Replay journey keeping your current progress"
                               >
-                                <Play className="mr-2 h-4 w-4" />
+                                <Play className="h-5 w-5" />
                                 Replay Journey
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>
-                                Keep your game history, progression and play
-                                again
+                                Start playing again while keeping all your game
+                                history and progression
                               </p>
                             </TooltipContent>
                           </Tooltip>
@@ -1129,13 +1130,13 @@ export function HomePageClient({
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                variant="outline"
-                                className="flex-1 border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
-                                size="lg"
                                 onClick={() => setShowResetConfirmDialog(true)}
                                 disabled={isResettingProgress}
+                                variant="outline"
+                                className="w-full text-base py-2 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 font-semibold flex items-center justify-center gap-2 rounded-lg"
+                                aria-label="Reset all progress and start completely fresh"
                               >
-                                <RotateCcw className="mr-2 h-4 w-4" />
+                                <RotateCcw className="h-5 w-5" />
                                 Start Fresh
                               </Button>
                             </TooltipTrigger>

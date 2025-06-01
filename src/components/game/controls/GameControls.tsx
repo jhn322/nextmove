@@ -635,14 +635,14 @@ const GameControls = ({
                       You&apos;ve defeated all 48 bots! What&apos;s next?
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="space-y-2">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             onClick={handleReplayJourney}
                             variant="default"
-                            className="flex-1 py-2 text-sm font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
+                            className="w-full py-2 text-sm font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
                             aria-label="Replay journey keeping your current progress"
                           >
                             <Play className="h-4 w-4" />
@@ -651,7 +651,8 @@ const GameControls = ({
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>
-                            Keep your game history, progression and play again
+                            Start playing again while keeping all your game
+                            history and progression
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -664,7 +665,7 @@ const GameControls = ({
                             onClick={() => setShowResetConfirmDialog(true)}
                             disabled={isResettingProgress}
                             variant="outline"
-                            className="flex-1 py-2 text-sm font-semibold flex items-center justify-center gap-2 border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400"
+                            className="w-full py-2 text-sm font-semibold flex items-center justify-center gap-2 border-orange-500/50 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400"
                             aria-label="Reset all progress and start completely fresh"
                           >
                             <RotateCcw className="h-4 w-4" />
