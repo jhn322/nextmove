@@ -42,7 +42,7 @@
     "howler": "^2.2.4",
     "lucide-react": "^0.475.0",
     "mongodb": "^6.16.0",
-    "next": "^15.2.4",
+    "next": "15.2.8",
     "next-auth": "^4.24.7",
     "next-themes": "^0.4.4",
     "react": "^19.0.0",
