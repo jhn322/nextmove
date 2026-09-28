@@ -47,6 +47,7 @@ model User {
   enablePreMadeMove   Boolean? @default(true) // Enable pre-made move feature
   showLegalMoves      Boolean? @default(true) // Show legal moves on board
   highlightSquare     Boolean? @default(true) // Highlight last move/square
+  prestigeLevel       Int     @default(0) // Number of times user has completed the full bot challenge
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken model
@@ -134,7 +135,7 @@ model Game {
   createdAt    DateTime @default(now()) @map("date") // Use createdAt to represent the game date
   eloDelta     Int?     @map("elo_delta")   // ELO change 
   newElo       Int?     @map("new_elo")     // New ELO 
-
+  prestigeLevel Int     @default(0) // Prestige level this game was played during
 
   @@index([userId, createdAt]) // Index for fetching user game history efficiently
 }

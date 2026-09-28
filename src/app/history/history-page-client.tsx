@@ -45,6 +45,8 @@ import {
   Play,
   Hourglass,
   ChartColumnStacked,
+  Star,
+  Zap,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -65,7 +67,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import { type GameHistory as PrismaGameHistory } from "@/lib/game-service";
-import { clearUserGameHistoryAction } from "@/lib/actions/game.actions";
+import {
+  clearUserGameHistoryAction,
+  addTestWinsAction,
+} from "@/lib/actions/game.actions";
 import { resetUserWordleStatsAction } from "@/lib/actions/game.actions";
 import { Session } from "next-auth";
 import Link from "next/link";
@@ -146,6 +151,9 @@ export const HistoryPageClient = ({
   const [wordleStats, setWordleStats] = useState<UserWordleStats | null>(null);
   const [isLoadingWordleStats, setIsLoadingWordleStats] = useState(true);
   const [wordleStatsError, setWordleStatsError] = useState<string | null>(null);
+
+  // State for test wins (development only)
+  const [isAddingTestWins, setIsAddingTestWins] = useState(false);
 
   // Removed temporary placeholder Chess Wordle statistics
   // const wordleTotalWins = 0;
@@ -458,6 +466,41 @@ export const HistoryPageClient = ({
     }
   };
 
+  const handleAddTestWins = async () => {
+    if (!session?.user?.id) {
+      setError("You need to be signed in to add test wins");
+      return;
+    }
+
+    setIsAddingTestWins(true);
+    setError(null);
+    setSuccessMessage("");
+
+    try {
+      const success = await addTestWinsAction();
+      if (success) {
+        setSuccessMessage(
+          "Added wins against 47 bots successfully! Refresh the page to see the changes."
+        );
+        // Optionally refresh the page after a delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setError(
+          "Failed to add test wins. Make sure you're in development mode."
+        );
+      }
+    } catch (error) {
+      console.error("Error adding test wins:", error);
+      setError(
+        "An unexpected error occurred adding test wins. Please try again."
+      );
+    } finally {
+      setIsAddingTestWins(false);
+    }
+  };
+
   const renderClearHistoryButton = () => {
     if (!session) return null;
 
@@ -606,6 +649,43 @@ export const HistoryPageClient = ({
 
   return (
     <div className="container max-w-6xl mx-auto py-12 px-4 space-y-8 min-h-screen">
+      {/* Development Test Button - Only in development mode */}
+      {typeof window !== "undefined" &&
+        window.location.hostname === "localhost" &&
+        session && (
+          <div className="hidden bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                  🧪 Development Testing
+                </h3>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  Add wins against 47 bots (leaving 1 unbeaten) to test the
+                  prestige system.
+                </p>
+              </div>
+              <Button
+                onClick={handleAddTestWins}
+                disabled={isAddingTestWins}
+                variant="outline"
+                className="border-yellow-500 text-yellow-700 hover:bg-yellow-50 dark:text-yellow-300 dark:hover:bg-yellow-900/50"
+              >
+                {isAddingTestWins ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Adding Wins...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-4 w-4 mr-2" />
+                    Add 47 Test Wins
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
       <Tabs defaultValue={defaultTab} value={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger
@@ -914,10 +994,50 @@ export const HistoryPageClient = ({
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                         <BotIcon className="h-4 w-4 text-purple-500" />
-                        Bots Defeated
+                        Bot Challenge Progress
                       </div>
-                      <div className="text-3xl font-bold">
-                        {gameStats.beatenBots.length} / {allBots.length}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold">
+                            {gameStats.beatenBots.length} / {allBots.length}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            Bots Defeated
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold">
+                              {gameStats?.prestigeLevel ?? 0}
+                            </span>
+                            {gameStats && gameStats.prestigeLevel > 0 && (
+                              <div className="flex">
+                                {Array.from(
+                                  {
+                                    length: Math.min(
+                                      gameStats.prestigeLevel,
+                                      3
+                                    ),
+                                  },
+                                  (_, i) => (
+                                    <Star
+                                      key={i}
+                                      className="h-4 w-4 text-yellow-500 fill-yellow-500"
+                                    />
+                                  )
+                                )}
+                                {gameStats.prestigeLevel > 3 && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    +{gameStats.prestigeLevel - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            Completions
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="p-4 bg-background rounded-lg border border-border/70 shadow-sm">

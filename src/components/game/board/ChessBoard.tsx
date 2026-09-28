@@ -1299,6 +1299,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                     playerColor={playerColor}
                     capturedPieces={capturedPieces}
                     pieceSet={pieceSet}
+                    prestigeLevel={gameStats?.prestigeLevel}
                   />
                 </div>
               </div>
@@ -1515,6 +1516,7 @@ const ChessBoard = ({ difficulty, initialBot }: ChessBoardProps) => {
                 playerColor={playerColor}
                 capturedPieces={capturedPieces}
                 pieceSet={pieceSet}
+                prestigeLevel={gameStats?.prestigeLevel}
               />
             </div>
           </div>

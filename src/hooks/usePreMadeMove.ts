@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Chess, Square } from "chess.js";
 import type { BoardSquare } from "../types/types";
+import { getAutoQueen } from "../lib/settings";
 
 export const usePreMadeMove = (
   game: Chess,
@@ -22,6 +23,7 @@ export const usePreMadeMove = (
     fromCol: number;
     toRow: number;
     toCol: number;
+    promotion?: "q" | "r" | "n" | "b";
   } | null>(null);
 
   const [preMadePossibleMoves, setPreMadePossibleMoves] = useState<string[]>(
@@ -63,6 +65,26 @@ export const usePreMadeMove = (
     tempGame.load(modifiedFen);
     return tempGame;
   }, []);
+
+  // Helper function to detect if a move is a pawn promotion
+  const isPromotionMove = useCallback(
+    (from: string, to: string): boolean => {
+      const fromSquare = from as Square;
+      const toSquare = to as Square;
+
+      // Get the piece at the from square
+      const piece = game.get(fromSquare);
+      if (!piece || piece.type !== "p") return false;
+
+      // Check if pawn is moving to the promotion rank
+      const toRank = parseInt(toSquare[1]);
+      return (
+        (piece.color === "w" && toRank === 8) ||
+        (piece.color === "b" && toRank === 1)
+      );
+    },
+    [game]
+  );
 
   // Handle creating a pre-made move
   const handlePreMadeMove = useCallback(
@@ -115,11 +137,19 @@ export const usePreMadeMove = (
           }
 
           if (preMadePossibleMoves.includes(square)) {
+            // Check if this is a pawn promotion move
+            let promotion: "q" | "r" | "n" | "b" | undefined;
+            if (isPromotionMove(preMadeMove.from, square)) {
+              const autoQueen = getAutoQueen();
+              promotion = autoQueen ? "q" : undefined;
+            }
+
             setPreMadeMove({
               ...preMadeMove,
               to: square,
               toRow: row,
               toCol: col,
+              promotion,
             });
             // Clear possible moves once destination is selected
             setPreMadePossibleMoves([]);
@@ -150,13 +180,18 @@ export const usePreMadeMove = (
       preMadeMove,
       createTempGame,
       preMadePossibleMoves,
+      isPromotionMove,
     ]
   );
 
   // Execute the pre-made move after the bot has moved
   const executePreMadeMove = useCallback(() => {
     if (preMadeMove && preMadeMove.to && game.turn() === playerColor) {
-      const moveSuccessful = makeMove(preMadeMove.from, preMadeMove.to);
+      const moveSuccessful = makeMove(
+        preMadeMove.from,
+        preMadeMove.to,
+        preMadeMove.promotion
+      );
 
       if (moveSuccessful) {
         setPreMadeMove(null);
@@ -188,8 +223,36 @@ export const usePreMadeMove = (
     const currentTurn = game.turn();
 
     if (currentTurn === playerColor && preMadeMove && preMadeMove.to) {
-      if (!executePreMadeMove()) {
-        cancelPreMadeMove();
+      // Check if this is a pawn promotion move with auto-queen disabled
+      if (
+        preMadeMove.promotion === undefined &&
+        isPromotionMove(preMadeMove.from, preMadeMove.to)
+      ) {
+        if (setSelectedPiece && setPossibleMoves) {
+          setSelectedPiece({
+            row: preMadeMove.fromRow,
+            col: preMadeMove.fromCol,
+          });
+
+          try {
+            const square = preMadeMove.from as Square;
+            const moves = game.moves({ square, verbose: true });
+            setPossibleMoves(moves.map((move) => move.to));
+          } catch (error) {
+            console.error(
+              "Error calculating moves for transferred piece:",
+              error
+            );
+            setPossibleMoves([]);
+          }
+
+          setPreMadeMove(null);
+          setPreMadePossibleMoves([]);
+        }
+      } else {
+        if (!executePreMadeMove()) {
+          cancelPreMadeMove();
+        }
       }
     } else if (
       currentTurn === playerColor &&
@@ -223,6 +286,7 @@ export const usePreMadeMove = (
     cancelPreMadeMove,
     setSelectedPiece,
     setPossibleMoves,
+    isPromotionMove,
   ]);
 
   return {

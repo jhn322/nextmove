@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Loader2,
   Flag,
+  Star,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
@@ -48,6 +49,7 @@ interface PlayerProfileProps {
   losses?: number;
   draws?: number;
   resigns?: number;
+  prestigeLevel?: number;
 }
 
 const VirtualizedAvatarGrid = dynamic(
@@ -63,6 +65,7 @@ export default function PlayerProfile({
   losses,
   draws,
   resigns,
+  prestigeLevel,
 }: PlayerProfileProps) {
   const { session, status, refreshSession } = useAuth();
   const [playerName, setPlayerName] = useState<string>("Player");
@@ -404,6 +407,24 @@ export default function PlayerProfile({
                     >
                       {playerName || "Player"}
                     </span>
+                    {prestigeLevel !== undefined && prestigeLevel > 0 && (
+                      <div className="flex items-center">
+                        {Array.from(
+                          { length: Math.min(prestigeLevel, 5) },
+                          (_, i) => (
+                            <Star
+                              key={i}
+                              className="h-4 w-4 text-yellow-500 fill-yellow-500"
+                            />
+                          )
+                        )}
+                        {prestigeLevel > 5 && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            +{prestigeLevel - 5}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {countryFlag && (
                       <Image
                         src={`/flags/${countryFlag}.webp`}
