@@ -92,22 +92,22 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
         "Brevo HTTP API Error (Password Reset):",
         response.status,
         response.statusText,
-        errorBody
+        errorBody,
       );
       throw new Error(
-        `Failed to send password reset email via Brevo HTTP API: ${response.status} ${response.statusText}. Details: ${errorBodyText}`
+        `Failed to send password reset email via Brevo HTTP API: ${response.status} ${response.statusText}. Details: ${errorBodyText}`,
       );
     }
 
     const responseData = await response.json();
     console.log(
       `Password reset email dispatched successfully via Brevo HTTP API to ${email}:`,
-      responseData
+      responseData,
     );
   } catch (error) {
     console.error(
       `Error during Brevo HTTP API call for password reset to ${email}:`,
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
     throw error;
   }
@@ -202,23 +202,64 @@ export const sendVerificationEmail = async (email: string, token: string) => {
         "Brevo HTTP API Error:",
         response.status,
         response.statusText,
-        errorBody
+        errorBody,
       );
       throw new Error(
-        `Failed to send email via Brevo HTTP API: ${response.status} ${response.statusText}. Details: ${errorBodyText}`
+        `Failed to send email via Brevo HTTP API: ${response.status} ${response.statusText}. Details: ${errorBodyText}`,
       );
     }
 
     const responseData = await response.json();
     console.log(
       `Verification email dispatched successfully via Brevo HTTP API to ${email}:`,
-      responseData // Contains messageId etc.
+      responseData, // Contains messageId etc.
     );
   } catch (error) {
     console.error(
       `Error during Brevo HTTP API call for ${email}:`,
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
     throw error;
+  }
+};
+
+type KeepAliveCheckResult = {
+  ok: boolean;
+  error?: string;
+};
+
+/**
+ * Brevo API call to keep the API key marked as active.
+ */
+export const pingBrevoApi = async (): Promise<KeepAliveCheckResult> => {
+  try {
+    const brevoApiKey = getEnvVar("BREVO_API_KEY");
+    const response = await fetch("https://api.brevo.com/v3/account", {
+      method: "GET",
+      headers: {
+        "api-key": brevoApiKey,
+        accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorBodyText = await response.text();
+      console.error(
+        "Brevo keep-alive ping failed:",
+        response.status,
+        errorBodyText,
+      );
+      return {
+        ok: false,
+        error: `Brevo API returned ${response.status}: ${errorBodyText.slice(0, 200)}`,
+      };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown Brevo ping error";
+    console.error("Brevo keep-alive ping error:", error);
+    return { ok: false, error: message };
   }
 };

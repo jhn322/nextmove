@@ -1,0 +1,59 @@
+# Pings production keep-alive route so MongoDB Atlas M0 and Brevo API key stay active.
+#
+# Repository setup (Settings → Secrets and variables → Actions):
+# - Secret: CRON_SECRET (same value as on Vercel)
+# - Variable: PRODUCTION_APP_URL (e.g. https://your-app.vercel.app, no trailing slash)
+
+name: Keep alive
+
+on:
+  schedule:
+    # Weekly — Sunday 12:00 UTC (enough margin for Atlas + Brevo inactivity rules)
+    - cron: "0 12 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call keep-alive endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          PRODUCTION_APP_URL: ${{ vars.PRODUCTION_APP_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CRON_SECRET}" ]; then
+            echo "Missing repository secret: CRON_SECRET"
+            exit 1
+          fi
+
+          if [ -z "${PRODUCTION_APP_URL}" ]; then
+            echo "Missing repository variable: PRODUCTION_APP_URL"
+            exit 1
+          fi
+
+          BASE_URL="${PRODUCTION_APP_URL%/}"
+          TARGET_URL="${BASE_URL}/api/internal/keep-alive"
+
+          echo "Pinging ${TARGET_URL}"
+
+          http_code="$(
+            curl -sS -o response.json -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer ${CRON_SECRET}" \
+              -H "Content-Type: application/json" \
+              "${TARGET_URL}"
+          )"
+
+          cat response.json
+          echo ""
+          echo "HTTP status: ${http_code}"
+
+          if [ "${http_code}" -lt 200 ] || [ "${http_code}" -ge 300 ]; then
+            exit 1
+          fi
